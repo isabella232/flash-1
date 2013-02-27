@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="PerfomanceTestView1" type="flex">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/PerfomanceTestView1.swc!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
