@@ -30,7 +30,7 @@ package com.pubnub.environment {
 		private var _destroyed:Boolean;
 		
 		private var lastStatus:String
-		private var _isRunning:Boolean;
+		private var _timeIsRunning:Boolean;
 		private var sysMon:SysMon;
 		private var _currentRetries:uint
 		private var _maxRetries:uint = 100;
@@ -82,7 +82,7 @@ package com.pubnub.environment {
 
 
             private function onLoaderHTTPStatus(e:HTTPStatusEvent):void {
-			if (_isRunning == false) return;
+			if (_timeIsRunning == false) return;
 
             var pingEndTime:int = getTimer() - pingStartTime;
             var remoteEndTime:int = getTimer() - remoteStartTime;
@@ -103,18 +103,18 @@ package com.pubnub.environment {
 			var pingOperationInterval:uint = lastStatus == NetMonEvent.HTTP_ENABLE ? Settings.PING_OPERATION_INTERVAL : Settings.PING_OPERATION_RETRY_INTERVAL;
 			
 			if (pingEndTime >= pingOperationInterval) {
-				ping();
+				timePing();
 			}else {
-				pingDelayTimeout = setTimeout(ping, pingOperationInterval - pingEndTime);
+				pingDelayTimeout = setTimeout(timePing, pingOperationInterval - pingEndTime);
 			}
 		}
 		
-		private function ping():void {
+		private function timePing():void {
             trace('Ping!');
-            if (_isRunning == false) return;
+            if (_timeIsRunning == false) return;
 			clearTimeout(pingTimeout);
 			pingStartTime = getTimer();
-			pingTimeout = setTimeout(onTimeout, Settings.PING_OPERATION_TIMEOUT);
+			pingTimeout = setTimeout(onTimePingTimeout, Settings.PING_OPERATION_TIMEOUT);
 			closeLoader();
 
             loader.load(new URLRequest(Settings.PING_OPERATION_URL));
@@ -123,13 +123,13 @@ package com.pubnub.environment {
 		private function onRestoreFromSleep(e:SysMonEvent):void {
 			//trace('onRestoreFromSleep');
 			lastStatus = null;
-			reconnect();
+			timeReconnect();
 		}
 		
-		private function onTimeout():void {
-			//trace('onTimeout');
+		private function onTimePingTimeout():void {
+			//trace('onTimePingTimeout');
 			onError(null);
-			ping();
+			timePing();
 		}
 		
 		private function onError(e:Event = null):void {
@@ -159,12 +159,12 @@ package com.pubnub.environment {
 			lastStatus = NetMonEvent.HTTP_ENABLE;
 		}
 		
-		public function start():void {
+		public function pingTimeStart():void {
 			//trace(this, 'start : ' + _isRunning);
-			if (_isRunning) return;
+			if (_timeIsRunning) return;
 			_currentRetries = 0;
 			lastStatus = null;
-			reconnect();
+			timeReconnect();
 			sysMon.start();
 
             nloader.load(new URLRequest(Settings.REMOTE_OPERATION_URL));
@@ -172,14 +172,14 @@ package com.pubnub.environment {
 
         }
 		
-		private function reconnect():void {
+		private function timeReconnect():void {
 			stop();
-			_isRunning = true;
-			ping();
+			_timeIsRunning = true;
+			timePing();
 		}
 		
 		public function stop():void {
-			_isRunning = false;
+			_timeIsRunning = false;
 			lastStatus = null;
 			sysMon.stop();
 			clearTimeout(pingDelayTimeout);
@@ -207,8 +207,8 @@ package com.pubnub.environment {
 
 		}
 		
-		public function get isRunning():Boolean {
-			return _isRunning;
+		public function get timeIsRunning():Boolean {
+			return _timeIsRunning;
 		}
 		
 		public function get currentRetries():uint {

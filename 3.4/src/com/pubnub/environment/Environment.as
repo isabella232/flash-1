@@ -24,7 +24,7 @@ package com.pubnub.environment {
 		}
 		
 		public function start():void {
-			netMon.start();
+			netMon.pingTimeStart();
 			sysMon.start();
 			lastHTTPDisabledTime = 0;
 		}
