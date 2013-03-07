@@ -14,7 +14,7 @@ package com.pubnub {
          // ie, 100 times, every 3 seconds for a network connection
 
          // time in millseconds to wait for web server to return a response. DO NOT CHANGE unless requested by support
-         public static const OPERATION_TIMEOUT:uint = 310000;
+         public static const OPERATION_TIMEOUT:uint = 5000;
 
          /////////////////////////////////////////////////////////////////////////////
 
@@ -25,6 +25,7 @@ package com.pubnub {
 
          // Timeout, in ms, for above POI
          public static const PING_OPERATION_TIMEOUT:uint = 10000;
+         public static const REMOTE_OPERATION_TIMEOUT:uint = 3000;
 
          ////////////////////////////////////////////////////////////////////////////
 		 
@@ -33,5 +34,6 @@ package com.pubnub {
 
          // URL Endpoint for recovery mode net detection
          public static const PING_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
+         public static const REMOTE_OPERATION_URL:String = 'http://www.internic.net/whois.html';
      }
 }

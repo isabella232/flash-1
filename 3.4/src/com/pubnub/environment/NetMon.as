@@ -20,7 +20,13 @@ package com.pubnub.environment {
 		
 		private var pingDelayTimeout:int;
 		private var pingTimeout:int;
+
+
+        private var remoteDelayTimeout:int;
+        private var remoteTimeout:int;
+
 		private var pingStartTime:int;
+        private var remoteStartTime:int;
 		private var _destroyed:Boolean;
 		
 		private var lastStatus:String
@@ -28,7 +34,9 @@ package com.pubnub.environment {
 		private var sysMon:SysMon;
 		private var _currentRetries:uint
 		private var _maxRetries:uint = 100;
-		private var loader:URLLoader;
+
+        private var loader:URLLoader;
+        private var nloader:URLLoader;
 		
 		public function NetMon () {
 			super(null);
@@ -39,6 +47,10 @@ package com.pubnub.environment {
 			loader = new URLLoader();
 			loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, 	onLoaderHTTPStatus);
 			loader.addEventListener(IOErrorEvent.IO_ERROR, 			onLoaderError);
+
+            nloader = new URLLoader();
+            nloader.addEventListener(HTTPStatusEvent.HTTP_STATUS, 	onNloaderHTTPStatus);
+            nloader.addEventListener(IOErrorEvent.IO_ERROR, 			onNloaderError);
 			
 			sysMon = new SysMon();
 			sysMon.addEventListener(SysMonEvent.RESTORE_FROM_SLEEP, onRestoreFromSleep);
@@ -47,17 +59,44 @@ package com.pubnub.environment {
 		}
 		
 		private function onLoaderError(e:IOErrorEvent):void {
-			//trace('onLoaderError');
+			trace('onLoaderError');
 		}
-		
-		private function onLoaderHTTPStatus(e:HTTPStatusEvent):void {
+
+        private function onNloaderError(e:IOErrorEvent):void {
+            trace('NLoader! Error!');
+        }
+
+        private function onNloaderHTTPStatus(e:HTTPStatusEvent):void {
+
+            trace("nLoader! Complete!");
+
+
+            try {
+                nloader.close();
+            }catch (err:Error) { };
+
+            nloader.load(new URLRequest(Settings.REMOTE_OPERATION_URL));
+
+
+        }
+
+
+            private function onLoaderHTTPStatus(e:HTTPStatusEvent):void {
 			if (_isRunning == false) return;
-			var pingEndTime:int = getTimer() - pingStartTime;
-			clearTimeout(pingDelayTimeout);
+
+            var pingEndTime:int = getTimer() - pingStartTime;
+            var remoteEndTime:int = getTimer() - remoteStartTime;
+
+            clearTimeout(pingDelayTimeout);
 			clearTimeout(pingTimeout);
-			if (e.status == 0) {
+
+            clearTimeout(remoteDelayTimeout);
+            clearTimeout(remoteTimeout);
+
+            if (e.status == 0) {
 				onError(null);
 			}else {
+                trace("onLoader");
 				onComplete(null);
 			}
 			
@@ -77,7 +116,8 @@ package com.pubnub.environment {
 			pingStartTime = getTimer();
 			pingTimeout = setTimeout(onTimeout, Settings.PING_OPERATION_TIMEOUT);
 			closeLoader();
-			loader.load(new URLRequest(Settings.PING_OPERATION_URL));
+
+            loader.load(new URLRequest(Settings.PING_OPERATION_URL));
 		}
 		
 		private function onRestoreFromSleep(e:SysMonEvent):void {
@@ -126,8 +166,11 @@ package com.pubnub.environment {
 			lastStatus = null;
 			reconnect();
 			sysMon.start();
-			
-		}
+
+            nloader.load(new URLRequest(Settings.REMOTE_OPERATION_URL));
+
+
+        }
 		
 		private function reconnect():void {
 			stop();
@@ -160,7 +203,8 @@ package com.pubnub.environment {
 		private function closeLoader():void {
 			try {
 				loader.close();
-			}catch (err:Error) { };
+			}catch (err:Error) { }
+
 		}
 		
 		public function get isRunning():Boolean {
