@@ -8,13 +8,13 @@ import flash.utils.*;
 
 /**
  * ...
- * @author firsoff maxim, support@pubnub.com
+ * @author geremy cohen, support@pubnub.com
  */
-[Event(name="enable", type="com.pubnub.environment.NetMonEvent")]
-[Event(name="disable", type="com.pubnub.environment.NetMonEvent")]
-[Event(name="max_retries", type="com.pubnub.environment.NetMonEvent")]
+[Event(name="enable", type="com.pubnub.environment.AuxNetMonEvent")]
+[Event(name="disable", type="com.pubnub.environment.AuxNetMonEvent")]
+[Event(name="max_retries", type="com.pubnub.environment.AuxNetMonEvent")]
 
-public class NetMon extends EventDispatcher {
+public class AuxNetMon extends EventDispatcher {
 
     private var pingDelayTimeout:int;
     private var pingTimeout:int;
@@ -28,31 +28,31 @@ public class NetMon extends EventDispatcher {
     private var _currentRetries:uint
     private var _maxRetries:uint = 100;
 
-    private var loader:URLLoader;
+    private var nloader:URLLoader;
 
-    public function NetMon() {
+    public function AuxNetMon() {
         super(null);
         init();
     }
 
     private function init():void {
 
-        loader = new URLLoader();
-        loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, onLoaderHTTPStatus);
-        loader.addEventListener(IOErrorEvent.IO_ERROR, onLoaderError);
+        nloader = new URLLoader();
+        nloader.addEventListener(HTTPStatusEvent.HTTP_STATUS, onNloaderHTTPStatus);
+        nloader.addEventListener(IOErrorEvent.IO_ERROR, onNloaderError);
 
         sysMon = new SysMon();
         sysMon.addEventListener(SysMonEvent.RESTORE_FROM_SLEEP, onRestoreFromSleep);
 
-        lastStatus = NetMonEvent.HTTP_DISABLE;
-    }
-
-    private function onLoaderError(e:IOErrorEvent):void {
-        trace('onLoaderError');
+        lastStatus = AuxNetMonEvent.HTTP_DISABLE;
     }
 
 
-    private function onLoaderHTTPStatus(e:HTTPStatusEvent):void {
+    private function onNloaderError(e:IOErrorEvent):void {
+        trace('NLoader! Error!');
+    }
+
+    private function onNloaderHTTPStatus(e:HTTPStatusEvent):void {
         if (_timeIsRunning == false) return;
 
         var pingEndTime:int = getTimer() - pingStartTime;
@@ -63,11 +63,11 @@ public class NetMon extends EventDispatcher {
         if (e.status == 0) {
             onError(null);
         } else {
-            trace("onLoader");
+            trace("onNloaderHTTPStatus");
             onComplete(null);
         }
 
-        var pingOperationInterval:uint = lastStatus == NetMonEvent.HTTP_ENABLE ? Settings.PING_OPERATION_INTERVAL : Settings.PING_OPERATION_RETRY_INTERVAL;
+        var pingOperationInterval:uint = lastStatus == AuxNetMonEvent.HTTP_ENABLE ? Settings.REMOTE_OPERATION_INTERVAL : Settings.REMOTE_OPERATION_RETRY_INTERVAL;
 
         if (pingEndTime >= pingOperationInterval) {
             timePing();
@@ -77,14 +77,14 @@ public class NetMon extends EventDispatcher {
     }
 
     private function timePing():void {
-        trace('Ping!');
+        trace('NL Ping!');
         if (_timeIsRunning == false) return;
         clearTimeout(pingTimeout);
         pingStartTime = getTimer();
-        pingTimeout = setTimeout(onTimePingTimeout, Settings.PING_OPERATION_TIMEOUT);
+        pingTimeout = setTimeout(onTimePingTimeout, Settings.REMOTE_OPERATION_TIMEOUT);
         closeLoader();
 
-        loader.load(new URLRequest(Settings.PING_OPERATION_URL));
+        nloader.load(new URLRequest(Settings.REMOTE_OPERATION_URL));
     }
 
     private function onRestoreFromSleep(e:SysMonEvent):void {
@@ -101,17 +101,16 @@ public class NetMon extends EventDispatcher {
 
     private function onError(e:Event = null):void {
         //Log.logRetry('PING : ERROR', Log.NORMAL);
-        if (lastStatus == NetMonEvent.HTTP_ENABLE) {
-            Log.logRetry('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network unavailable', Log.WARNING);
-            dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE));
-        }
+            //Log.logRetry('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network unavailable', Log.WARNING);
+            dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.HTTP_DISABLE));
 
-        lastStatus = NetMonEvent.HTTP_DISABLE;
+
+        lastStatus = AuxNetMonEvent.HTTP_DISABLE;
         _currentRetries++;
         if (_currentRetries >= _maxRetries) {
             stop();
-            Log.logRetry('RETRY_LOGGING:RECONNECT_HEARTBEAT: maximum retries  of [' + _maxRetries + '] reached', Log.WARNING);
-            dispatchEvent(new NetMonEvent(NetMonEvent.MAX_RETRIES));
+            //Log.logRetry('RETRY_LOGGING:RECONNECT_HEARTBEAT: maximum retries  of [' + _maxRetries + '] reached', Log.WARNING);
+            dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.MAX_RETRIES));
         } else {
             Log.logRetry('RETRY_LOGGING:RECONNECT_HEARTBEAT: Retrying [' + _currentRetries + '] of maximum [' + _maxRetries + '] attempts', Log.WARNING);
         }
@@ -119,11 +118,11 @@ public class NetMon extends EventDispatcher {
 
     private function onComplete(e:Event = null):void {
         _currentRetries = 0;
-        if (lastStatus != NetMonEvent.HTTP_ENABLE) {
-            Log.logRetry('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network available', Log.NORMAL);
-            dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE));
+        if (lastStatus == AuxNetMonEvent.HTTP_ENABLE) {
+            //Log.logRetry('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network available', Log.NORMAL);
+            dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.HTTP_ENABLE));
         }
-        lastStatus = NetMonEvent.HTTP_ENABLE;
+        lastStatus = AuxNetMonEvent.HTTP_ENABLE;
     }
 
     public function pingTimeStart():void {
@@ -133,6 +132,9 @@ public class NetMon extends EventDispatcher {
         lastStatus = null;
         timeReconnect();
         sysMon.start();
+
+        nloader.load(new URLRequest(Settings.REMOTE_OPERATION_URL));
+
 
     }
 
@@ -158,15 +160,15 @@ public class NetMon extends EventDispatcher {
         sysMon = null;
 
         closeLoader();
-        loader.removeEventListener(HTTPStatusEvent.HTTP_STATUS, onLoaderHTTPStatus);
-        loader.removeEventListener(IOErrorEvent.IO_ERROR, onLoaderError);
-        loader = null;
+        nloader.removeEventListener(HTTPStatusEvent.HTTP_STATUS, onNloaderHTTPStatus);
+        nloader.removeEventListener(IOErrorEvent.IO_ERROR, onNloaderError);
+        nloader = null;
         _destroyed = true;
     }
 
     private function closeLoader():void {
         try {
-            loader.close();
+            nloader.close();
         } catch (err:Error) {
         }
 

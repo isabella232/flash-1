@@ -22,6 +22,7 @@ package com.pubnub {
          // Do not exceed 15000 !!!!
 
          public static const PING_OPERATION_INTERVAL:uint = 15000;
+         public static const REMOTE_OPERATION_INTERVAL:uint = 5000;
 
          // Timeout, in ms, for above POI
          public static const PING_OPERATION_TIMEOUT:uint = 10000;
@@ -31,9 +32,13 @@ package com.pubnub {
 		 
 		 // When in subscribe recovery mode, try to hit POU endpoint every PORI ms
 		 public static const PING_OPERATION_RETRY_INTERVAL:uint = 1000;
+         public static const REMOTE_OPERATION_RETRY_INTERVAL:uint = 1000;
 
          // URL Endpoint for recovery mode net detection
          public static const PING_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
          public static const REMOTE_OPERATION_URL:String = 'http://www.internic.net/whois.html';
+
+         //public static const REMOTE_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
+
      }
 }
