@@ -101,21 +101,23 @@ public class Environment extends EventDispatcher {
         }
     }
 
+    private function onAuxHTTPEnable(e:AuxNetMonEvent):void {
+        Log.log("Aux Connect Success to " + Settings.REMOTE_OPERATION_URL, Log.DEBUG);
+    }
+
+    private function onAuxHTTPDisable(e:AuxNetMonEvent):void {
+        Log.log("Aux Connect Failed to " + Settings.REMOTE_OPERATION_URL, Log.DEBUG);
+    }
+
     private function onHTTPEnable(e:NetMonEvent):void {
+        Log.log("Ping Connect Success to " + Settings.PING_OPERATION_URL, Log.DEBUG);
         _firstRun = true;
         _netwotkEnabled = false;
         dispatchEvent(e);
     }
 
-    private function onAuxHTTPEnable(e:AuxNetMonEvent):void {
-        Log.log("Connect Success to " + Settings.REMOTE_OPERATION_URL, Log.DEBUG);
-    }
-
-    private function onAuxHTTPDisable(e:AuxNetMonEvent):void {
-        Log.log("Connect Failed to " + Settings.REMOTE_OPERATION_URL, Log.DEBUG);
-    }
-    
     private function onHTTPDisable(e:NetMonEvent):void {
+        Log.log("Ping Connect Failed to " + Settings.PING_OPERATION_URL, Log.DEBUG);
         _netwotkEnabled = false;
         Log.log("Subscribe Failed!", Log.DEBUG);
         dispatchEvent(e);

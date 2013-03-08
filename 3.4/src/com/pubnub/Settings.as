@@ -36,7 +36,7 @@ package com.pubnub {
 
          // URL Endpoint for recovery mode net detection
          public static const PING_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
-         public static const REMOTE_OPERATION_URL:String = 'http://www.internic.net/whois.html';
+         public static const REMOTE_OPERATION_URL:String = 'http://pubsub.pubnub.com/crossdomain.xml';
 
          //public static const REMOTE_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
 
