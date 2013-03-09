@@ -97,7 +97,7 @@ public class URLResponse {
         var ind:int = _rawData.indexOf(RESPONSE_END_LINE);
         var bodyRawStr:String = _rawData.substr(ind + RESPONSE_END_LINE.length, _rawData.length);
 
-        Log.log(Log.DEBUG, "raw data:\n" + _rawData);
+        //Log.log("raw data:\n" + _rawData, Log.DEBUG);
 
         if (isChunked(_headers)) {
 
