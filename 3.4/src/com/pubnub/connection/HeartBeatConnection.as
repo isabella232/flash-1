@@ -23,7 +23,7 @@ package com.pubnub.connection {
 			timeoutInterval = setTimeout(onTimeout, operation.timeout, operation);
 			this.operation = operation;
 			if (loader.connected) {
-				loader.load(operation.request);
+				loader.load(operation);
 				this.operation.startTime = getTimer();
 			}else {
 				loader.connect(operation.request);
@@ -32,7 +32,7 @@ package com.pubnub.connection {
 		
 		private function onTimeout(operation:Operation):void {
 			if (operation) {
-				Log.logTimeout(Errors.OPERATION_TIMEOUT + ', ' + operation.url);
+				Log.log(Errors.OPERATION_TIMEOUT + ', ' + operation.url);
 				operation.onError( { message:Errors.OPERATION_TIMEOUT, operation:operation } );
 			}
 		}

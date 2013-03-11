@@ -111,7 +111,7 @@ package com.pubnub {
 			if (subscribeConnection) subscribeConnection.close();
 			environment.stop();
 			_initialized = false;
-			Log.logRetry('Shutdown', Log.WARNING);
+			Log.log('Shutdown', Log.WARNING);
 			
 			dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE));
 			//dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, null, [0, Errors.NETWORK_LOST, channels, lastToken]));

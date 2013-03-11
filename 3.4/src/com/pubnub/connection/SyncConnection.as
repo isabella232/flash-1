@@ -50,13 +50,13 @@ package com.pubnub.connection {
 			busy = true;
 			this.operation = operation;
 			this.operation.startTime = getTimer();
-			loader.load(operation.request);
+			loader.load(operation);
 		}
 		
 		private function onTimeout(operation:Operation):void {
 			//trace(this, 'onTimeout');
 			if (operation) {
-				logTimeoutError(operation);
+				logError(operation);
 				operation.onError( { message:Errors.OPERATION_TIMEOUT, operation:operation } );
 				removeOperation(operation);
 			}
@@ -79,13 +79,13 @@ package com.pubnub.connection {
 			}
 		}
 		
-		private function logTimeoutError(operation:Operation):void {
+		private function logError(operation:Operation):void {
 			var args:Array = [Errors.OPERATION_TIMEOUT];
 			var op:Operation = getLastOperation();
 			if (op) {
 				args.push(op.url);
 			}
-			Log.log(args.join(','), Log.ERROR, Errors.OPERATION_TIMEOUT);
+			Log.log(args.join(','), Log.ERROR);
 		}
 		
 		private function sendNextOperation():void {

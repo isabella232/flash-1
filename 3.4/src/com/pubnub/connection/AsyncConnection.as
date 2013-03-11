@@ -50,7 +50,7 @@ import com.pubnub.net.URLLoaderEvent;
 			clearTimeout(timeout);
 			timeout = setTimeout(onTimeout, Settings.OPERATION_TIMEOUT, operation);
 			this.operation = operation;
-			loader.load(operation.request);
+			loader.load(operation);
 		}
 		
 		private function onTimeout(operation:Operation):void {

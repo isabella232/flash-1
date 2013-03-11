@@ -100,8 +100,8 @@ public class AuxNetMon extends EventDispatcher {
     }
 
     private function onError(e:Event = null):void {
-        //Log.logRetry('PING : ERROR', Log.NORMAL);
-            //Log.logRetry('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network unavailable', Log.WARNING);
+        //Log.log('PING : ERROR', Log.NORMAL);
+            //Log.log('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network unavailable', Log.WARNING);
             dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.HTTP_DISABLE));
 
 
@@ -109,17 +109,17 @@ public class AuxNetMon extends EventDispatcher {
         _currentRetries++;
         if (_currentRetries >= _maxRetries) {
             stop();
-            //Log.logRetry('RETRY_LOGGING:RECONNECT_HEARTBEAT: maximum retries  of [' + _maxRetries + '] reached', Log.WARNING);
+            //Log.log('RETRY_LOGGING:RECONNECT_HEARTBEAT: maximum retries  of [' + _maxRetries + '] reached', Log.WARNING);
             dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.MAX_RETRIES));
         } else {
-            Log.logRetry('RETRY_LOGGING:RECONNECT_HEARTBEAT: Retrying [' + _currentRetries + '] of maximum [' + _maxRetries + '] attempts', Log.WARNING);
+            Log.log('RETRY_LOGGING:RECONNECT_HEARTBEAT: Retrying [' + _currentRetries + '] of maximum [' + _maxRetries + '] attempts', Log.WARNING);
         }
     }
 
     private function onComplete(e:Event = null):void {
         _currentRetries = 0;
         if (lastStatus == AuxNetMonEvent.HTTP_ENABLE) {
-            //Log.logRetry('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network available', Log.NORMAL);
+            //Log.log('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network available', Log.NORMAL);
             dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.HTTP_ENABLE));
         }
         lastStatus = AuxNetMonEvent.HTTP_ENABLE;

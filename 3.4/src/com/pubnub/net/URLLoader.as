@@ -3,6 +3,7 @@ import com.adobe.net.*;
 import com.hurlant.crypto.tls.TLSSocket;
 import com.pubnub.log.Log;
 import com.pubnub.net.URLResponse;
+import com.pubnub.operation.Operation;
 
 import flash.errors.IOError;
 import flash.events.*;
@@ -34,6 +35,7 @@ public class URLLoader extends EventDispatcher {
     protected var normalSocket:Socket;
     protected var uri:URI;
     protected var request:URLRequest;
+    protected var operation:Operation;
 
     protected var _response:URLResponse;
     protected var _headers:Array;
@@ -54,14 +56,16 @@ public class URLLoader extends EventDispatcher {
         init();
     }
 
-    public function load(request:URLRequest):void {
-        this.request = request;
+    public function load(operation:Operation):void {
+        this.operation = operation;
+        this.request = operation.request;
         uri = new URI(request.url);
         //trace(request.url);
         socket = getSocket(request.url);
         destroyRESPONSE();
         sendRequest(request);
-        Log.logURL('REQUEST: ' + unescape(request.url), Log.DEBUG);
+
+        Log.log('REQUEST: ' + unescape(request.url), Log.DEBUG, this.operation);
     }
 
     private function getSocket(url:String):* {
@@ -90,7 +94,8 @@ public class URLLoader extends EventDispatcher {
         try {
             if (normalSocket.connected) normalSocket.close();
         } catch (err:IOError) {
-            Log.log("Close: " + err, Log.WARNING);
+
+            Log.log("Close: " + err, Log.WARNING, this.operation);
         }
 
         try {
@@ -98,7 +103,7 @@ public class URLLoader extends EventDispatcher {
                 secureSocket.close();
             }
         } catch (err:IOError) {
-            Log.log("Close: " + err, Log.WARNING);
+            Log.log("Close: " + err, Log.WARNING, this.operation);
         }
         destroyRESPONSE();
         request = null;
@@ -148,7 +153,7 @@ public class URLLoader extends EventDispatcher {
 
                 //Log.log("THE DATA: " + tempStr, Log.DEBUG);
 
-                if ( _headers == null) {
+                if (_headers == null) {
                     //Log.log("Headers don't exist -- getting headers:", Log.DEBUG);
                     _headers = URLResponse.getHeaders(tempStr);
                 }
@@ -186,7 +191,7 @@ public class URLLoader extends EventDispatcher {
 
 
             } catch (e:Error) {
-                Log.log("onSocketData error: " + e, Log.DEBUG);
+                Log.log("onSocketData error: " + e, Log.DEBUG, this.operation);
                 break;
             }
         }
@@ -206,13 +211,12 @@ public class URLLoader extends EventDispatcher {
     }
 
 
-
     protected function onRESPONSE(bytes:ByteArray):void {
         try {
             if (request) {
                 _response = new URLResponse(bytes, request);
                 //trace(_response.body);
-                Log.log('RESPONSE: ' + _response.body, Log.DEBUG);
+                Log.log('RESPONSE: ' + _response.body, Log.DEBUG, this.operation);
             }
             //trace('onRESPONSE : ' + _response.body);
             dispatchEvent(new URLLoaderEvent(URLLoaderEvent.COMPLETE, _response));
