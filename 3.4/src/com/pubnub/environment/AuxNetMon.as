@@ -49,7 +49,7 @@ public class AuxNetMon extends EventDispatcher {
 
 
     private function onNloaderError(e:IOErrorEvent):void {
-        trace('NLoader! Error!');
+        trace('NLoader! Error!: ' + e.toString());
     }
 
     private function onNloaderHTTPStatus(e:HTTPStatusEvent):void {
@@ -100,15 +100,15 @@ public class AuxNetMon extends EventDispatcher {
     }
 
     private function onError(e:Event = null):void {
-        //Log.log('PING : ERROR', Log.NORMAL);
-            //Log.log('RETRY_LOGGING:CONNECTION_HEARTBEAT: Network unavailable', Log.WARNING);
-            dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.HTTP_DISABLE));
+
+
+        dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.HTTP_DISABLE));
 
 
         lastStatus = AuxNetMonEvent.HTTP_DISABLE;
         _currentRetries++;
         if (_currentRetries >= _maxRetries) {
-            stop();
+            //stop();
             //Log.log('RETRY_LOGGING:RECONNECT_HEARTBEAT: maximum retries  of [' + _maxRetries + '] reached', Log.WARNING);
             dispatchEvent(new AuxNetMonEvent(AuxNetMonEvent.MAX_RETRIES));
         } else {

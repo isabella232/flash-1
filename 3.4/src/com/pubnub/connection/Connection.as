@@ -46,7 +46,7 @@ package com.pubnub.connection {
 		
 		protected function onComplete(e:URLLoaderEvent):void {
 			var response:URLResponse = e.data as URLResponse;
-			if (operation && !operation.destroyed) {
+			if (operation && !operation.destroyed && response && response.body) {
 				operation.onData(response.body);
 			}
 		}

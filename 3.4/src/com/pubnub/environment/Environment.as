@@ -1,6 +1,7 @@
 package com.pubnub.environment {
 import com.pubnub.*;
 import com.pubnub.log.Log;
+import com.pubnub.operation.Operation;
 
 import flash.events.*;
 
@@ -102,22 +103,22 @@ public class Environment extends EventDispatcher {
     }
 
     private function onAuxHTTPEnable(e:AuxNetMonEvent):void {
-        Log.log("Aux Connect Success to " + Settings.REMOTE_OPERATION_URL, Log.DEBUG);
+        Log.log("Aux Connect Success to " + Settings.REMOTE_OPERATION_URL, Log.DEBUG, new Operation("Aux Ping"));
     }
 
     private function onAuxHTTPDisable(e:AuxNetMonEvent):void {
-        Log.log("Aux Connect Failed to " + Settings.REMOTE_OPERATION_URL, Log.DEBUG);
+        Log.log("Aux Connect Failed to " + Settings.REMOTE_OPERATION_URL, Log.DEBUG, new Operation("Aux Ping"));
     }
 
     private function onHTTPEnable(e:NetMonEvent):void {
-        Log.log("Ping Connect Success to " + Settings.PING_OPERATION_URL, Log.DEBUG);
+        Log.log("Ping Connect Success to " + Settings.PING_OPERATION_URL, Log.DEBUG, new Operation("Sub Ping"));
         _firstRun = true;
         _netwotkEnabled = false;
         dispatchEvent(e);
     }
 
     private function onHTTPDisable(e:NetMonEvent):void {
-        Log.log("Ping Connect Failed to " + Settings.PING_OPERATION_URL, Log.DEBUG);
+        Log.log("Ping Connect Failed to " + Settings.PING_OPERATION_URL, Log.DEBUG, new Operation("Sub Ping"));
         _netwotkEnabled = false;
         Log.log("Subscribe Failed!", Log.DEBUG);
         dispatchEvent(e);

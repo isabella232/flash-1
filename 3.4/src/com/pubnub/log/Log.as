@@ -51,7 +51,7 @@ public class Log {
 
         if (operation && operation.toString() != "[object PublishOperation]") {
             trace("logging: " + operation.toString());
-            debugMessage(message)
+            debugMessage(new Date().toString() + " " + message)
         }
 
         //trace(new Date() + " " + message);
@@ -81,7 +81,7 @@ public class Log {
             levelResult = (level == null) || (rec.level == level);
 
             if (typeResult && levelResult) {
-                result.push(rec.toString());
+                result.push(rec.toString(i));
             }
         }
         if (reverse) result.reverse();
@@ -114,9 +114,9 @@ class LogRecord {
         date = new Date();
     }
 
-    public function toString():String {
+    public function toString(recordsCount = 0):String {
         //return (index+1) + '.' +  date.toString() + ' [' + level+  '] '+': ' + message;
-        return (index + 1) + '.' + ' [' + level.toUpperCase() + '], \n' + message + ', \ndate: [' + date.toString() + ']';
+        return (recordsCount) + '.' + ' [' + level.toUpperCase() + '], \n' + message + ', \ndate: [' + date.toString() + ']';
     }
 
 }

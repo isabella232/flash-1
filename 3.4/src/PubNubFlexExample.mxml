@@ -28,7 +28,7 @@
 			
         [Bindable]
 
-        public var channel:String = 'hello_world,a,b';
+        public var channel:String = 'hello_world';
         //public var channel:String = 'rand_seq';
 
 

@@ -40,7 +40,7 @@ import com.pubnub.net.URLRequest;
 		}
 		
 		protected function init():void {
-			// absrtract
+			// abstract
 		}
 		
 		public function setURL(url:String = null, args:Object = null):URLRequest {
