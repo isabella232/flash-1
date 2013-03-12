@@ -68,7 +68,7 @@ public class Subscribe extends EventDispatcher {
          subcribe(chs.join(','), tkn);
          }
          }*/
-        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE));
+        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT));
     }
 
     /**
@@ -76,7 +76,7 @@ public class Subscribe extends EventDispatcher {
      * @param    channel
      * @return    Boolean  result of subcribe (true if is subscribe to one channel or more channels)
      */
-    public function subcribe(channel:String, token:String = null):Boolean {
+    public function subscribe(channel:String, token:String = null):Boolean {
         if (!checkNetwork()) return false;
 
         if (!checkChannelName(channel)) return false;
@@ -269,6 +269,8 @@ public class Subscribe extends EventDispatcher {
          * RESPONSE = [['m1', 'm2', 'm3', 'm4'], lastToken];
          */
 
+        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
+
         var multiplexRESPONSE:Boolean = chStr && chStr.length > 0 && chStr.indexOf(',') > -1;
         var presenceRESPONSE:Boolean = chStr && chStr.indexOf(PNPRES_PREFIX) > -1;
         var channel:String;
@@ -437,7 +439,7 @@ public class Subscribe extends EventDispatcher {
                 var token:String = savedTimetoken;
             }
             if (savedChannels && savedChannels.length > 0) {
-                subcribe(savedChannels.join(','), token);
+                subscribe(savedChannels.join(','), token);
             }
             savedTimetoken = null;
             savedChannels = [];

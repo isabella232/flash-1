@@ -56,11 +56,18 @@ package com.pubnub {
 			
 			environment = new Environment(origin);
 			environment.addEventListener(EnvironmentEvent.SHUTDOWN, 	onEnvironmentShutdown);
-			environment.addEventListener(NetMonEvent.HTTP_ENABLE, 		onEnvironmentHttpEnable);
-			environment.addEventListener(NetMonEvent.HTTP_DISABLE, 		onEnvironmentHttpDisable);
+
+
+            // Only Subscribe timeout will trigger network down
+            environment.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, 		onEnvironmentHttpDisable);
+
+            // NetMon event or Subscribe enable event will bring network up
+            environment.addEventListener(NetMonEvent.HTTP_ENABLE, 		onEnvironmentHttpEnable);
+            environment.addEventListener(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT, 		onEnvironmentHttpEnable);
 		}
 		
 		private function onEnvironmentHttpDisable(e:NetMonEvent):void {
+            Log.log("Disabling network due to subscribe timeout", Log.DEBUG);
 			_checkReconnect = true;
 			if (subscribeConnection) {
 				subscribeConnection.networkEnabled = false;
@@ -160,7 +167,8 @@ package com.pubnub {
 			subscribeConnection.cipherKey = cipherKey;
 			
 			
-			subscribeConnection.addEventListener(NetMonEvent.HTTP_DISABLE,	onSubscribeTimeout);
+			//TODO: Redundant listener?
+            subscribeConnection.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT,	onSubscribeTimeout);
 		}
 		
 		private function onSubscribeTimeout(e:NetMonEvent):void {
@@ -201,7 +209,7 @@ package com.pubnub {
 		 */
 		public function subscribe(channel:String, token:String = null):void {
 			throwInit();
-			subscribeConnection.subcribe(channel, token);
+			subscribeConnection.subscribe(channel, token);
 		}
 			
 		private function onSubscribe(e:SubscribeEvent):void {

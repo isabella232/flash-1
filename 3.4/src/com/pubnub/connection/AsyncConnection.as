@@ -56,6 +56,7 @@ import com.pubnub.net.URLLoaderEvent;
 		private function onTimeout(operation:Operation):void {
 			trace('onTimeout');
 			dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, operation));
+            Log.log("Operation timeout: " + operation.toString(), Log.DEBUG, operation);
 		}
 		
 		override public function close():void {

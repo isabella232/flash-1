@@ -9,6 +9,10 @@ package com.pubnub.environment {
 		
 		public static const HTTP_ENABLE:String = 'enable';
 		public static const HTTP_DISABLE:String = 'disable';
+
+        public static const HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT:String = 'disable_via_subscribe_timeout';
+        public static const HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT:String = 'enable_via_subscribe_timeout';
+
 		public static const MAX_RETRIES:String = 'max_retries';
 		
 		public function NetMonEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false) { 
