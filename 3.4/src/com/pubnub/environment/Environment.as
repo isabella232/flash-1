@@ -31,8 +31,11 @@ public class Environment extends EventDispatcher {
 
     public function start():void {
 
-        netMon.pingTimeStart();
-        auxNetMon.pingTimeStart();
+//        netMon.pingTimeStart();
+//        auxNetMon.pingTimeStart();
+
+        // This is to just stub the "init ping"
+        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE));
 
         sysMon.start();
         lastHTTPDisabledTime = 0;

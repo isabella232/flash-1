@@ -176,7 +176,7 @@ package com.pubnub {
 
 		private function onSubscribeTimeout(e:NetMonEvent):void {
             _checkReconnect = true;
-
+            subscribeConnection.retryMode = true;
             subscribeConnection.retryCount++;
 
             Log.log("Retrying " + subscribeConnection.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
@@ -237,14 +237,18 @@ package com.pubnub {
 				case SubscribeEvent.CONNECT:
 					status = OperationStatus.CONNECT;
 					subscribe.networkEnabled = true;
-
-                    dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
-                    dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE));
-
 				break;
 			
 				case SubscribeEvent.DATA:
-					status = OperationStatus.DATA;
+
+                    if (subscribeConnection.retryMode = true) {
+                        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
+                        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE));
+                        subscribeConnection.retryMode = false;
+                    }
+
+
+                    status = OperationStatus.DATA;
 				break;
 				
 				case SubscribeEvent.DISCONNECT:

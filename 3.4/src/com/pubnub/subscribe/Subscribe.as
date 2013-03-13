@@ -469,6 +469,13 @@ public class Subscribe extends EventDispatcher {
         _retryCount = value;
     }
 
+    public function get retryMode():Boolean {
+        return _retryMode;
+    }
+    public function set retryMode(value:Boolean):void {
+        _retryMode = value;
+    }
+
     public function set subscribeDelay(value:int):void {
         _subscribeDelay = value;
     }
