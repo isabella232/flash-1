@@ -5,7 +5,8 @@ package com.pubnub {
       */
      public class Settings {
          // retry to connect a maximum of this many times before Pn.shutdown()
-         public static const MAX_RECONNECT_RETRIES:uint = 30; //100;
+         public static const MAX_RECONNECT_RETRIES:uint = 5; //100;
+         public static const RECONNECT_RETRY_DELAY:uint = 1000; //100;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
          public static const RESUME_ON_RECONNECT:Boolean = false;
@@ -14,7 +15,7 @@ package com.pubnub {
          // ie, 100 times, every 3 seconds for a network connection
 
          // time in millseconds to wait for web server to return a response. DO NOT CHANGE unless requested by support
-         public static const OPERATION_TIMEOUT:uint = 5000;
+         public static const OPERATION_TIMEOUT:uint = 2000;
 
          /////////////////////////////////////////////////////////////////////////////
 

@@ -6,9 +6,12 @@ import com.pubnub.json.*;
 import com.pubnub.log.Log;
 import com.pubnub.net.*;
 import com.pubnub.operation.*;
+
 import flash.events.*;
 import flash.utils.*;
+
 import org.casalib.util.*;
+
 use namespace pn_internal;
 
 /**
@@ -29,9 +32,13 @@ public class Subscribe extends EventDispatcher {
     protected var _origin:String = "";
     protected var _connected:Boolean;
 
+    protected var _retryMode:Boolean = false;
+    protected var _subscribeDelay:int = 0;
+    protected var _retryCount:int = 0;
+
     protected var _connectionUID:String;
     protected var _lastToken:String;
-    protected var _reusedToken:String;
+    protected var _existingTimeToken:String;
     protected var factory:Dictionary;
     protected var _destroyed:Boolean;
     protected var _channels:Array;
@@ -68,6 +75,7 @@ public class Subscribe extends EventDispatcher {
          subcribe(chs.join(','), tkn);
          }
          }*/
+
         dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT));
     }
 
@@ -76,13 +84,14 @@ public class Subscribe extends EventDispatcher {
      * @param    channel
      * @return    Boolean  result of subcribe (true if is subscribe to one channel or more channels)
      */
-    public function subscribe(channel:String, token:String = null):Boolean {
-        if (!checkNetwork()) return false;
+    public function subscribe(channel:String, existingTimeToken:String = null):Boolean {
 
-        if (!checkChannelName(channel)) return false;
+        if ( ! (isNetworkEnabled() || isChannelListValid(channel)) ) {
+            return false;
+        }
 
-        if (token) {
-            _reusedToken = token;
+        if (existingTimeToken) {
+            _existingTimeToken = existingTimeToken;
         }
 
         // search of channels
@@ -101,7 +110,7 @@ public class Subscribe extends EventDispatcher {
         return addCh.length > 0;
     }
 
-    private function checkChannelName(channel:String):Boolean {
+    private function isChannelListValid(channel:String):Boolean {
         var result:Boolean = isChannelCorrect(channel);
         if (result == false) {
             dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.SUBSCRIBE_CHANNEL_ERROR, channel]));
@@ -110,7 +119,7 @@ public class Subscribe extends EventDispatcher {
         return result;
     }
 
-    private function checkNetwork():Boolean {
+    private function isNetworkEnabled():Boolean {
         if (_networkEnabled == false) {
             dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
             return false;
@@ -119,9 +128,9 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function unsubscribe(channel:String, reason:Object = null):Boolean {
-        if (!checkNetwork()) return false;
+        if (!isNetworkEnabled()) return false;
 
-        if (!checkChannelName(channel)) return false;
+        if (!isChannelListValid(channel)) return false;
 
         return doUnsubscribe(channel, reason);
     }
@@ -144,7 +153,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function unsubscribeAll(reason:Object = null):void {
-        if (!checkNetwork()) return;
+        if (!isNetworkEnabled()) return;
         doUnsubscribeAll(reason);
     }
 
@@ -212,9 +221,9 @@ public class Subscribe extends EventDispatcher {
         _connected = true;
         _lastToken = e.data[1];
         //trace('onSubscribeInit : ' + _lastToken);
-        if (_reusedToken) {
-            _lastToken = _reusedToken;
-            _reusedToken = null;
+        if (_existingTimeToken) {
+            _lastToken = _existingTimeToken;
+            _existingTimeToken = null;
         }
 
 
@@ -234,7 +243,7 @@ public class Subscribe extends EventDispatcher {
         connection.sendOperation(operation);
     }
 
-    protected function onConnect(e:OperationEvent):void {
+    protected function onMessageReceived(e:OperationEvent):void {
 
         if (_networkEnabled == false) return;
 
@@ -269,7 +278,7 @@ public class Subscribe extends EventDispatcher {
          * RESPONSE = [['m1', 'm2', 'm3', 'm4'], lastToken];
          */
 
-        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
+        retryCount = 0;
 
         var multiplexRESPONSE:Boolean = chStr && chStr.length > 0 && chStr.indexOf(',') > -1;
         var presenceRESPONSE:Boolean = chStr && chStr.indexOf(PNPRES_PREFIX) > -1;
@@ -353,7 +362,7 @@ public class Subscribe extends EventDispatcher {
             subscribeKey: subscribeKey,
             channel: this.channelsString,
             uid: sessionUUID});
-        operation.addEventListener(OperationEvent.RESULT, onConnect);
+        operation.addEventListener(OperationEvent.RESULT, onMessageReceived);
         operation.addEventListener(OperationEvent.FAULT, onConnectError);
         return operation;
     }
@@ -432,8 +441,10 @@ public class Subscribe extends EventDispatcher {
 
     public function set networkEnabled(value:Boolean):void {
         _networkEnabled = value;
+
         connection.networkEnabled = value;
-        if (value) {
+
+        if (value == true) {
 
             if (Settings.RESUME_ON_RECONNECT) {
                 var token:String = savedTimetoken;
@@ -443,11 +454,23 @@ public class Subscribe extends EventDispatcher {
             }
             savedTimetoken = null;
             savedChannels = [];
-        } else {
+        } else if (value == false) {
+
             savedTimetoken = _lastToken;
             savedChannels = _channels.concat();
             close('Close with network unavailable');
         }
+    }
+
+    public function get retryCount():int {
+        return _retryCount;
+    }
+    public function set retryCount(value:int):void {
+        _retryCount = value;
+    }
+
+    public function set subscribeDelay(value:int):void {
+        _subscribeDelay = value;
     }
 
     public function get networkEnabled():Boolean {

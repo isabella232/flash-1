@@ -166,20 +166,35 @@ package com.pubnub {
 			subscribeConnection.sessionUUID = _sessionUUID;
 			subscribeConnection.cipherKey = cipherKey;
 			
-			
-			//TODO: Redundant listener?
-            subscribeConnection.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT,	onSubscribeTimeout);
+            subscribeConnection.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);
 		}
-		
+
+        private function delayedSubscribeRetry(e:NetMonEvent):void {
+            trace("Running onSubscribeTimeout in: " + Settings.RECONNECT_RETRY_DELAY);
+            setTimeout(onSubscribeTimeout, Settings.RECONNECT_RETRY_DELAY, e);
+        }
+
 		private function onSubscribeTimeout(e:NetMonEvent):void {
-			_checkReconnect = true;
-			if (subscribeConnection) {
+            _checkReconnect = true;
+
+            subscribeConnection.retryCount++;
+
+            Log.log("Retrying " + subscribeConnection.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
+
+            if (subscribeConnection) {
 				subscribeConnection.networkEnabled = false;
 			}
-			subscribeConnection.networkEnabled = true;
-			dispatchEvent(e);
+
+            // try to turn it back on
+            if (subscribeConnection.retryCount < Settings.MAX_RECONNECT_RETRIES) {
+                subscribeConnection.networkEnabled = true;
+                dispatchEvent(e);
+            } else {
+                dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
+            }
+
 		}
-		
+
 		private function createInitOperation(args:Object = null):Operation {
 			var init:TimeOperation = new TimeOperation(_origin);
 			init.addEventListener(OperationEvent.RESULT, onInitComplete);
@@ -215,11 +230,17 @@ package com.pubnub {
 		private function onSubscribe(e:SubscribeEvent):void {
 			var subscribe:Subscribe = e.target as Subscribe;
 			var status:String;
-			switch (e.type) {
+
+            trace(e.type);
+
+            switch (e.type) {
 				case SubscribeEvent.CONNECT:
 					status = OperationStatus.CONNECT;
 					subscribe.networkEnabled = true;
-					dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE));
+
+                    dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
+                    dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE));
+
 				break;
 			
 				case SubscribeEvent.DATA:
