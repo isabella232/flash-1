@@ -55,14 +55,13 @@ package com.pubnub {
 			syncConnection = new SyncConnection(Settings.OPERATION_TIMEOUT);
 			
 			environment = new Environment(origin);
-			environment.addEventListener(EnvironmentEvent.SHUTDOWN, 	onEnvironmentShutdown);
-
+			environment.addEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
 
             // Only Subscribe timeout will trigger network down
-            environment.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, 		onEnvironmentHttpDisable);
+            environment.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, onEnvironmentHttpDisable);
 
             // Only Subscribe enable event will bring network up
-            environment.addEventListener(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT, 		onEnvironmentHttpEnable);
+            environment.addEventListener(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT, onEnvironmentHttpEnable);
 		}
 		
 		private function onEnvironmentHttpDisable(e:NetMonEvent):void {
@@ -79,10 +78,6 @@ package com.pubnub {
 			syncConnection.networkEnabled = true;
 			if (subscribeConnection) {
 				subscribeConnection.networkEnabled = true;
-				/*if (_checkReconnect && Settings.RESUME_ON_RECONNECT == false) {
-					trace('RECONNECT');
-					subscribeConnection.reconnect();
-				}*/
 			}
 			
 			if (_initialized == false) {
@@ -159,6 +154,7 @@ package com.pubnub {
 			subscribeConnection.addEventListener(SubscribeEvent.DATA, 		onSubscribe);
 			subscribeConnection.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
 			subscribeConnection.addEventListener(SubscribeEvent.ERROR, 		onSubscribe);
+            subscribeConnection.addEventListener(SubscribeEvent.WARNING, 	onSubscribe);
 			subscribeConnection.addEventListener(SubscribeEvent.PRESENCE, 	onSubscribe);
 			subscribeConnection.origin = _origin;
 			subscribeConnection.subscribeKey = _subscribeKey;
@@ -259,7 +255,11 @@ package com.pubnub {
 					dispatchEvent(new PnEvent(PnEvent.PRESENCE, e.data, e.data.channel));
 					return;
 				break;
-			
+
+                case SubscribeEvent.WARNING:
+                    status = OperationStatus.WARNING;
+                break;
+
 				default: status = OperationStatus.ERROR;		
 			}
 			dispatchEvent(new PnEvent(PnEvent.SUBSCRIBE, e.data, e.data.channel, status));

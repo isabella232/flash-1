@@ -66,14 +66,14 @@ import com.pubnub.net.URLRequest;
 				try {
 					result = PnJSON.parse(String(data));
 				}catch (err:Error) {
-                    Log.log("*** Received bad json: " + data, Log.DEBUG);
+                    Log.log("*** Received bad json: " + data, Log.DEBUG, this);
                     //trace(new Date() + "*** Received bad json: " + data, Log.DEBUG);
                     error = true;
 				}
 			}
 			
 			if (error) {
-                    Log.log("**** Bad JSON Received! ****", Log.DEBUG);
+                    Log.log("**** Bad JSON Received! ****", Log.DEBUG, this);
                 dispatchEvent(new OperationEvent(OperationEvent.RESULT, result));
 				//dispatchEvent(new OperationEvent(OperationEvent.FAULT, { message:'Error JSON parse', id:'-1' } ));
 			}else {

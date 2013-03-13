@@ -4,7 +4,6 @@ import com.pubnub.connection.*;
 import com.pubnub.environment.*;
 import com.pubnub.json.*;
 import com.pubnub.log.Log;
-import com.pubnub.net.*;
 import com.pubnub.operation.*;
 
 import flash.events.*;
@@ -45,7 +44,7 @@ public class Subscribe extends EventDispatcher {
     protected var savedChannels:Array;
     protected var savedTimetoken:String;
 
-    protected var connection:AsyncConnection;
+    protected var asyncConnection:AsyncConnection;
     protected var _networkEnabled:Boolean;
 
 
@@ -61,32 +60,27 @@ public class Subscribe extends EventDispatcher {
         factory[SUBSCRIBE] = getSubscribeOperation;
         factory[LEAVE] = getLeaveOperation;
 
-        connection = new AsyncConnection();
-        connection.addEventListener(OperationEvent.TIMEOUT, onTimeout);
+        asyncConnection = new AsyncConnection();
+        asyncConnection.addEventListener(OperationEvent.TIMEOUT, onTimeout);
     }
 
     private function onTimeout(e:OperationEvent):void {
-        /*var operation:Operation = e.data as Operation;
-         if (_networkEnabled) {
-         var tkn:String = Settings.RESUME_ON_RECONNECT ? _lastToken : '0';
-         var chs:Array = _channels.concat();
-         close('Reconnecting due to client-side timeout');
-         if (chs && chs.length > 0) {
-         subcribe(chs.join(','), tkn);
-         }
-         }*/
-
+        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
         dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT));
     }
 
-    /**
-     * Subscibe to a channel or multiple channels (use format: "ch1,ch2,ch3...")
-     * @param    channel
-     * @return    Boolean  result of subcribe (true if is subscribe to one channel or more channels)
-     */
-    public function subscribe(channel:String, existingTimeToken:String = null):Boolean {
+    public function subscribe(channelList:String, existingTimeToken:String = null):Boolean {
 
-        if ( ! (isNetworkEnabled() || isChannelListValid(channel)) ) {
+        var channelString:String;
+        var channelsToAdd:Array = [];
+
+        if (!isNetworkEnabled()) {
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
+            return false;
+        }
+
+        if (!isChannelListValid(channelList)) {
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL, channels]));
             return false;
         }
 
@@ -94,66 +88,51 @@ public class Subscribe extends EventDispatcher {
             _existingTimeToken = existingTimeToken;
         }
 
-        // search of channels
-        var addCh:Array = [];
-        var temp:Array = channel.split(',');
-        var ch:String;
-        for (var i:int = 0; i < temp.length; i++) {
-            ch = StringUtil.removeWhitespace(temp[i]);
-            if (hasChannel(ch)) {
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.ALREADY_CONNECTED, ch]));
+        var channelListAsArray:Array = channelList.split(',');
+        for (var i:int = 0; i < channelListAsArray.length; i++) {
+            channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
+            if (channelIsInChannelList(channelString)) {
+                dispatchEvent(new SubscribeEvent(SubscribeEvent.WARNING, [ 0, Errors.SUBSCRIBE_ALREADY_SUBSCRIBED, channelString]));
             } else {
-                addCh.push(ch);
+                channelsToAdd.push(channelString);
             }
         }
-        process(addCh);
-        return addCh.length > 0;
+        processNewActiveChannelList(channelsToAdd);
+        return channelsToAdd.length > 0;
     }
 
-    private function isChannelListValid(channel:String):Boolean {
-        var result:Boolean = isChannelCorrect(channel);
-        if (result == false) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.SUBSCRIBE_CHANNEL_ERROR, channel]));
-            return false;
-        }
-        return result;
-    }
-
-    private function isNetworkEnabled():Boolean {
-        if (_networkEnabled == false) {
+    public function unsubscribe(channelList:String, reason:Object = null):Boolean {
+        if (!isNetworkEnabled()) {
             dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
             return false;
         }
-        return _networkEnabled;
-    }
 
-    public function unsubscribe(channel:String, reason:Object = null):Boolean {
-        if (!isNetworkEnabled()) return false;
+        if (!isChannelListValid(channelList)) {
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL, channels]));
+            return false;
+        }
 
-        if (!isChannelListValid(channel)) return false;
-
-        return doUnsubscribe(channel, reason);
-    }
-
-    private function doUnsubscribe(channel:String, reason:Object = null):Boolean {
-        // search of channels
-        var removeCh:Array = [];
-        var temp:Array = channel.split(',');
-        var ch:String;
-        for (var i:int = 0; i < temp.length; i++) {
-            ch = StringUtil.removeWhitespace(temp[i]);
-            if (hasChannel(ch)) {
-                removeCh.push(ch);
+        var channelsToRemove:Array = [];
+        var channelListAsArray:Array = channelList.split(',');
+        var channelString:String;
+        for (var i:int = 0; i < channelListAsArray.length; i++) {
+            channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
+            if (channelIsInChannelList(channelString)) {
+                channelsToRemove.push(channelString);
             } else {
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.NOT_CONNECTED, ch]));
+                dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.NOT_CONNECTED, channelString]));
             }
         }
-        process(null, removeCh, reason);
-        return removeCh.length > 0;
+        processNewActiveChannelList(null, channelsToRemove, reason);
+        return channelsToRemove.length > 0;
     }
 
     public function unsubscribeAll(reason:Object = null):void {
-        if (!isNetworkEnabled()) return;
+        if (!isNetworkEnabled()) {
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
+            return;
+        }
+
         doUnsubscribeAll(reason);
     }
 
@@ -163,11 +142,23 @@ public class Subscribe extends EventDispatcher {
         unsubscribe(allChannels, reason);
     }
 
-    private function process(addCh:Array = null, removeCh:Array = null, reason:Object = null):void {
+    private function isChannelListValid(channel:String):Boolean {
+        if (channel == null || channel.length > int.MAX_VALUE || _destroyed) {
+            return false;
+        }
+        return true;
+    }
+
+    private function isNetworkEnabled():Boolean {
+        return _networkEnabled;
+    }
+
+
+    private function processNewActiveChannelList(addCh:Array = null, removeCh:Array = null, reason:Object = null):void {
         var needAdd:Boolean = addCh && addCh.length > 0;
         var needRemove:Boolean = removeCh && removeCh.length > 0;
         if (needAdd || needRemove) {
-            connection.close();
+            asyncConnection.close();
             if (needRemove) {
                 var removeChStr:String = removeCh.join(',');
                 leave(removeChStr);
@@ -192,23 +183,13 @@ public class Subscribe extends EventDispatcher {
         }
     }
 
-    private function isChannelCorrect(channel:String):Boolean {
-        // if destroyd it is allways false
-        var result:Boolean = !_destroyed;
-        // check String
-        if (channel == null || channel.length > int.MAX_VALUE) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.SUBSCRIBE_CHANNEL_ERROR, channel]));
-            result = false;
-        }
-        return result;
-    }
 
     /*---------------------------INIT---------------------------*/
     protected function subscribeInit():void {
         //trace('subscribeInit : ' + sessionUUID, _channels);
         _connectionUID = PnUtils.getUID();
         var operation:Operation = getOperation(INIT_SUBSCRIBE);
-        connection.sendOperation(operation);
+        asyncConnection.sendOperation(operation);
     }
 
     protected function onSubscribeInit(e:OperationEvent):void {
@@ -240,7 +221,7 @@ public class Subscribe extends EventDispatcher {
     /*---------------------------SUBSCRIBE---------------------------*/
     private function doSubscribe():void {
         var operation:Operation = getOperation(SUBSCRIBE);
-        connection.sendOperation(operation);
+        asyncConnection.sendOperation(operation);
     }
 
     protected function onMessageReceived(e:OperationEvent):void {
@@ -294,7 +275,7 @@ public class Subscribe extends EventDispatcher {
                 var chArray:Array = chStr.split(',');
                 for (var i:int = 0; i < messages.length; i++) {
                     channel = chArray[i];
-                    if (hasChannel(channel)) {
+                    if (channelIsInChannelList(channel)) {
                         dispatchEvent(new SubscribeEvent(SubscribeEvent.DATA, {
                             channel: channel,
                             message: messages[i],
@@ -405,14 +386,14 @@ public class Subscribe extends EventDispatcher {
         if (_destroyed) return;
         _destroyed = true;
         close();
-        connection.removeEventListener(OperationEvent.TIMEOUT, onTimeout);
-        connection.destroy();
-        connection = null;
+        asyncConnection.removeEventListener(OperationEvent.TIMEOUT, onTimeout);
+        asyncConnection.destroy();
+        asyncConnection = null;
     }
 
     public function close(reason:String = null):void {
         doUnsubscribeAll(reason);
-        connection.close();
+        asyncConnection.close();
         if (_channels.length > 0) {
             leave(_channels.join(','));
         }
@@ -442,7 +423,10 @@ public class Subscribe extends EventDispatcher {
     public function set networkEnabled(value:Boolean):void {
         _networkEnabled = value;
 
-        connection.networkEnabled = value;
+        asyncConnection.networkEnabled = value;
+
+        trace("NW_ENABLED = " + value)
+
 
         if (value == true) {
 
@@ -465,6 +449,7 @@ public class Subscribe extends EventDispatcher {
     public function get retryCount():int {
         return _retryCount;
     }
+
     public function set retryCount(value:int):void {
         _retryCount = value;
     }
@@ -472,6 +457,7 @@ public class Subscribe extends EventDispatcher {
     public function get retryMode():Boolean {
         return _retryMode;
     }
+
     public function set retryMode(value:Boolean):void {
         _retryMode = value;
     }
@@ -488,7 +474,7 @@ public class Subscribe extends EventDispatcher {
         return _lastToken;
     }
 
-    private function hasChannel(ch:String):Boolean {
+    private function channelIsInChannelList(ch:String):Boolean {
         return (ch != null && _channels.indexOf(ch) > -1);
     }
 }

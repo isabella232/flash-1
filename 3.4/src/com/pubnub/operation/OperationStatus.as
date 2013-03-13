@@ -8,6 +8,8 @@ package com.pubnub.operation {
 		static public const CONNECT:String = 'connect';
 		static public const DISCONNECT:String = 'disconnect';
 		static public const ERROR:String = 'error';
-	
-	}
+        static public const WARNING:String = 'warning';
+
+
+    }
 }

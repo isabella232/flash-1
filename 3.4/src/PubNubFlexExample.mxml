@@ -139,7 +139,11 @@
                     break;
 
                 case OperationStatus.ERROR:
-                    callExternalInterface("console.log", ("Subscribe [ERROR]:" + (e.channel ? e.channel : 'no channel') + ', ' + e.data));
+                    callExternalInterface("console.log", ("Subscribe [ERROR]:" + (e.channel ? e.channel : '') + ', ' + e.data));
+                    break;
+
+                case OperationStatus.WARNING:
+                    callExternalInterface("console.log", ("Subscribe [WARNING]:" + (e.channel ? e.channel : '') + ', ' + e.data));
                     break;
             }
             channelsDataProvider = new ArrayCollection(Pn.getSubscribeChannels());
