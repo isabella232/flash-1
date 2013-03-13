@@ -89,8 +89,6 @@
             Pn.instance.addEventListener(PnEvent.TIME, onPnTime);
             Pn.instance.addEventListener(EnvironmentEvent.SHUTDOWN, onPnShutdown);
 
-            Pn.instance.addEventListener(NetMonEvent.HTTP_ENABLE, onPnConnected);
-
             Pn.instance.addEventListener(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT, onPnConnected);
             Pn.instance.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, onPnDisconnected);
 

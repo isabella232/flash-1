@@ -12,7 +12,7 @@ import com.pubnub.operation.TimeOperation;
  * @author firsoff maxim, firsoffmaxim@gmail.com, icq : 235859730
  */
 public class Log {
-    public static const MAX_RECORDS:Number = 288000;
+    public static const MAX_RECORDS:Number = 2000;
 
     // LEVELS of log
     public static const NORMAL:String = 'normal';

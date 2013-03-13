@@ -61,13 +61,12 @@ package com.pubnub {
             // Only Subscribe timeout will trigger network down
             environment.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, 		onEnvironmentHttpDisable);
 
-            // NetMon event or Subscribe enable event will bring network up
-            environment.addEventListener(NetMonEvent.HTTP_ENABLE, 		onEnvironmentHttpEnable);
+            // Only Subscribe enable event will bring network up
             environment.addEventListener(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT, 		onEnvironmentHttpEnable);
 		}
 		
 		private function onEnvironmentHttpDisable(e:NetMonEvent):void {
-            Log.log("Disabling network due to subscribe timeout", Log.DEBUG);
+            Log.log("Disabling network due to subscribe timeout", Log.DEBUG, new Operation("Aux Ping"));
 			_checkReconnect = true;
 			if (subscribeConnection) {
 				subscribeConnection.networkEnabled = false;
@@ -241,9 +240,9 @@ package com.pubnub {
 			
 				case SubscribeEvent.DATA:
 
-                    if (subscribeConnection.retryMode = true) {
+                    if (subscribeConnection.retryMode == true) {
+                        Log.log("Recovering from Subscribe Timeout", Log.DEBUG, new Operation("Aux Ping"));
                         dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
-                        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE));
                         subscribeConnection.retryMode = false;
                     }
 

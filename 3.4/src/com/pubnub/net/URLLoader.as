@@ -65,7 +65,7 @@ public class URLLoader extends EventDispatcher {
         destroyRESPONSE();
         sendRequest(request);
 
-        Log.log('REQUEST: ' + unescape(request.url), Log.DEBUG, this.operation);
+        Log.log('REQUEST: ' + unescape(request.url), Log.DEBUG);
     }
 
     private function getSocket(url:String):* {
@@ -216,7 +216,7 @@ public class URLLoader extends EventDispatcher {
             if (request) {
                 _response = new URLResponse(bytes, request);
                 //trace(_response.body);
-                Log.log('RESPONSE: ' + _response.body, Log.DEBUG, this.operation);
+                Log.log('RESPONSE: ' + _response.body, Log.DEBUG);
             }
             //trace('onRESPONSE : ' + _response.body);
             dispatchEvent(new URLLoaderEvent(URLLoaderEvent.COMPLETE, _response));
