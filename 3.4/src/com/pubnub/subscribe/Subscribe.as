@@ -172,12 +172,6 @@ public class Subscribe extends EventDispatcher {
 
 
     /*---------------------------INIT---------------------------*/
-    protected function subscribeInit():void {
-        UUID ||= PnUtils.getUID();
-
-        var operation:Operation = getOperation(INIT_SUBSCRIBE);
-        asyncConnection.sendOperation(operation);
-    }
 
     protected function onSubscribeInit(e:OperationEvent):void {
         if (_networkEnabled == false) return;
@@ -188,16 +182,22 @@ public class Subscribe extends EventDispatcher {
         }
         _connected = true;
         _lastToken = e.data[1];
-        //trace('onSubscribeInit : ' + _lastToken);
+
         if (_existingTimeToken) {
             _lastToken = _existingTimeToken;
             _existingTimeToken = null;
         }
 
-
         dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, { channel: _channels.join(',') }));
         destroyOperation(e.target as Operation);
         doSubscribe();
+    }
+
+    protected function subscribeInit():void {
+        UUID ||= PnUtils.getUID();
+
+        var operation:Operation = getOperation(INIT_SUBSCRIBE);
+        asyncConnection.executeGet(operation);
     }
 
     protected function onSubscribeInitError(e:OperationEvent):void {
@@ -208,7 +208,7 @@ public class Subscribe extends EventDispatcher {
     /*---------------------------SUBSCRIBE---------------------------*/
     private function doSubscribe():void {
         var operation:Operation = getOperation(SUBSCRIBE);
-        asyncConnection.sendOperation(operation);
+        asyncConnection.executeGet(operation);
     }
 
     protected function onMessageReceived(e:OperationEvent):void {
@@ -301,7 +301,7 @@ public class Subscribe extends EventDispatcher {
     /*---------------------------LEAVE---------------------------------*/
     protected function leave(channel:String):void {
         var operation:Operation = getOperation(LEAVE, channel);
-        Pn.pn_internal::syncConnection.sendOperation(operation);
+        Pn.pn_internal::syncConnection.executeGet(operation);
     }
 
     protected function getOperation(type:String, ...rest):Operation {
@@ -313,36 +313,36 @@ public class Subscribe extends EventDispatcher {
     }
 
     protected function getSubscribeInitOperation(args:Object = null):Operation {
-        var operation:SubscribeInitOperation = new SubscribeInitOperation(origin);
-        operation.setURL(null, {
+        var subscribeInitOperation:SubscribeInitOperation = new SubscribeInitOperation(origin);
+        subscribeInitOperation.setURL(null, {
             channel: this.channelsString,
             subscribeKey: subscribeKey,
             uid: UUID});
-        operation.addEventListener(OperationEvent.RESULT, onSubscribeInit);
-        operation.addEventListener(OperationEvent.FAULT, onSubscribeInitError);
-        return operation;
+        subscribeInitOperation.addEventListener(OperationEvent.RESULT, onSubscribeInit);
+        subscribeInitOperation.addEventListener(OperationEvent.FAULT, onSubscribeInitError);
+        return subscribeInitOperation;
     }
 
     protected function getSubscribeOperation():Operation {
-        var operation:SubscribeOperation = new SubscribeOperation(origin);
-        operation.setURL(null, {
+        var subscribeOperation:SubscribeOperation = new SubscribeOperation(origin);
+        subscribeOperation.setURL(null, {
             timetoken: _lastToken,
             subscribeKey: subscribeKey,
             channel: this.channelsString,
             uid: UUID});
-        operation.addEventListener(OperationEvent.RESULT, onMessageReceived);
-        operation.addEventListener(OperationEvent.FAULT, onConnectError);
-        return operation;
+        subscribeOperation.addEventListener(OperationEvent.RESULT, onMessageReceived);
+        subscribeOperation.addEventListener(OperationEvent.FAULT, onConnectError);
+        return subscribeOperation;
     }
 
     protected function getLeaveOperation(channel:String):Operation {
-        var operation:LeaveOperation = new LeaveOperation(origin);
-        operation.setURL(null, {
+        var leaveOperation:LeaveOperation = new LeaveOperation(origin);
+        leaveOperation.setURL(null, {
             channel: channel,
             uid: UUID,
             subscribeKey: subscribeKey
         });
-        return operation;
+        return leaveOperation;
     }
 
     public function get connected():Boolean {

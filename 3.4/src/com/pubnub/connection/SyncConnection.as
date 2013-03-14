@@ -22,7 +22,7 @@ package com.pubnub.connection {
 			_timeout = timeout;
 		}
 		
-		override public function sendOperation(operation:Operation):void {
+		override public function executeGet(operation:Operation):void {
 			if (!operation) return;
 			if (_networkEnabled == false) {
 				operation.onError([0, Errors.NETWORK_UNAVAILABLE]);
@@ -107,7 +107,7 @@ package com.pubnub.connection {
 		public function reconnect():void {
 			//trace(this, 'reconnect');
 			busy = false;
-			sendOperation(queue[0]);
+			executeGet(queue[0]);
 		}
 		
 		override protected function onConnect(e:Event):void {

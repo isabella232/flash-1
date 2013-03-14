@@ -16,8 +16,8 @@ package com.pubnub.connection {
 			super();
 		}
 		
-		override public function sendOperation(operation:Operation):void {
-			super.sendOperation(operation);
+		override public function executeGet(operation:Operation):void {
+			super.executeGet(operation);
 			var timeout:int = operation.timeout;
 			clearTimeout(timeoutInterval);
 			timeoutInterval = setTimeout(onTimeout, operation.timeout, operation);
@@ -55,7 +55,7 @@ package com.pubnub.connection {
 			//trace('onConnect : ' + operation);
 			super.onConnect(e);
 			if (operation) {
-				sendOperation(operation);
+				executeGet(operation);
 			}
 		}	
 	}

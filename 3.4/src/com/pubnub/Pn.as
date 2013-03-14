@@ -90,7 +90,7 @@ package com.pubnub {
 		
 		private function doInit():void {
 			var operation:Operation = createOperation(INIT_OPERATION)
-			syncConnection.sendOperation(operation);
+			syncConnection.executeGet(operation);
 		}
 		
 		private function onEnvironmentShutdown(e:EnvironmentEvent):void {
@@ -298,7 +298,7 @@ package com.pubnub {
 				return;
 			}
 			var operation:Operation = createOperation(HISTORY_OPERATION, args);
-			syncConnection.sendOperation(operation);
+			syncConnection.executeGet(operation);
 		}
 		
 		private function onHistoryResult(e:OperationEvent):void {
@@ -330,7 +330,7 @@ package com.pubnub {
 		public function publish(args:Object):void {
 			throwInit();
 			var operation:Operation = createOperation(PUBLISH_OPERATION, args)
-			syncConnection.sendOperation(operation);
+			syncConnection.executeGet(operation);
 		}
 		
 		private function onPublishFault(e:OperationEvent):void {
@@ -369,7 +369,7 @@ package com.pubnub {
 			var operation:Operation = createOperation(TIME_OPERATION);
 			operation.addEventListener(OperationEvent.RESULT, onTimeResult);
 			operation.addEventListener(OperationEvent.FAULT, onTimeFault);
-			syncConnection.sendOperation(operation);
+			syncConnection.executeGet(operation);
 		}
 		
 		private function onTimeFault(e:OperationEvent):void {

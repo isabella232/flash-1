@@ -19,14 +19,14 @@ import com.pubnub.net.URLLoaderEvent;
 			super.init();
 		}
 		
-		override public function sendOperation(operation:Operation):void {
+		override public function executeGet(operation:Operation):void {
 			//trace('sendOperation : ' + loader.connected);
 			
-			super.sendOperation(operation);
+			super.executeGet(operation);
 			if (ready) {
 				doSendOperation(operation);
 			}else {
-                Log.log("sendOperation: connection not ready for op: " + operation.toString(), Log.DEBUG);
+                Log.log("executeGet: connection not ready for op: " + operation.toString(), Log.DEBUG);
 				loader.connect(operation.request);
 				queue.push(operation);
 			}
@@ -35,7 +35,7 @@ import com.pubnub.net.URLLoaderEvent;
 		override protected function onConnect(e:Event):void {
 			if (queue.length > 0) {
 				for (var i:int = 0; i < queue.length; i++) {
-					sendOperation(queue[i]);
+					executeGet(queue[i]);
 				}
 				queue.length = 0;
 			}
