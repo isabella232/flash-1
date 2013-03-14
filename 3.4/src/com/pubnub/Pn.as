@@ -136,21 +136,22 @@ package com.pubnub {
 		/*------------------- INIT --------------------------------*/
 		public function init(config:Object):void {
 			if (_initialized) {
-				shutdown('re-init');
+				shutdown('reinitializing');
 			}
 			_initialized = false;
 			ori = Math.floor(Math.random() * 9) + 1;
 			initKeys(config);
-            _sessionUUID = PnUtils.getUID();
-			if (subscribeConnection) {
-				subscribeConnection.sessionUUID = _sessionUUID;
-			}
-			
+            _sessionUUID ||= PnUtils.getUID();
+
 			//start Environment service (wait first HTTP_ENABLE event)
 			environment.start();
 			
 			subscribeConnection ||= new Subscribe();
-			subscribeConnection.addEventListener(SubscribeEvent.CONNECT, 	onSubscribe);
+
+            if (subscribeConnection) {
+                subscribeConnection.UUID = _sessionUUID;
+            }
+            subscribeConnection.addEventListener(SubscribeEvent.CONNECT, 	onSubscribe);
 			subscribeConnection.addEventListener(SubscribeEvent.DATA, 		onSubscribe);
 			subscribeConnection.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
 			subscribeConnection.addEventListener(SubscribeEvent.ERROR, 		onSubscribe);
@@ -158,7 +159,7 @@ package com.pubnub {
 			subscribeConnection.addEventListener(SubscribeEvent.PRESENCE, 	onSubscribe);
 			subscribeConnection.origin = _origin;
 			subscribeConnection.subscribeKey = _subscribeKey;
-			subscribeConnection.sessionUUID = _sessionUUID;
+			subscribeConnection.UUID = _sessionUUID;
 			subscribeConnection.cipherKey = cipherKey;
 			
             subscribeConnection.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);

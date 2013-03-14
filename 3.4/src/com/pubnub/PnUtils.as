@@ -6,7 +6,8 @@ package com.pubnub {
 	 */
 	public class PnUtils {
 		private static const ALPHA_CHAR_CODES:Array = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70];
-		public static function getUID():String {
+
+        public static function getUID():String {
 			var temp:Array = new Array(36);
 			var index:int = 0;
 			

@@ -25,7 +25,6 @@ public class Subscribe extends EventDispatcher {
     static public const LEAVE:String = 'leave';
 
     public var subscribeKey:String;
-    public var sessionUUID:String;
     public var cipherKey:String;
 
     protected var _origin:String = "";
@@ -35,7 +34,7 @@ public class Subscribe extends EventDispatcher {
     protected var _subscribeDelay:int = 0;
     protected var _retryCount:int = 0;
 
-    protected var _connectionUID:String;
+    protected var _UUID:String = null;
     protected var _lastToken:String;
     protected var _existingTimeToken:String;
     protected var factory:Dictionary;
@@ -137,20 +136,8 @@ public class Subscribe extends EventDispatcher {
     }
 
     private function doUnsubscribeAll(reason:Object = null):void {
-        //clearInterval(resubTimer);
         var allChannels:String = _channels.join(',');
         unsubscribe(allChannels, reason);
-    }
-
-    private function isChannelListValid(channel:String):Boolean {
-        if (channel == null || channel.length > int.MAX_VALUE || _destroyed) {
-            return false;
-        }
-        return true;
-    }
-
-    private function isNetworkEnabled():Boolean {
-        return _networkEnabled;
     }
 
 
@@ -186,8 +173,8 @@ public class Subscribe extends EventDispatcher {
 
     /*---------------------------INIT---------------------------*/
     protected function subscribeInit():void {
-        //trace('subscribeInit : ' + sessionUUID, _channels);
-        _connectionUID = PnUtils.getUID();
+        UUID ||= PnUtils.getUID();
+
         var operation:Operation = getOperation(INIT_SUBSCRIBE);
         asyncConnection.sendOperation(operation);
     }
@@ -330,7 +317,7 @@ public class Subscribe extends EventDispatcher {
         operation.setURL(null, {
             channel: this.channelsString,
             subscribeKey: subscribeKey,
-            uid: sessionUUID});
+            uid: UUID});
         operation.addEventListener(OperationEvent.RESULT, onSubscribeInit);
         operation.addEventListener(OperationEvent.FAULT, onSubscribeInitError);
         return operation;
@@ -342,7 +329,7 @@ public class Subscribe extends EventDispatcher {
             timetoken: _lastToken,
             subscribeKey: subscribeKey,
             channel: this.channelsString,
-            uid: sessionUUID});
+            uid: UUID});
         operation.addEventListener(OperationEvent.RESULT, onMessageReceived);
         operation.addEventListener(OperationEvent.FAULT, onConnectError);
         return operation;
@@ -352,7 +339,7 @@ public class Subscribe extends EventDispatcher {
         var operation:LeaveOperation = new LeaveOperation(origin);
         operation.setURL(null, {
             channel: channel,
-            uid: sessionUUID,
+            uid: UUID,
             subscribeKey: subscribeKey
         });
         return operation;
@@ -368,14 +355,6 @@ public class Subscribe extends EventDispatcher {
 
     public function set origin(value:String):void {
         _origin = value;
-    }
-
-    public function get connectionUID():String {
-        return _connectionUID;
-    }
-
-    public function set connectionUID(value:String):void {
-        _connectionUID = value;
     }
 
     public function get destroyed():Boolean {
@@ -462,6 +441,16 @@ public class Subscribe extends EventDispatcher {
         _retryMode = value;
     }
 
+    public function set UUID(value:String):void {
+        _UUID = value;
+        trace("UUID SET in Subscribe: " + _UUID);
+
+    }
+
+    public function get UUID():String {
+        return _UUID;
+    }
+
     public function set subscribeDelay(value:int):void {
         _subscribeDelay = value;
     }
@@ -477,5 +466,17 @@ public class Subscribe extends EventDispatcher {
     private function channelIsInChannelList(ch:String):Boolean {
         return (ch != null && _channels.indexOf(ch) > -1);
     }
+
+    private function isChannelListValid(channel:String):Boolean {
+        if (channel == null || channel.length > int.MAX_VALUE || _destroyed) {
+            return false;
+        }
+        return true;
+    }
+
+    private function isNetworkEnabled():Boolean {
+        return _networkEnabled;
+    }
+
 }
 }
