@@ -85,6 +85,7 @@ public class Pn extends EventDispatcher {
 
         if (config.secret_key)
             secretKey = config.secret_key;
+            subscribeConnection.secretKey = secretKey;
 
         if (config.cipher_key)
             cipherKey = config.cipher_key;

@@ -21,8 +21,6 @@ public class Subscribe extends EventDispatcher {
 
     static public const PNPRES_PREFIX:String = '-pnpres';
     static public const SUBSCRIBE:String = 'subscribe';
-    static public const INIT_SUBSCRIBE:String = 'init_subscribe';
-    static public const LEAVE:String = 'leave';
 
     public var subscribeKey:String;
     public var publishKey:String;
@@ -100,6 +98,41 @@ public class Subscribe extends EventDispatcher {
         return channelsToAdd.length > 0;
     }
 
+
+    private function processNewActiveChannelList(addCh:Array = null, removeCh:Array = null, reason:Object = null):void {
+
+        trace("processNewActiveChannelList");
+
+        var needAdd:Boolean = addCh && addCh.length > 0;
+        var needRemove:Boolean = removeCh && removeCh.length > 0;
+        if (needAdd || needRemove) {
+            asyncConnection.close();
+            if (needRemove) {
+                var removeChStr:String = removeCh.join(',');
+                leave(removeChStr);
+                ArrayUtil.removeItems(_channels, removeCh);
+                dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: removeChStr, reason: (reason ? reason : '') }));
+            }
+
+            if (needAdd) {
+                _channels = _channels.concat(addCh);
+            }
+
+            //trace('_lastToken : ' + _lastToken);
+            if (_channels.length > 0) {
+                if (_lastToken) {
+                    trace("_lastToken");
+                    doSubscribe();
+                } else {
+                    trace("no _lastToken");
+                    subscribeInit();
+                }
+            } else {
+                _lastToken = null;
+            }
+        }
+    }
+
     public function unsubscribe(channelList:String, reason:Object = null):Boolean {
         if (!isNetworkEnabled()) {
             dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
@@ -141,39 +174,7 @@ public class Subscribe extends EventDispatcher {
     }
 
 
-    private function processNewActiveChannelList(addCh:Array = null, removeCh:Array = null, reason:Object = null):void {
 
-        trace("processNewActiveChannelList");
-
-        var needAdd:Boolean = addCh && addCh.length > 0;
-        var needRemove:Boolean = removeCh && removeCh.length > 0;
-        if (needAdd || needRemove) {
-            asyncConnection.close();
-            if (needRemove) {
-                var removeChStr:String = removeCh.join(',');
-                leave(removeChStr);
-                ArrayUtil.removeItems(_channels, removeCh);
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: removeChStr, reason: (reason ? reason : '') }));
-            }
-
-            if (needAdd) {
-                _channels = _channels.concat(addCh);
-            }
-
-            //trace('_lastToken : ' + _lastToken);
-            if (_channels.length > 0) {
-                if (_lastToken) {
-                    trace("_lastToken");
-                    doSubscribe();
-                } else {
-                    trace("no _lastToken");
-                    subscribeInit();
-                }
-            } else {
-                _lastToken = null;
-            }
-        }
-    }
 
 
     /*---------------------------INIT---------------------------*/
@@ -201,8 +202,15 @@ public class Subscribe extends EventDispatcher {
     protected function subscribeInit():void {
         UUID ||= PnUtils.getUID();
 
-        var operation:Operation = getSubscribeInitOperation();
-        asyncConnection.executeGet(operation);
+        var subscribeInitOperation:SubscribeInitOperation = new SubscribeInitOperation(origin);
+        subscribeInitOperation.setURL(null, {
+            channel: this.channelsString,
+            subscribeKey: subscribeKey,
+            uid: UUID});
+        subscribeInitOperation.addEventListener(OperationEvent.RESULT, onSubscribeInit);
+        subscribeInitOperation.addEventListener(OperationEvent.FAULT, onSubscribeInitError);
+
+        asyncConnection.executeGet(subscribeInitOperation);
     }
 
     protected function onSubscribeInitError(e:OperationEvent):void {
@@ -212,8 +220,17 @@ public class Subscribe extends EventDispatcher {
 
     /*---------------------------SUBSCRIBE---------------------------*/
     private function doSubscribe():void {
-        var operation:Operation = getSubscribeOperation();
-        asyncConnection.executeGet(operation);
+
+        var subscribeOperation:SubscribeOperation = new SubscribeOperation(origin);
+        subscribeOperation.setURL(null, {
+            timetoken: _lastToken,
+            subscribeKey: subscribeKey,
+            channel: this.channelsString,
+            uid: UUID});
+        subscribeOperation.addEventListener(OperationEvent.RESULT, onMessageReceived);
+        subscribeOperation.addEventListener(OperationEvent.FAULT, onConnectError);
+
+        asyncConnection.executeGet(subscribeOperation);
     }
 
     protected function onMessageReceived(e:OperationEvent):void {
@@ -293,46 +310,21 @@ public class Subscribe extends EventDispatcher {
 
     /*---------------------------LEAVE---------------------------------*/
     protected function leave(channel:String):void {
-        var operation:Operation = getLeaveOperation(channel);
-        Pn.pn_internal::nonSubConnection.executeGet(operation);
-    }
 
-    protected function destroyOperation(op:Operation):void {
-        op.destroy();
-    }
-
-    protected function getSubscribeInitOperation(args:Object = null):Operation {
-        var subscribeInitOperation:SubscribeInitOperation = new SubscribeInitOperation(origin);
-        subscribeInitOperation.setURL(null, {
-            channel: this.channelsString,
-            subscribeKey: subscribeKey,
-            uid: UUID});
-        subscribeInitOperation.addEventListener(OperationEvent.RESULT, onSubscribeInit);
-        subscribeInitOperation.addEventListener(OperationEvent.FAULT, onSubscribeInitError);
-        return subscribeInitOperation;
-    }
-
-    protected function getSubscribeOperation():Operation {
-        var subscribeOperation:SubscribeOperation = new SubscribeOperation(origin);
-        subscribeOperation.setURL(null, {
-            timetoken: _lastToken,
-            subscribeKey: subscribeKey,
-            channel: this.channelsString,
-            uid: UUID});
-        subscribeOperation.addEventListener(OperationEvent.RESULT, onMessageReceived);
-        subscribeOperation.addEventListener(OperationEvent.FAULT, onConnectError);
-        return subscribeOperation;
-    }
-
-    protected function getLeaveOperation(channel:String):Operation {
         var leaveOperation:LeaveOperation = new LeaveOperation(origin);
         leaveOperation.setURL(null, {
             channel: channel,
             uid: UUID,
             subscribeKey: subscribeKey
         });
-        return leaveOperation;
+
+        Pn.pn_internal::nonSubConnection.executeGet(leaveOperation);
     }
+
+    protected function destroyOperation(op:Operation):void {
+        op.destroy();
+    }
+
 
     public function get connected():Boolean {
         return _connected;
