@@ -16,13 +16,8 @@ package com.pubnub {
 	[Event(name="init", type="com.pubnub.PnEvent")]
 	public class Pn extends EventDispatcher {
 		static private var __instance:Pn;
-		static public const INIT_OPERATION:String = 'init';
-		static public const HISTORY_OPERATION:String = 'history';
-		static public const PUBLISH_OPERATION:String = 'publish';
-		static public const TIME_OPERATION:String = 'time';
-		
-		private var _initialized:Boolean = false;         
-        private var operationsFactory:Dictionary;
+
+		private var _initialized:Boolean = false;
 		
         private var subscribeConnection:Subscribe;
 		
@@ -44,20 +39,13 @@ package com.pubnub {
 		}
 		
 		private function setup():void {
-			
-			operationsFactory = new Dictionary();
-			operationsFactory[PUBLISH_OPERATION] = 	createPublishOperation;
-			operationsFactory[HISTORY_OPERATION] = 	createDetailedHistoryOperation; 
-			operationsFactory[TIME_OPERATION] = 	createTimeOperation; 
+
 			syncConnection = new SyncConnection(Settings.OPERATION_TIMEOUT);
 			
 			environment = new Environment(origin);
 			environment.addEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
 
-            // Only Subscribe timeout will trigger network down
             environment.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, onEnvironmentHttpDisable);
-
-            // Only Subscribe enable event will bring network up
             environment.addEventListener(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT, onEnvironmentHttpEnable);
 		}
 		
@@ -84,11 +72,6 @@ package com.pubnub {
 			dispatchEvent(e);
 		}
 		
-		private function doInit():void {
-			var operation:Operation = createOperation(INIT_OPERATION)
-			syncConnection.executeGet(operation);
-		}
-		
 		private function onEnvironmentShutdown(e:EnvironmentEvent):void {
 			shutdown(Errors.NETWORK_LOST);
 		}
@@ -110,14 +93,10 @@ package com.pubnub {
 			Log.log('Shutdown', Log.WARNING);
 			
 			dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE));
-			//dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, null, [0, Errors.NETWORK_LOST, channels, lastToken]));
 			dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, null, [0, reason, channels, lastToken]));
 		}
 		
-		private function createOperation(type:String, args:Object = null):Operation {
-			var op:Operation = operationsFactory[type].call(null, args);
-			return op;
-		}
+
 		
 		public static  function get instance():Pn {
 			__instance ||= new Pn();
@@ -279,7 +258,7 @@ package com.pubnub {
 				dispatchEvent(new PnEvent(PnEvent.DETAILED_HISTORY, [ -1, 'Channel and subKey are missing'], channel, OperationStatus.ERROR));
 				return;
 			}
-			var operation:Operation = createOperation(HISTORY_OPERATION, args);
+			var operation:Operation = createDetailedHistoryOperation(args);
 			syncConnection.executeGet(operation);
 		}
 		
@@ -310,7 +289,7 @@ package com.pubnub {
 		}
 		
 		public function publish(args:Object):void {
-			var operation:Operation = createOperation(PUBLISH_OPERATION, args)
+			var operation:Operation = createPublishOperation(args)
 			syncConnection.executeGet(operation);
 		}
 		
@@ -347,7 +326,7 @@ package com.pubnub {
 		
 		public function time():void {
 			//throwInit();
-			var operation:Operation = createOperation(TIME_OPERATION);
+			var operation:Operation = createTimeOperation();
 			operation.addEventListener(OperationEvent.RESULT, onTimeResult);
 			operation.addEventListener(OperationEvent.FAULT, onTimeFault);
 			syncConnection.executeGet(operation);
