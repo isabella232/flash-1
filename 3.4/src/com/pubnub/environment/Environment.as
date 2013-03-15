@@ -18,7 +18,6 @@ public class Environment extends EventDispatcher {
     //private var auxNetMon:AuxNetMon;
 
     private var sysMon:SysMon;
-    private var _networkEnabled:Boolean;
     private var lastHTTPDisabledTime:int = 0;
     private var maxTimeout:int;
     private var _firstRun:Boolean;
@@ -36,14 +35,13 @@ public class Environment extends EventDispatcher {
 
         // This is to just stub the "init ping"
 
-        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
 
         sysMon.start();
         lastHTTPDisabledTime = 0;
     }
 
     public function stop():void {
-        _networkEnabled = false;
 //        netMon.stop();
 //        auxNetMon.stop();
 
@@ -137,11 +135,6 @@ public class Environment extends EventDispatcher {
     public function set origin(value:String):void {
         _origin = value;
     }
-
-    public function get networkEnabled():Boolean {
-        return _networkEnabled;
-    }
-
 
     public function get firstRun():Boolean {
         return _firstRun;

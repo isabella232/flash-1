@@ -48,7 +48,7 @@ package flexUnitTests
 			var connection_Async:AsyncConnection = new AsyncConnection();
 			Assert.assertNotNull(connection_Async);	
 			
-			var connection_Sync:SyncConnection = new SyncConnection();
+			var connection_Sync:NonSubConnection = new NonSubConnection();
 			Assert.assertNotNull(connection_Sync);	
 			
 			var connection_heartbeat:HeartBeatConnection = new HeartBeatConnection();

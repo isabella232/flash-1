@@ -9,7 +9,7 @@ package com.pubnub.connection {
 	 * ...
 	 * @author firsoff maxim, firsoffmaxim@gmail.com, icq : 235859730
 	 */
-	public class SyncConnection extends Connection {
+	public class NonSubConnection extends Connection {
 		
 		protected var _timeout:int = 310000;
 		protected var timeoutInterval:int;
@@ -17,7 +17,7 @@ package com.pubnub.connection {
 		protected var initialized:Boolean
 		private var busy:Boolean;
 		
-		public function SyncConnection(timeout:int = 310000) {
+		public function NonSubConnection(timeout:int = 310000) {
 			super();
 			_timeout = timeout;
 		}

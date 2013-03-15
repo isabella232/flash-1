@@ -25,7 +25,9 @@ public class Subscribe extends EventDispatcher {
     static public const LEAVE:String = 'leave';
 
     public var subscribeKey:String;
+    public var publishKey:String;
     public var cipherKey:String;
+    public var secretKey:String;
 
     protected var _origin:String = "";
     protected var _connected:Boolean;
@@ -65,7 +67,7 @@ public class Subscribe extends EventDispatcher {
 
     private function onTimeout(e:OperationEvent):void {
         dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
-        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT));
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
     }
 
     public function subscribe(channelList:String, existingTimeToken:String = null):Boolean {
@@ -300,7 +302,7 @@ public class Subscribe extends EventDispatcher {
     /*---------------------------LEAVE---------------------------------*/
     protected function leave(channel:String):void {
         var operation:Operation = getOperation(LEAVE, channel);
-        Pn.pn_internal::syncConnection.executeGet(operation);
+        Pn.pn_internal::nonSubConnection.executeGet(operation);
     }
 
     protected function getOperation(type:String, ...rest):Operation {

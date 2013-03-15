@@ -3,12 +3,10 @@ package com.pubnub {
 	import com.pubnub.connection.*;
 	import com.pubnub.environment.*;
 	import com.pubnub.log.*;
-	import com.pubnub.net.*;
 	import com.pubnub.operation.*;
 	import com.pubnub.subscribe.*;
 	import flash.errors.*;
 	import flash.events.*;
-	import flash.system.Security;
 	import flash.utils.*;
 	use namespace pn_internal;
 	
@@ -31,25 +29,65 @@ package com.pubnub {
         private var _sessionUUID:String = "";
 		private var environment:Environment;
 		
-		static pn_internal var syncConnection:SyncConnection;
+		static pn_internal var nonSubConnection:NonSubConnection;
 		
 		public function Pn() {
 			if (__instance) throw new IllegalOperationError('Use [Pn.instance] getter');
 			setup();
 		}
-		
-		private function setup():void {
 
-			syncConnection = new SyncConnection(Settings.OPERATION_TIMEOUT);
-			
-			environment = new Environment(origin);
-			environment.addEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
+        public static function get instance():Pn {
+            __instance ||= new Pn();
+            return __instance;
+        }
 
-            environment.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, onEnvironmentHttpDisable);
-            environment.addEventListener(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT, onEnvironmentHttpEnable);
-		}
-		
-		private function onEnvironmentHttpDisable(e:NetMonEvent):void {
+        public static function  init(config:Object):void {
+            instance.init(config);
+        }
+
+        public function init(config:Object):void {
+            if (_initialized) {
+                shutdown('reinitializing');
+            }
+            _initialized = false;
+            initKeys(config);
+            _sessionUUID ||= PnUtils.getUID();
+
+            //start Environment service (wait first HTTP_ENABLE event)
+            environment.start();
+
+            subscribeConnection ||= new Subscribe();
+
+            if (subscribeConnection) {
+                subscribeConnection.UUID = _sessionUUID;
+            }
+            subscribeConnection.addEventListener(SubscribeEvent.CONNECT, 	onSubscribe);
+            subscribeConnection.addEventListener(SubscribeEvent.DATA, 		onSubscribe);
+            subscribeConnection.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
+            subscribeConnection.addEventListener(SubscribeEvent.ERROR, 		onSubscribe);
+            subscribeConnection.addEventListener(SubscribeEvent.WARNING, 	onSubscribe);
+            subscribeConnection.addEventListener(SubscribeEvent.PRESENCE, 	onSubscribe);
+            subscribeConnection.origin = _origin;
+            subscribeConnection.subscribeKey = _subscribeKey;
+            subscribeConnection.UUID = _sessionUUID;
+            subscribeConnection.cipherKey = cipherKey;
+
+            subscribeConnection.addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);
+        }
+
+        private function setup():void {
+
+            nonSubConnection = new NonSubConnection(Settings.OPERATION_TIMEOUT);
+
+            environment = new Environment(origin);
+            environment.addEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
+
+            environment.addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, onSubscribeTimeout);
+            environment.addEventListener(NetMonEvent.SUBSCRIBE_TIMEIN, onSubscribeTimein);
+        }
+
+
+		private function onSubscribeTimeout(e:NetMonEvent):void {
             Log.log("Disabling network due to subscribe timeout", Log.DEBUG, new Operation("Aux Ping"));
 			if (subscribeConnection) {
 				subscribeConnection.networkEnabled = false;
@@ -57,8 +95,8 @@ package com.pubnub {
 			dispatchEvent(e);
 		}
 		
-		private function onEnvironmentHttpEnable(e:NetMonEvent):void {
-            syncConnection.networkEnabled = true;
+		private function onSubscribeTimein(e:NetMonEvent):void {
+            nonSubConnection.networkEnabled = true;
 
             if (subscribeConnection) {
                 subscribeConnection.retryMode = false;
@@ -77,7 +115,6 @@ package com.pubnub {
 		}
 		
 		private function shutdown(reason:String = ''):void {
-			// define last params
 			var channels:String = 'no channels';
 			var lastToken:String = null;
 			if (subscribeConnection) {
@@ -85,65 +122,24 @@ package com.pubnub {
 					channels = subscribeConnection.channels.join(',');
 				}
 				lastToken = subscribeConnection.lastToken;
-			}
-			syncConnection.close();
-			if (subscribeConnection) subscribeConnection.close();
+                subscribeConnection.close();
+
+            }
+
+            nonSubConnection.close();
 			environment.stop();
 			_initialized = false;
-			Log.log('Shutdown', Log.WARNING);
-			
-			dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_DISABLE));
+
+            Log.log('Shutdown', Log.WARNING);
 			dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, null, [0, reason, channels, lastToken]));
 		}
 		
-
-		
-		public static  function get instance():Pn {
-			__instance ||= new Pn();
-			return __instance;
-		}
-		
-		public static function  init(config:Object):void {
-			instance.init(config);
-		}
-		
-		/*------------------- INIT --------------------------------*/
-		public function init(config:Object):void {
-			if (_initialized) {
-				shutdown('reinitializing');
-			}
-			_initialized = false;
-			initKeys(config);
-            _sessionUUID ||= PnUtils.getUID();
-
-			//start Environment service (wait first HTTP_ENABLE event)
-			environment.start();
-			
-			subscribeConnection ||= new Subscribe();
-
-            if (subscribeConnection) {
-                subscribeConnection.UUID = _sessionUUID;
-            }
-            subscribeConnection.addEventListener(SubscribeEvent.CONNECT, 	onSubscribe);
-			subscribeConnection.addEventListener(SubscribeEvent.DATA, 		onSubscribe);
-			subscribeConnection.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
-			subscribeConnection.addEventListener(SubscribeEvent.ERROR, 		onSubscribe);
-            subscribeConnection.addEventListener(SubscribeEvent.WARNING, 	onSubscribe);
-			subscribeConnection.addEventListener(SubscribeEvent.PRESENCE, 	onSubscribe);
-			subscribeConnection.origin = _origin;
-			subscribeConnection.subscribeKey = _subscribeKey;
-			subscribeConnection.UUID = _sessionUUID;
-			subscribeConnection.cipherKey = cipherKey;
-			
-            subscribeConnection.addEventListener(NetMonEvent.HTTP_DISABLE_VIA_SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);
-		}
-
         private function delayedSubscribeRetry(e:NetMonEvent):void {
-            trace("Running onSubscribeTimeout in: " + Settings.RECONNECT_RETRY_DELAY);
-            setTimeout(onSubscribeTimeout, Settings.RECONNECT_RETRY_DELAY, e);
+            trace("Running attemptDelayedResubscribe in: " + Settings.RECONNECT_RETRY_DELAY);
+            setTimeout(attemptDelayedResubscribe, Settings.RECONNECT_RETRY_DELAY, e);
         }
 
-		private function onSubscribeTimeout(e:NetMonEvent):void {
+		private function attemptDelayedResubscribe(e:NetMonEvent):void {
 
             Log.log("Retrying " + subscribeConnection.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
@@ -179,11 +175,6 @@ package com.pubnub {
 
         }
 		
-		/**
-		 * 
-		 * @param	channel for MX subcribe use "ch1,ch2,ch3,ch4"
-		 */
-
 		private function onSubscribe(e:SubscribeEvent):void {
 			var subscribe:Subscribe = e.target as Subscribe;
 			var status:String;
@@ -204,9 +195,8 @@ package com.pubnub {
                         subscribeConnection.retryMode = false;
                         subscribeConnection.networkEnabled = true;
 
-                        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
+                        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
                     }
-
 
                     status = OperationStatus.DATA;
 				break;
@@ -259,7 +249,7 @@ package com.pubnub {
 				return;
 			}
 			var operation:Operation = createDetailedHistoryOperation(args);
-			syncConnection.executeGet(operation);
+			nonSubConnection.executeGet(operation);
 		}
 		
 		private function onHistoryResult(e:OperationEvent):void {
@@ -290,7 +280,7 @@ package com.pubnub {
 		
 		public function publish(args:Object):void {
 			var operation:Operation = createPublishOperation(args)
-			syncConnection.executeGet(operation);
+			nonSubConnection.executeGet(operation);
 		}
 		
 		private function onPublishFault(e:OperationEvent):void {
@@ -329,7 +319,7 @@ package com.pubnub {
 			var operation:Operation = createTimeOperation();
 			operation.addEventListener(OperationEvent.RESULT, onTimeResult);
 			operation.addEventListener(OperationEvent.FAULT, onTimeFault);
-			syncConnection.executeGet(operation);
+			nonSubConnection.executeGet(operation);
 		}
 		
 		private function onTimeFault(e:OperationEvent):void {
@@ -357,39 +347,22 @@ package com.pubnub {
 				return null;
 			}
 		}
-		
-		private function initKeys(config:Object):void {
-			_ssl = config.ssl;
-			origin = config.origin;
-			//trace('origin : ' + origin);
-			if(config.publish_key)
-				_publishKey = config.publish_key;
-			
-			if(config.sub_key)
-				_subscribeKey = config.sub_key;
-			
-			if(config.secret_key)
-				secretKey = config.secret_key;
-			
-			if(config.cipher_key)
-				cipherKey = config.cipher_key;
-		}
+
 
 		public function destroy():void {
 			shutdown();
-			
-			syncConnection.destroy();
-			syncConnection = null;
-			
+
+			nonSubConnection.destroy();
+			nonSubConnection = null;
+
 			subscribeConnection.destroy();
 			subscribeConnection = null;
-			
+
 			environment.destroy();
 			environment.removeEventListener(EnvironmentEvent.SHUTDOWN, 		onEnvironmentShutdown);
-			environment.removeEventListener(EnvironmentEvent.RECONNECT, 	onEnvironmentHttpEnable);
-			environment.removeEventListener(NetMonEvent.HTTP_DISABLE, 		onEnvironmentHttpDisable);
+			environment.removeEventListener(EnvironmentEvent.RECONNECT, 	onSubscribeTimein);
 			environment = null;
-			
+
 			subscribeConnection = null;
 			_initialized = false;
 			__instance = null;
@@ -433,5 +406,23 @@ package com.pubnub {
 		public function get ssl():Boolean {
 			return _ssl;
 		}
+
+
+        protected function initKeys(config:Object):void {
+            _ssl = config.ssl;
+            origin = config.origin;
+            //trace('origin : ' + origin);
+            if(config.publish_key)
+                _publishKey = config.publish_key;
+
+            if(config.sub_key)
+                _subscribeKey = config.sub_key;
+
+            if(config.secret_key)
+                secretKey = config.secret_key;
+
+            if(config.cipher_key)
+                cipherKey = config.cipher_key;
+        }
 	}
 }
