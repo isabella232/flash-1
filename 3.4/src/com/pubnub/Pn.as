@@ -32,10 +32,8 @@ package com.pubnub {
 		private var _subscribeKey:String = "demo";
 		private var secretKey:String = "";
 		private var cipherKey:String = "";
-		private var _checkReconnect:Boolean;
-		
+
         private var _sessionUUID:String = "";
-		private var ori:Number = Math.floor(Math.random() * 9) + 1;
 		private var environment:Environment;
 		
 		static pn_internal var syncConnection:SyncConnection;
@@ -48,8 +46,7 @@ package com.pubnub {
 		private function setup():void {
 			
 			operationsFactory = new Dictionary();
-			operationsFactory[INIT_OPERATION] = 	createInitOperation; 
-			operationsFactory[PUBLISH_OPERATION] = 	createPublishOperation; 
+			operationsFactory[PUBLISH_OPERATION] = 	createPublishOperation;
 			operationsFactory[HISTORY_OPERATION] = 	createDetailedHistoryOperation; 
 			operationsFactory[TIME_OPERATION] = 	createTimeOperation; 
 			syncConnection = new SyncConnection(Settings.OPERATION_TIMEOUT);
@@ -66,7 +63,6 @@ package com.pubnub {
 		
 		private function onEnvironmentHttpDisable(e:NetMonEvent):void {
             Log.log("Disabling network due to subscribe timeout", Log.DEBUG, new Operation("Aux Ping"));
-			_checkReconnect = true;
 			if (subscribeConnection) {
 				subscribeConnection.networkEnabled = false;
 			}
@@ -74,17 +70,17 @@ package com.pubnub {
 		}
 		
 		private function onEnvironmentHttpEnable(e:NetMonEvent):void {
-			//trace('onEnvironmentHttpEnable : ' +  Settings.RESUME_ON_RECONNECT)
-			syncConnection.networkEnabled = true;
-			if (subscribeConnection) {
+            syncConnection.networkEnabled = true;
+
+            if (subscribeConnection) {
+                subscribeConnection.retryMode = false;
+                subscribeConnection.retryCount = 0;
 				subscribeConnection.networkEnabled = true;
 			}
 			
 			if (_initialized == false) {
-				// Loads start time token
-				doInit();
+                startEnvironment();
 			}
-			_checkReconnect = false;
 			dispatchEvent(e);
 		}
 		
@@ -107,7 +103,6 @@ package com.pubnub {
 				}
 				lastToken = subscribeConnection.lastToken;
 			}
-			_checkReconnect = false;
 			syncConnection.close();
 			if (subscribeConnection) subscribeConnection.close();
 			environment.stop();
@@ -139,7 +134,6 @@ package com.pubnub {
 				shutdown('reinitializing');
 			}
 			_initialized = false;
-			ori = Math.floor(Math.random() * 9) + 1;
 			initKeys(config);
             _sessionUUID ||= PnUtils.getUID();
 
@@ -171,19 +165,19 @@ package com.pubnub {
         }
 
 		private function onSubscribeTimeout(e:NetMonEvent):void {
-            _checkReconnect = true;
-            subscribeConnection.retryMode = true;
-            subscribeConnection.retryCount++;
 
             Log.log("Retrying " + subscribeConnection.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
             if (subscribeConnection) {
 				subscribeConnection.networkEnabled = false;
-			}
+                subscribeConnection.retryMode = true;
+                subscribeConnection.retryCount++;
+            }
 
             // try to turn it back on
             if (subscribeConnection.retryCount < Settings.MAX_RECONNECT_RETRIES) {
                 subscribeConnection.networkEnabled = true;
+                //subscribeConnection.saveChannelsAndSubscribe();
                 dispatchEvent(e);
             } else {
                 dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
@@ -191,19 +185,10 @@ package com.pubnub {
 
 		}
 
-		private function createInitOperation(args:Object = null):Operation {
-			var init:TimeOperation = new TimeOperation(_origin);
-			init.addEventListener(OperationEvent.RESULT, onInitComplete);
-			init.addEventListener(OperationEvent.FAULT, onInitError);
-			init.setURL();
-			return init;
-		}
-		
-		private function onInitComplete(event:OperationEvent):void {
-			var result:Object = event.data;
+		private function startEnvironment():void {
 			_initialized = true;
 			environment.start();
-			dispatchEvent(new PnEvent(PnEvent.INIT,  result[0]));
+			dispatchEvent(new PnEvent(PnEvent.INIT,  "Init Completed"));
 		}
 		
 		private function onInitError(event:OperationEvent):void {
@@ -211,18 +196,15 @@ package com.pubnub {
 		}
 		/*---------------SUBSCRIBE---------------*/
 		public static function subscribe(channel:String, token:String = null):void{
-			instance.subscribe(channel, token);
-		}
+            Pn.__instance.subscribeConnection.subscribe(channel, token);
+
+        }
 		
 		/**
 		 * 
 		 * @param	channel for MX subcribe use "ch1,ch2,ch3,ch4"
 		 */
-		public function subscribe(channel:String, token:String = null):void {
-			throwInit();
-			subscribeConnection.subscribe(channel, token);
-		}
-			
+
 		private function onSubscribe(e:SubscribeEvent):void {
 			var subscribe:Subscribe = e.target as Subscribe;
 			var status:String;
@@ -232,15 +214,18 @@ package com.pubnub {
             switch (e.type) {
 				case SubscribeEvent.CONNECT:
 					status = OperationStatus.CONNECT;
-					subscribe.networkEnabled = true;
+
+                    //subscribe.networkEnabled = true;
 				break;
 			
 				case SubscribeEvent.DATA:
 
                     if (subscribeConnection.retryMode == true) {
                         Log.log("Recovering from Subscribe Timeout", Log.DEBUG, new Operation("Aux Ping"));
-                        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
                         subscribeConnection.retryMode = false;
+                        subscribeConnection.networkEnabled = true;
+
+                        dispatchEvent(new NetMonEvent(NetMonEvent.HTTP_ENABLE_VIA_SUBSCRIBE_TIMEOUT));
                     }
 
 
@@ -272,7 +257,6 @@ package com.pubnub {
 		}
 
 		public function unsubscribe(channel:String):void {
-			throwInit(); 
 			subscribeConnection.unsubscribe(channel);
 		}
 		
@@ -281,13 +265,11 @@ package com.pubnub {
 		}
 		
 		public function unsubscribeAll():void {
-			throwInit();
 			if(subscribeConnection) subscribeConnection.unsubscribeAll();
 		}
 		
 		/*---------------DETAILED HISTORY---------------*/
 		public function detailedHistory(args:Object):void {
-			throwInit();
 			var channel:String = args.channel;
 			var sub_key:String = args['sub-key'];
 			if (channel == null || 
@@ -328,7 +310,6 @@ package com.pubnub {
 		}
 		
 		public function publish(args:Object):void {
-			throwInit();
 			var operation:Operation = createOperation(PUBLISH_OPERATION, args)
 			syncConnection.executeGet(operation);
 		}
@@ -414,11 +395,7 @@ package com.pubnub {
 			if(config.cipher_key)
 				cipherKey = config.cipher_key;
 		}
-		
-		private function throwInit():void {
-			if (!_initialized) throw new IllegalOperationError("[PUBNUB] Not initialized yet"); 
-		}
-		
+
 		public function destroy():void {
 			shutdown();
 			

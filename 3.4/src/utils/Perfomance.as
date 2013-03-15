@@ -80,7 +80,7 @@ package utils {
 		
 		private function onPnInit(e:PnEvent):void {
 			//trace('-------------INIT----------------');
-			Pn.subscribe(channel);	
+			Pn.subscribe(channel);
 		}
 		
 		private function onPnSubscribe(e:PnEvent):void {

@@ -44,7 +44,7 @@ public class Subscribe extends EventDispatcher {
     protected var savedTimetoken:String;
 
     protected var asyncConnection:AsyncConnection;
-    protected var _networkEnabled:Boolean;
+    protected var _networkEnabled:Boolean = true;
 
 
     public function Subscribe() {
@@ -75,7 +75,6 @@ public class Subscribe extends EventDispatcher {
 
         if (!isNetworkEnabled()) {
             dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
-            return false;
         }
 
         if (!isChannelListValid(channelList)) {
@@ -406,23 +405,25 @@ public class Subscribe extends EventDispatcher {
 
         trace("NW_ENABLED = " + value)
 
-
         if (value == true) {
-
-            if (Settings.RESUME_ON_RECONNECT) {
-                var token:String = savedTimetoken;
-            }
-            if (savedChannels && savedChannels.length > 0) {
-                subscribe(savedChannels.join(','), token);
-            }
-            savedTimetoken = null;
-            savedChannels = [];
+            saveChannelsAndSubscribe();
         } else if (value == false) {
 
             savedTimetoken = _lastToken;
             savedChannels = _channels.concat();
             close('Close with network unavailable');
         }
+    }
+
+    public function saveChannelsAndSubscribe():void {
+        if (Settings.RESUME_ON_RECONNECT) {
+            var token:String = savedTimetoken;
+        }
+        if (savedChannels && savedChannels.length > 0) {
+            subscribe(savedChannels.join(','), token);
+        }
+        savedTimetoken = null;
+        savedChannels = [];
     }
 
     public function get retryCount():int {
