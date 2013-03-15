@@ -43,8 +43,7 @@ public class Pn extends EventDispatcher {
 
         environment = new Environment(origin);
         environment.addEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
-        environment.addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, onSubscribeTimeout);
-        environment.addEventListener(NetMonEvent.SUBSCRIBE_TIMEIN, onSubscribeTimein);
+        //environment.addEventListener(NetMonEvent.SUBSCRIBE_TIMEIN, onSubscribeTimein);
     }
 
     public static function get instance():Pn {
@@ -104,6 +103,8 @@ public class Pn extends EventDispatcher {
     }
 
     private function onSubscribeTimeout(e:NetMonEvent):void {
+        trace("PN onSubscribeTimeout");
+
         Log.log("Disabling network due to subscribe timeout", Log.DEBUG, new Operation("Aux Ping"));
         if (subscribeConnection) {
             subscribeConnection.networkEnabled = false;
@@ -112,6 +113,8 @@ public class Pn extends EventDispatcher {
     }
 
     private function onSubscribeTimein(e:NetMonEvent):void {
+
+        // TODO: Also bounce the nonSubConnection here
         nonSubConnection.networkEnabled = true;
 
         if (subscribeConnection) {
@@ -123,6 +126,7 @@ public class Pn extends EventDispatcher {
         if (_initialized == false) {
             startEnvironment();
         }
+
         dispatchEvent(e);
     }
 

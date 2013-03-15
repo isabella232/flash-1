@@ -20,7 +20,7 @@ import com.pubnub.net.URLLoaderEvent;
 		}
 		
 		override public function executeGet(operation:Operation):void {
-			//trace('sendOperation : ' + loader.connected);
+			trace('executeGet: ' + operation.url);
 			
 			super.executeGet(operation);
 			if (ready) {

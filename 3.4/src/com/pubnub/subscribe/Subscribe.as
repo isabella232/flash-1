@@ -56,21 +56,20 @@ public class Subscribe extends EventDispatcher {
 
     protected function init():void {
         _channels = [];
-        factory = new Dictionary();
-        factory[INIT_SUBSCRIBE] = getSubscribeInitOperation;
-        factory[SUBSCRIBE] = getSubscribeOperation;
-        factory[LEAVE] = getLeaveOperation;
 
         asyncConnection = new AsyncConnection();
         asyncConnection.addEventListener(OperationEvent.TIMEOUT, onTimeout);
     }
 
     private function onTimeout(e:OperationEvent):void {
+        trace("subscribe: onTimeout thrown.")
         dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
         dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
     }
 
     public function subscribe(channelList:String, existingTimeToken:String = null):Boolean {
+
+        trace("subscribe");
 
         var channelString:String;
         var channelsToAdd:Array = [];
@@ -143,6 +142,9 @@ public class Subscribe extends EventDispatcher {
 
 
     private function processNewActiveChannelList(addCh:Array = null, removeCh:Array = null, reason:Object = null):void {
+
+        trace("processNewActiveChannelList");
+
         var needAdd:Boolean = addCh && addCh.length > 0;
         var needRemove:Boolean = removeCh && removeCh.length > 0;
         if (needAdd || needRemove) {
@@ -161,8 +163,10 @@ public class Subscribe extends EventDispatcher {
             //trace('_lastToken : ' + _lastToken);
             if (_channels.length > 0) {
                 if (_lastToken) {
+                    trace("_lastToken");
                     doSubscribe();
                 } else {
+                    trace("no _lastToken");
                     subscribeInit();
                 }
             } else {
@@ -197,7 +201,7 @@ public class Subscribe extends EventDispatcher {
     protected function subscribeInit():void {
         UUID ||= PnUtils.getUID();
 
-        var operation:Operation = getOperation(INIT_SUBSCRIBE);
+        var operation:Operation = getSubscribeInitOperation();
         asyncConnection.executeGet(operation);
     }
 
@@ -208,7 +212,7 @@ public class Subscribe extends EventDispatcher {
 
     /*---------------------------SUBSCRIBE---------------------------*/
     private function doSubscribe():void {
-        var operation:Operation = getOperation(SUBSCRIBE);
+        var operation:Operation = getSubscribeOperation();
         asyncConnection.executeGet(operation);
     }
 
@@ -234,18 +238,6 @@ public class Subscribe extends EventDispatcher {
             Log.log("SubConnect: notOK: broken response: " + e + " , TT: " + _lastToken, Log.DEBUG);
             doSubscribe();
         }
-
-        /*
-         * MX (array.length = 3)
-         * RESPONSE = [['m1', 'm2', 'm3', 'm4'], lastToken, ['ch1', 'ch2', 'ch2', 'ch3']];
-         *
-         * ch1 - m1
-         * ch2 - m2,m3
-         * ch3 - m4
-         *
-         * Single channel RESPONSE (array.length = 2)
-         * RESPONSE = [['m1', 'm2', 'm3', 'm4'], lastToken];
-         */
 
         retryCount = 0;
 
@@ -280,7 +272,7 @@ public class Subscribe extends EventDispatcher {
                 }
             }
         }
-        //Log.log("SubConnect: ok, TT: " + _lastToken);
+
         doSubscribe();
     }
 
@@ -301,12 +293,8 @@ public class Subscribe extends EventDispatcher {
 
     /*---------------------------LEAVE---------------------------------*/
     protected function leave(channel:String):void {
-        var operation:Operation = getOperation(LEAVE, channel);
+        var operation:Operation = getLeaveOperation(channel);
         Pn.pn_internal::nonSubConnection.executeGet(operation);
-    }
-
-    protected function getOperation(type:String, ...rest):Operation {
-        return factory[type].apply(null, rest);
     }
 
     protected function destroyOperation(op:Operation):void {

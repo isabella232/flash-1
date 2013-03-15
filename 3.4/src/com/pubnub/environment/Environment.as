@@ -35,7 +35,7 @@ public class Environment extends EventDispatcher {
 
         // This is to just stub the "init ping"
 
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
+        //dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
 
         sysMon.start();
         lastHTTPDisabledTime = 0;
