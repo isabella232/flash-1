@@ -31,7 +31,6 @@ public class NonSubConnection extends Connection {
             doSendOperation(operation);
         } else {
 
-            operation.onError([0, Errors.NETWORK_UNAVAILABLE]);
             if (loader.connected == false) {
                 loader.connect(operation.request);
             }
@@ -113,6 +112,7 @@ public class NonSubConnection extends Connection {
 
     override protected function onConnect(e:Event):void {
         //trace('onConnect : ' + queue[0]);
+        _networkEnabled = true;
         super.onConnect(e);
         doSendOperation(queue[0]);
     }
@@ -122,6 +122,7 @@ public class NonSubConnection extends Connection {
     }
 
     override protected function onError(e:URLLoaderEvent):void {
+        _networkEnabled = false;
         clearTimeout(nonSubTimer);
         dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
         super.onError(e);
