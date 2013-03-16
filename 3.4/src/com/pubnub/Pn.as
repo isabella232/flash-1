@@ -208,7 +208,7 @@ public class Pn extends EventDispatcher {
         var subscribe:Subscribe = e.target as Subscribe;
         var status:String;
 
-        trace(e.type);
+        trace("onSubscribe: " + e);
 
         switch (e.type) {
             case SubscribeEvent.CONNECT:

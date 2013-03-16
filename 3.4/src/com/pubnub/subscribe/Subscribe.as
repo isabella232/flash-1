@@ -7,8 +7,6 @@ import com.pubnub.log.Log;
 import com.pubnub.operation.*;
 
 import flash.events.*;
-import flash.utils.*;
-
 import org.casalib.util.*;
 
 use namespace pn_internal;
@@ -32,13 +30,12 @@ public class Subscribe extends EventDispatcher {
 
     protected var _UUID:String = null;
 
-    protected var _lastReceivedTimetoken:String;
-    protected var _resumeOnReconnectTimetoken:String;
+    protected var _lastReceivedTimetoken:String = "0";
 
     protected var _destroyed:Boolean;
     protected var _channels:Array;
     protected var savedChannels:Array;
-    protected var savedTimetoken:String;
+    protected var _savedTimetoken:String;
 
     protected var subscribeConnection:SubscribeConnection;
     protected var _networkEnabled:Boolean = true;
@@ -72,7 +69,8 @@ public class Subscribe extends EventDispatcher {
     public function subscribe(channelList:String, useThisTimeokenInstead:String = null):Boolean {
 
         if (useThisTimeokenInstead) {
-            _resumeOnReconnectTimetoken = useThisTimeokenInstead;
+            savedTimetoken = useThisTimeokenInstead;
+            lastReceivedTimetoken = useThisTimeokenInstead;
         }
 
         var channelsToModify:Array = modifyChannelList("subscribe", channelList);
@@ -154,17 +152,13 @@ public class Subscribe extends EventDispatcher {
                 _channels = _channels.concat(addCh);
             }
 
-            //trace('_lastToken : ' + _lastToken);
             if (_channels.length > 0) {
-                if (_lastReceivedTimetoken) {
-                    trace("a _lastToken");
+                if (lastReceivedTimetoken) {
+                    trace("running doSubscribe");
                     doSubscribe();
                 } else {
-                    trace("a no _lastToken");
-                    subscribeInit();
+                    dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL]));
                 }
-            } else {
-                _lastReceivedTimetoken = null;
             }
         }
     }
@@ -183,48 +177,13 @@ public class Subscribe extends EventDispatcher {
         unsubscribe(allChannels, reason);
     }
 
-    protected function onSubscribeInit(e:OperationEvent):void {
-        if (_networkEnabled == false || e.data == null) {
-            return;
-        }
-
-        _lastReceivedTimetoken = e.data[1];
-
-        if (resumeOnReconnectTimetoken) {
-            _lastReceivedTimetoken = resumeOnReconnectTimetoken;
-            _resumeOnReconnectTimetoken = null;
-        }
-
-        dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, { channel: _channels.join(',') }));
-        destroyOperation(e.target as Operation);
-        doSubscribe();
-    }
-
-    public function subscribeInit():void {
-        UUID ||= PnUtils.getUID();
-
-        var subscribeInitOperation:SubscribeInitOperation = new SubscribeInitOperation(origin);
-        subscribeInitOperation.setURL(null, {
-            channel: this.channelsString,
-            subscribeKey: subscribeKey,
-            uid: UUID});
-        subscribeInitOperation.addEventListener(OperationEvent.RESULT, onSubscribeInit);
-        subscribeInitOperation.addEventListener(OperationEvent.FAULT, onSubscribeInitError);
-
-        subscribeConnection.executeGet(subscribeInitOperation);
-    }
-
-    protected function onSubscribeInitError(e:OperationEvent):void {
-        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_INIT_ERROR]));
-        destroyOperation(e.target as Operation);
-    }
-
     /*---------------------------SUBSCRIBE---------------------------*/
     private function doSubscribe():void {
+        UUID ||= PnUtils.getUID();
 
         var subscribeOperation:SubscribeOperation = new SubscribeOperation(origin);
         subscribeOperation.setURL(null, {
-            timetoken: _lastReceivedTimetoken,
+            timetoken: lastReceivedTimetoken,
             subscribeKey: subscribeKey,
             channel: this.channelsString,
             uid: UUID});
@@ -236,21 +195,21 @@ public class Subscribe extends EventDispatcher {
 
     protected function onMessageReceived(e:OperationEvent):void {
 
-        if (_networkEnabled == false) return;
-
-        if (e.data == null) {
-            Log.log("SubConnect: notOK: is null. TT: " + _lastReceivedTimetoken, Log.DEBUG);
+        if (_networkEnabled == false || e.data == null) {
+            Log.log("onMessageReceived: e.data is null at: " + lastReceivedTimetoken, Log.DEBUG);
             doSubscribe();
             return;
         }
 
         try {
             var messages:Array = e.data[0] as Array;
-            _lastReceivedTimetoken = e.data[1];
+            savedTimetoken = lastReceivedTimetoken;
+            lastReceivedTimetoken = e.data[1];
             var chStr:String = e.data[2];
         } catch (e) {
-            Log.log("SubConnect: notOK: broken response: " + e + " , TT: " + _lastReceivedTimetoken, Log.DEBUG);
+            Log.log("onMessageReceived: broken response array: " + e + " , TT: " + lastReceivedTimetoken, Log.DEBUG);
             doSubscribe();
+            return
         }
 
         var multiplexRESPONSE:Boolean = chStr && chStr.length > 0 && chStr.indexOf(',') > -1;
@@ -258,7 +217,7 @@ public class Subscribe extends EventDispatcher {
         var channel:String;
 
         if (presenceRESPONSE) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: chStr, message: messages, timetoken: _lastReceivedTimetoken}));
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: chStr, message: messages, timetoken: lastReceivedTimetoken}));
         } else {
             if (!messages) return;
             decryptMessages(messages);
@@ -271,7 +230,7 @@ public class Subscribe extends EventDispatcher {
                         dispatchEvent(new SubscribeEvent(SubscribeEvent.DATA, {
                             channel: channel,
                             message: messages[i],
-                            timetoken: _lastReceivedTimetoken }));
+                            timetoken: lastReceivedTimetoken }));
                     }
                 }
             } else {
@@ -280,7 +239,7 @@ public class Subscribe extends EventDispatcher {
                     dispatchEvent(new SubscribeEvent(SubscribeEvent.DATA, {
                         channel: channel,
                         message: messages[j],
-                        timetoken: _lastReceivedTimetoken }));
+                        timetoken: lastReceivedTimetoken }));
                 }
             }
         }
@@ -350,7 +309,7 @@ public class Subscribe extends EventDispatcher {
             leave(_channels.join(','));
         }
         _channels.length = 0;
-        _lastReceivedTimetoken = null;
+        lastReceivedTimetoken = "0";
     }
 
     protected function get channelsString():String {
@@ -385,7 +344,7 @@ public class Subscribe extends EventDispatcher {
 
     // on false
     public function saveTimetokenAndChannelsAndClose():void {
-        savedTimetoken = _lastReceivedTimetoken;
+        savedTimetoken = lastReceivedTimetoken;
         savedChannels = _channels.concat();
         close('Close with network unavailable');
     }
@@ -436,8 +395,18 @@ public class Subscribe extends EventDispatcher {
         return _lastReceivedTimetoken;
     }
 
-    public function get resumeOnReconnectTimetoken():String {
-        return _resumeOnReconnectTimetoken;
+    public function set lastReceivedTimetoken(value:String):void {
+        _lastReceivedTimetoken = value;
+        trace("last received timetoken set to: " + value);
+    }
+
+    public function get savedTimetoken():String {
+        return _savedTimetoken;
+    }
+
+    public function set savedTimetoken(value:String):void {
+        trace("last saved timetoken set to: " + value);
+        _savedTimetoken = value;
     }
 
     private function channelIsInChannelList(ch:String):Boolean {

@@ -20,8 +20,6 @@ import com.pubnub.net.URLLoaderEvent;
 		}
 		
 		override public function executeGet(operation:Operation):void {
-			trace('executeGet: ' + operation.url);
-			
 			super.executeGet(operation);
 			if (ready) {
 				doSendOperation(operation);

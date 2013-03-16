@@ -24,14 +24,13 @@ package com.pubnub.connection {
 		
 		override public function executeGet(operation:Operation):void {
 			if (!operation) return;
-			if (_networkEnabled == false) {
-				operation.onError([0, Errors.NETWORK_UNAVAILABLE]);
-				return;
-			}
-			if (ready) {
+
+			if (ready && _networkEnabled) {
 					doSendOperation(operation);
 				}else {
-					if (loader.connected == false) {
+
+                operation.onError([0, Errors.NETWORK_UNAVAILABLE]);
+                if (loader.connected == false) {
 						loader.connect(operation.request);
 				}
 			}	
