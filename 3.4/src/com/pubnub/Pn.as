@@ -100,6 +100,9 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(SubscribeEvent.ERROR, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.WARNING, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);
+
+        subscribeObject.addEventListener(NetMonEvent.NET_UP, onNetStatus);
+        subscribeObject.addEventListener(NetMonEvent.NET_DOWN, onNetStatus);
     }
 
     private function onEnvironmentShutdown(e:EnvironmentEvent):void {
@@ -174,6 +177,28 @@ public class Pn extends EventDispatcher {
                 status = OperationStatus.ERROR;
         }
         dispatchEvent(new PnEvent(PnEvent.SUBSCRIBE, e.data, e.data.channel, status));
+    }
+
+
+    private function onNetStatus(e:NetMonEvent):void {
+        var status:String;
+
+        trace("onNetStatus: " + e);
+
+        switch (e.type) {
+
+            case NetMonEvent.NET_UP:
+                status = NetMonEvent.NET_UP;
+                break;
+
+            case NetMonEvent.NET_DOWN:
+                status = NetMonEvent.NET_DOWN;
+                break;
+
+            default:
+                status = OperationStatus.ERROR;
+        }
+        dispatchEvent(e);
     }
 
 

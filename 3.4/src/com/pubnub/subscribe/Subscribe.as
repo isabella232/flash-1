@@ -51,7 +51,7 @@ public class Subscribe extends EventDispatcher {
         _channels = [];
 
         subscribeConnection = new SubscribeConnection();
-        addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, onTimeout);
+        //addEventListener(NetMonEvent.NET_DOWN, onTimeout);
         addEventListener(OperationEvent.TIMEOUT, onTimeout);
         subscribeConnection.addEventListener(OperationEvent.CONNECT, onConnect);
         subscribeConnection.addEventListener(OperationEvent.TIMEOUT, onTimeout);
@@ -68,7 +68,7 @@ public class Subscribe extends EventDispatcher {
     private function onNetworkEnable():void {
 
         trace("entering onNetworkEnable");
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
+        dispatchEvent(new NetMonEvent(NetMonEvent.NET_UP));
 
         if (!networkEnabled) {
             trace("!networkEnabled");
@@ -84,16 +84,18 @@ public class Subscribe extends EventDispatcher {
 
     private function onTimeout(e:OperationEvent):void {
         trace("subscribe: onTimeout thrown.")
-        delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
+        delayedSubscribeRetry(new NetMonEvent(NetMonEvent.NET_DOWN));
     }
 
     private function onConnectError(e:OperationEvent):void {
         trace("subscribe: onTimeout thrown.")
         dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
-        delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
+        delayedSubscribeRetry(new NetMonEvent(NetMonEvent.NET_DOWN));
     }
 
     private function delayedSubscribeRetry(e:NetMonEvent):void {
+        dispatchEvent(new NetMonEvent(NetMonEvent.NET_DOWN));
+
         trace("Running attemptDelayedResubscribe in: " + Settings.RECONNECT_RETRY_DELAY);
 
         //dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));

@@ -10,8 +10,8 @@ package com.pubnub.environment {
 		public static const HTTP_ENABLE:String = 'enable';
 		public static const HTTP_DISABLE:String = 'disable';
 
-        public static const SUBSCRIBE_TIMEOUT:String = 'subscribe_timeout';
-        public static const SUBSCRIBE_TIMEIN:String = 'subscribe_timein';
+        public static const NET_DOWN:String = 'net_down';
+        public static const NET_UP:String = 'net_up';
 
 		public static const MAX_RETRIES:String = 'max_retries';
 		
