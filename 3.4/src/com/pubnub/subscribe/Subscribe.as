@@ -67,37 +67,70 @@ public class Subscribe extends EventDispatcher {
 
     public function subscribe(channelList:String, existingTimeToken:String = null):Boolean {
 
-        trace("subscribe");
-
-        var channelString:String;
-        var channelsToAdd:Array = [];
-
-        if (!isNetworkEnabled()) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
-        }
-
-        if (!isChannelListValid(channelList)) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL, channels]));
-            return false;
-        }
-
         if (existingTimeToken) {
             _existingTimeToken = existingTimeToken;
         }
 
-        var channelListAsArray:Array = channelList.split(',');
-        for (var i:int = 0; i < channelListAsArray.length; i++) {
-            channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
-            if (channelIsInChannelList(channelString)) {
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.WARNING, [ 0, Errors.SUBSCRIBE_ALREADY_SUBSCRIBED, channelString]));
-            } else {
-                channelsToAdd.push(channelString);
-            }
-        }
-        processNewActiveChannelList(channelsToAdd);
-        return channelsToAdd.length > 0;
+        var channelsToModify:Array = modifyChannelList("subscribe", channelList);
+        return channelsToModify.length > 0;
     }
 
+
+    public function unsubscribe(channelList:String, reason:Object = null):Boolean {
+
+        var channelsToModify:Array = modifyChannelList("unsubscribe", channelList, reason);
+        return channelsToModify.length > 0;
+    }
+
+    protected function modifyChannelList(operationType:String, channelList:String, reason:Object = null):Array {
+        trace("modifyChannelList: " + operationType);
+
+        if (!isNetworkEnabled()) {
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
+            if (operationType == "unsubscribe") {
+                return [];
+            }
+        }
+
+        if (!isChannelListValid(channelList)) {
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL, channels]));
+            return [];
+        }
+
+        var channelsToModify:Array = [];
+        var channelListAsArray:Array = channelList.split(',');
+        var channelString:String;
+
+        for (var i:int = 0; i < channelListAsArray.length; i++) {
+            channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
+
+            if (operationType == "subscribe") {
+
+                if (channelIsInChannelList(channelString)) {
+                    dispatchEvent(new SubscribeEvent(SubscribeEvent.WARNING, [ 0, Errors.SUBSCRIBE_ALREADY_SUBSCRIBED, channelString]));
+                } else {
+                    channelsToModify.push(channelString);
+                }
+            }
+
+            if (operationType == "unsubscribe") {
+
+                if (channelIsInChannelList(channelString)) {
+                    channelsToModify.push(channelString);
+                } else {
+                    dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CANT_UNSUB_NON_SUB, channelString]));
+                }
+            }
+        }
+
+        if (operationType == "subscribe") {
+            processNewActiveChannelList(channelsToModify);
+        } else if (operationType == "unsubscribe") {
+            processNewActiveChannelList(null, channelsToModify);
+        }
+
+        return channelsToModify;
+    }
 
     private function processNewActiveChannelList(addCh:Array = null, removeCh:Array = null, reason:Object = null):void {
 
@@ -133,31 +166,6 @@ public class Subscribe extends EventDispatcher {
         }
     }
 
-    public function unsubscribe(channelList:String, reason:Object = null):Boolean {
-        if (!isNetworkEnabled()) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
-            return false;
-        }
-
-        if (!isChannelListValid(channelList)) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL, channels]));
-            return false;
-        }
-
-        var channelsToRemove:Array = [];
-        var channelListAsArray:Array = channelList.split(',');
-        var channelString:String;
-        for (var i:int = 0; i < channelListAsArray.length; i++) {
-            channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
-            if (channelIsInChannelList(channelString)) {
-                channelsToRemove.push(channelString);
-            } else {
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.NOT_CONNECTED, channelString]));
-            }
-        }
-        processNewActiveChannelList(null, channelsToRemove, reason);
-        return channelsToRemove.length > 0;
-    }
 
     public function unsubscribeAll(reason:Object = null):void {
         if (!isNetworkEnabled()) {
@@ -172,9 +180,6 @@ public class Subscribe extends EventDispatcher {
         var allChannels:String = _channels.join(',');
         unsubscribe(allChannels, reason);
     }
-
-
-
 
 
     /*---------------------------INIT---------------------------*/
@@ -214,7 +219,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     protected function onSubscribeInitError(e:OperationEvent):void {
-        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.SUBSCRIBE_INIT_ERROR]));
+        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_INIT_ERROR]));
         destroyOperation(e.target as Operation);
     }
 
