@@ -54,9 +54,16 @@ public class Subscribe extends EventDispatcher {
 
         subscribeConnection = new SubscribeConnection();
         subscribeConnection.addEventListener(OperationEvent.TIMEOUT, onTimeout);
+        subscribeConnection.addEventListener(OperationEvent.CONNECTION_ERROR, onConnectError);
     }
 
     private function onTimeout(e:OperationEvent):void {
+        trace("subscribe: onTimeout thrown.")
+        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
+    }
+
+    private function onConnectError(e:OperationEvent):void {
         trace("subscribe: onTimeout thrown.")
         dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
         dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
@@ -290,11 +297,13 @@ public class Subscribe extends EventDispatcher {
         }
     }
 
-    protected function onConnectError(e:OperationEvent):void {
-        //trace('onSubscribeError!');
-        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.SUBSCRIBE_CHANNEL_ERROR]));
-        destroyOperation(e.target as Operation);
-    }
+
+    // TODO: Old onConnectError -- See if our new one is better!
+//    protected function onConnectError(e:OperationEvent):void {
+//        //trace('onSubscribeError!');
+//        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ -1, Errors.SUBSCRIBE_CHANNEL_ERROR]));
+//        destroyOperation(e.target as Operation);
+//    }
 
     /*---------------------------LEAVE---------------------------------*/
     protected function leave(channel:String):void {

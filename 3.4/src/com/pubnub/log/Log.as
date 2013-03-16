@@ -54,7 +54,7 @@ public class Log {
             debugMessage(new Date().toString() + " " + message)
         }
 
-        //trace(new Date() + " " + message);
+        trace(new Date() + " " + message);
         var record:LogRecord = new LogRecord(message, level);
         if (instance.records.length > MAX_RECORDS) {
             // flush log

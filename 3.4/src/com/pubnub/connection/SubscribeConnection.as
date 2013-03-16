@@ -27,9 +27,9 @@ import com.pubnub.net.URLLoaderEvent;
 				doSendOperation(operation);
 			}else {
                 Log.log("executeGet: connection not ready for op: " + operation.toString(), Log.DEBUG);
-				loader.connect(operation.request);
+                loader.connect(operation.request);
 				queue.push(operation);
-			}
+            }
 		}
 		
 		override protected function onConnect(e:Event):void {
@@ -65,9 +65,9 @@ import com.pubnub.net.URLLoaderEvent;
 		}
 		
 		override protected function onError(e:URLLoaderEvent):void {
-			trace('onError');
-			clearTimeout(timeout);
-			super.onError(e);
+            clearTimeout(timeout);
+            dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
+            super.onError(e);
 		}
 		
 		override protected function onClose(e:Event):void {
