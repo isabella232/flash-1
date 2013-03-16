@@ -43,7 +43,6 @@ public class Pn extends EventDispatcher {
 
         environment = new Environment(origin);
         environment.addEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
-        //environment.addEventListener(NetMonEvent.SUBSCRIBE_TIMEIN, onSubscribeTimein);
     }
 
     public static function get instance():Pn {
@@ -91,7 +90,7 @@ public class Pn extends EventDispatcher {
             cipherKey = config.cipher_key;
         subscribeObject.cipherKey = cipherKey;
 
-        subscribeObject.addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);
+        //subscribeObject.addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);
     }
 
     protected function addSubscribeEventListeners():void {
@@ -101,34 +100,6 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(SubscribeEvent.ERROR, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.WARNING, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);
-    }
-
-    private function onSubscribeTimeout(e:NetMonEvent):void {
-        trace("PN onSubscribeTimeout");
-
-        Log.log("Disabling network due to subscribe timeout", Log.DEBUG, new Operation("Aux Ping"));
-        if (subscribeObject) {
-            subscribeObject.networkEnabled = false;
-        }
-        dispatchEvent(e);
-    }
-
-    private function onSubscribeTimein(e:NetMonEvent):void {
-
-        // TODO: Also bounce the nonSubConnection here
-        nonSubConnection.networkEnabled = true;
-
-        if (subscribeObject) {
-            subscribeObject.retryMode = false;
-            subscribeObject.retryCount = 0;
-            subscribeObject.networkEnabled = true;
-        }
-
-        if (_initialized == false) {
-            startEnvironment();
-        }
-
-        dispatchEvent(e);
     }
 
     private function onEnvironmentShutdown(e:EnvironmentEvent):void {
@@ -155,40 +126,6 @@ public class Pn extends EventDispatcher {
         dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, null, [0, reason, channels, lastToken]));
     }
 
-    private function delayedSubscribeRetry(e:NetMonEvent):void {
-        trace("Running attemptDelayedResubscribe in: " + Settings.RECONNECT_RETRY_DELAY);
-        setTimeout(attemptDelayedResubscribe, Settings.RECONNECT_RETRY_DELAY, e);
-    }
-
-    private function attemptDelayedResubscribe(e:NetMonEvent):void {
-
-        trace("***********");
-        Log.log("Retrying last/saved, retry/retryMax: " + subscribeObject.lastReceivedTimetoken + "/" + subscribeObject.savedTimetoken +
-                " " + subscribeObject.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
-
-        if (subscribeObject) {
-            //subscribeConnection.networkEnabled = false;
-
-            subscribeObject.saveChannelsAndUnsubscribe();
-
-            subscribeObject.retryMode = true;
-            subscribeObject.retryCount++;
-            //subscribeObject.subscribeInit();
-        }
-
-        // try to turn it back on
-        if (subscribeObject.retryCount < Settings.MAX_RECONNECT_RETRIES) {
-            //subscribeConnection.networkEnabled = true;
-            //subscribeConnection.saveChannelsAndSubscribe();
-
-            subscribeObject.saveChannelsAndSubscribe();
-
-            dispatchEvent(e);
-        } else {
-            dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
-        }
-    }
-
     private function startEnvironment():void {
         _initialized = true;
         environment.start();
@@ -213,19 +150,9 @@ public class Pn extends EventDispatcher {
         switch (e.type) {
             case SubscribeEvent.CONNECT:
                 status = OperationStatus.CONNECT;
-                if (Settings.TIME_IN_ON_ZERO_TIMETOKEN) {
-                    dispatchAndFlagTimeIn();
-                }
-
                 break;
 
             case SubscribeEvent.DATA:
-                dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
-
-                if (!subscribeObject.networkEnabled) {
-                    dispatchAndFlagTimeIn();
-                }
-
                 status = OperationStatus.DATA;
                 break;
 
@@ -249,16 +176,6 @@ public class Pn extends EventDispatcher {
         dispatchEvent(new PnEvent(PnEvent.SUBSCRIBE, e.data, e.data.channel, status));
     }
 
-    protected function dispatchAndFlagTimeIn():void {
-        Log.log("Recovering from Subscribe Timeout", Log.DEBUG, new Operation("Aux Ping"));
-
-        subscribeObject.retryMode = false;
-        subscribeObject.networkEnabled = true;
-        subscribeObject.retryCount = 0;
-
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
-
-    }
 
     /*---------------UNSUBSCRIBE---------------*/
     public static function unsubscribe(channel:String):void {
@@ -320,6 +237,7 @@ public class Pn extends EventDispatcher {
     public static function publish(args:Object):void {
         if (!nonSubConnection.networkEnabled) {
             nonSubConnection.networkEnabled = true;
+
         }
         instance.publish(args);
     }
@@ -406,7 +324,6 @@ public class Pn extends EventDispatcher {
 
         environment.destroy();
         environment.removeEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
-        environment.removeEventListener(EnvironmentEvent.RECONNECT, onSubscribeTimein);
         environment = null;
 
         subscribeObject = null;

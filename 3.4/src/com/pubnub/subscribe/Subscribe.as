@@ -7,14 +7,14 @@ import com.pubnub.log.Log;
 import com.pubnub.operation.*;
 
 import flash.events.*;
+import flash.utils.clearTimeout;
+import flash.utils.setTimeout;
+
 import org.casalib.util.*;
 
 use namespace pn_internal;
 
-/**
- * ...
- * @author firsoff maxim, support@pubnub.com
- */
+
 public class Subscribe extends EventDispatcher {
 
     static public const PNPRES_PREFIX:String = '-pnpres';
@@ -27,11 +27,12 @@ public class Subscribe extends EventDispatcher {
     protected var _origin:String = "";
     protected var _retryMode:Boolean = false;
     protected var _retryCount:int = 0;
+    protected var _retryTimer:int = 0;
 
     protected var _UUID:String = null;
 
     protected var _lastReceivedTimetoken:String = "0";
-    protected var _savedTimetoken:String = "0" ;
+    protected var _savedTimetoken:String = "0";
 
     protected var _destroyed:Boolean;
     protected var _channels:Array;
@@ -50,19 +51,75 @@ public class Subscribe extends EventDispatcher {
         _channels = [];
 
         subscribeConnection = new SubscribeConnection();
+        addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, onTimeout);
+        addEventListener(OperationEvent.TIMEOUT, onTimeout);
+        subscribeConnection.addEventListener(OperationEvent.CONNECT, onConnect);
         subscribeConnection.addEventListener(OperationEvent.TIMEOUT, onTimeout);
         subscribeConnection.addEventListener(OperationEvent.CONNECTION_ERROR, onConnectError);
     }
 
+    protected function onConnect(e:OperationEvent):void {
+        Log.log("Subscribe: onConnect", Log.DEBUG);
+        if (Settings.TIME_IN_ON_ZERO_TIMETOKEN) {
+            onNetworkEnable();
+        }
+    }
+
+    private function onNetworkEnable():void {
+
+        trace("entering onNetworkEnable");
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
+
+        if (!networkEnabled) {
+            trace("!networkEnabled");
+            clearTimeout(_retryTimer);
+            retryMode = false;
+            retryCount = 0;
+            networkEnabled = true;
+
+            trace("running saveChannelsAndSubscribe")
+            saveChannelsAndSubscribe();
+        }
+    }
+
     private function onTimeout(e:OperationEvent):void {
         trace("subscribe: onTimeout thrown.")
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
+        delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
     }
 
     private function onConnectError(e:OperationEvent):void {
         trace("subscribe: onTimeout thrown.")
         dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
+        delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
+    }
+
+    private function delayedSubscribeRetry(e:NetMonEvent):void {
+        trace("Running attemptDelayedResubscribe in: " + Settings.RECONNECT_RETRY_DELAY);
+
+        //dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
+        clearTimeout(_retryTimer);
+
+        _retryTimer = setTimeout(attemptDelayedResubscribe, Settings.RECONNECT_RETRY_DELAY, e);
+    }
+
+    private function attemptDelayedResubscribe(e:NetMonEvent):void {
+
+        Log.log("*********** Retrying last/saved, retry/retryMax: " + lastReceivedTimetoken + "/" + savedTimetoken +
+                " " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
+
+        saveChannelsAndUnsubscribe();
+        networkEnabled = false;
+
+        retryMode = true;
+        retryCount++;
+
+        // try to turn it back on
+        if (retryCount < Settings.MAX_RECONNECT_RETRIES) {
+            saveChannelsAndSubscribe();
+            dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, "re-attempting subscribe retry"));
+        } else {
+            dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
+        }
     }
 
     public function subscribe(channelList:String, useThisTimeokenInstead:String = null):Boolean {
@@ -192,7 +249,9 @@ public class Subscribe extends EventDispatcher {
 
     protected function onMessageReceived(e:OperationEvent):void {
 
-        if (_networkEnabled == false || e.data == null) {
+        onNetworkEnable();
+
+        if (e.data == null) {
             Log.log("onMessageReceived: e.data is null at: " + lastReceivedTimetoken, Log.DEBUG);
             doSubscribe();
             return;
@@ -337,10 +396,10 @@ public class Subscribe extends EventDispatcher {
 
         if (value == true) {
             trace("*** ENABLING NETWORK ***");
-            saveChannelsAndSubscribe();
+            //saveChannelsAndSubscribe();
         } else if (value == false) {
             trace("*** DISABLING NETWORK ***");
-            saveChannelsAndUnsubscribe();
+            //saveChannelsAndUnsubscribe();
         }
     }
 

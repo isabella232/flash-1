@@ -11,10 +11,13 @@ package com.pubnub.operation {
 		public static const FAULT:String = 'OperationEvent.fault';
 		public static const TIMEOUT:String = 'OperationEvent.timeout';
         public static const CONNECTION_ERROR:String = 'Connection.error';
+        public static const CONNECT:String = 'Connection.connect';
+
+
+        private var _data:Object;
 		
-		private var _data:Object;
-		
-		public function OperationEvent(type:String, data:Object = null, bubbles:Boolean=false, cancelable:Boolean=false) { 
+		public function
+                OperationEvent(type:String, data:Object = null, bubbles:Boolean=false, cancelable:Boolean=false) {
 			super(type, bubbles, cancelable);
 			_data = data;	
 		} 
