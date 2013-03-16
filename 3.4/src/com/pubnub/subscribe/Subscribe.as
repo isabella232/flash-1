@@ -31,11 +31,11 @@ public class Subscribe extends EventDispatcher {
     protected var _UUID:String = null;
 
     protected var _lastReceivedTimetoken:String = "0";
+    protected var _savedTimetoken:String = "0" ;
 
     protected var _destroyed:Boolean;
     protected var _channels:Array;
     protected var savedChannels:Array;
-    protected var _savedTimetoken:String;
 
     protected var subscribeConnection:SubscribeConnection;
     protected var _networkEnabled:Boolean = true;
@@ -56,7 +56,6 @@ public class Subscribe extends EventDispatcher {
 
     private function onTimeout(e:OperationEvent):void {
         trace("subscribe: onTimeout thrown.")
-        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
         dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
     }
 
@@ -87,7 +86,6 @@ public class Subscribe extends EventDispatcher {
         trace("modifyChannelList: " + operationType);
 
         if (!isNetworkEnabled()) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
             if (operationType == "unsubscribe") {
                 return [];
             }
@@ -165,7 +163,6 @@ public class Subscribe extends EventDispatcher {
 
     public function unsubscribeAll(reason:Object = null):void {
         if (!isNetworkEnabled()) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
             return;
         }
 
@@ -203,8 +200,10 @@ public class Subscribe extends EventDispatcher {
 
         try {
             var messages:Array = e.data[0] as Array;
+
             savedTimetoken = lastReceivedTimetoken;
             lastReceivedTimetoken = e.data[1];
+
             var chStr:String = e.data[2];
         } catch (e) {
             Log.log("onMessageReceived: broken response array: " + e + " , TT: " + lastReceivedTimetoken, Log.DEBUG);
@@ -296,20 +295,20 @@ public class Subscribe extends EventDispatcher {
     public function destroy():void {
         if (_destroyed) return;
         _destroyed = true;
-        close();
+        unsubscribeAndLeave();
         subscribeConnection.removeEventListener(OperationEvent.TIMEOUT, onTimeout);
         subscribeConnection.destroy();
         subscribeConnection = null;
     }
 
-    public function close(reason:String = null):void {
+    public function unsubscribeAndLeave(reason:String = null):void {
         doUnsubscribeAll(reason);
         subscribeConnection.close();
         if (_channels.length > 0) {
             leave(_channels.join(','));
         }
         _channels.length = 0;
-        lastReceivedTimetoken = "0";
+
     }
 
     protected function get channelsString():String {
@@ -331,33 +330,42 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function set networkEnabled(value:Boolean):void {
+        currentNW();
         _networkEnabled = value;
 
         trace("NW_ENABLED = " + value)
 
         if (value == true) {
+            trace("*** ENABLING NETWORK ***");
             saveChannelsAndSubscribe();
         } else if (value == false) {
-            saveTimetokenAndChannelsAndClose();
+            trace("*** DISABLING NETWORK ***");
+            saveChannelsAndUnsubscribe();
         }
     }
 
+    private function currentNW():void {
+        trace("** Current NW **");
+
+        trace("retryMode: " + retryMode);
+        trace("networkEnabled: " + networkEnabled);
+        trace("retryCount: " + retryCount);
+    }
+
     // on false
-    public function saveTimetokenAndChannelsAndClose():void {
-        savedTimetoken = lastReceivedTimetoken;
+    public function saveChannelsAndUnsubscribe():void {
+        currentNW();
         savedChannels = _channels.concat();
-        close('Close with network unavailable');
+        unsubscribeAndLeave('network disabled, retrying to connect');
     }
 
     // on true
     public function saveChannelsAndSubscribe():void {
-        if (Settings.RESUME_ON_RECONNECT) {
-            var token:String = savedTimetoken;
-        }
+        currentNW();
         if (savedChannels && savedChannels.length > 0) {
-            subscribe(savedChannels.join(','), token);
+            subscribe(savedChannels.join(','));
         }
-        savedTimetoken = null;
+
         savedChannels = [];
     }
 

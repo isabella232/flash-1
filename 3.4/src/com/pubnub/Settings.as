@@ -6,17 +6,20 @@ package com.pubnub {
      public class Settings {
          // retry to connect a maximum of this many times before Pn.shutdown()
          public static const MAX_RECONNECT_RETRIES:uint = 500; //100;
-         public static const RECONNECT_RETRY_DELAY:uint = 1000; //100;
-         public static const TIME_IN_ON_ZERO_TIMETOKEN:Boolean = true;
+         public static const RECONNECT_RETRY_DELAY:uint = 2000; //100;
+         public static const TIME_IN_ON_ZERO_TIMETOKEN:Boolean = false;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
+
          public static const RESUME_ON_RECONNECT:Boolean = false;
+
          // Given the above defaults
          // the client would check for 5 minutes (300s) after network loss
          // ie, 100 times, every 3 seconds for a network connection
 
          // time in millseconds to wait for web server to return a response. DO NOT CHANGE unless requested by support
-         public static const OPERATION_TIMEOUT:uint = 30000;
+         public static const OPERATION_TIMEOUT:uint = 5000;
+         public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 15000;
 
          /////////////////////////////////////////////////////////////////////////////
 

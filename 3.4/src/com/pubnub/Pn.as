@@ -143,7 +143,7 @@ public class Pn extends EventDispatcher {
                 channels = subscribeObject.channels.join(',');
             }
             lastToken = subscribeObject.lastReceivedTimetoken;
-            subscribeObject.close();
+            subscribeObject.unsubscribeAndLeave();
 
         }
 
@@ -163,13 +163,13 @@ public class Pn extends EventDispatcher {
     private function attemptDelayedResubscribe(e:NetMonEvent):void {
 
         trace("***********");
-        trace("Retrying " + subscribeObject.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
-        Log.log("Retrying " + subscribeObject.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
+        Log.log("Retrying last/saved, retry/retryMax: " + subscribeObject.lastReceivedTimetoken + "/" + subscribeObject.savedTimetoken +
+                " " + subscribeObject.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
         if (subscribeObject) {
             //subscribeConnection.networkEnabled = false;
 
-            subscribeObject.saveTimetokenAndChannelsAndClose();
+            subscribeObject.saveChannelsAndUnsubscribe();
 
             subscribeObject.retryMode = true;
             subscribeObject.retryCount++;
@@ -220,6 +220,8 @@ public class Pn extends EventDispatcher {
                 break;
 
             case SubscribeEvent.DATA:
+                dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
+
                 if (!subscribeObject.networkEnabled) {
                     dispatchAndFlagTimeIn();
                 }
