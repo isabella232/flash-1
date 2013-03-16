@@ -45,7 +45,7 @@ package flexUnitTests
 			var pncrypto:PnCrypto = new PnCrypto();
 			Assert.assertNotNull(pncrypto);	
 			
-			var connection_Async:AsyncConnection = new AsyncConnection();
+			var connection_Async:SubscribeConnection = new SubscribeConnection();
 			Assert.assertNotNull(connection_Async);	
 			
 			var connection_Sync:NonSubConnection = new NonSubConnection();

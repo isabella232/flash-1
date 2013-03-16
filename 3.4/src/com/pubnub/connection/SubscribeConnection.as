@@ -11,7 +11,7 @@ import com.pubnub.net.URLLoaderEvent;
 	 * ...
 	 * @author firsoff maxim, firsoffmaxim@gmail.com, icq : 235859730
 	 */
-	public class AsyncConnection extends Connection {
+	public class SubscribeConnection extends Connection {
 		
 		protected var timeout:int;
 		

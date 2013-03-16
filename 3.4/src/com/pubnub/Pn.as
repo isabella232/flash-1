@@ -19,7 +19,7 @@ public class Pn extends EventDispatcher {
 
     private var _initialized:Boolean = false;
 
-    private var subscribeConnection:Subscribe;
+    private var subscribeObject:Subscribe;
 
     private var _origin:String;
     private var _ssl:Boolean;
@@ -68,47 +68,47 @@ public class Pn extends EventDispatcher {
 
         environment.start();
 
-        subscribeConnection ||= new Subscribe();
+        subscribeObject ||= new Subscribe();
 
         addSubscribeEventListeners();
 
-        subscribeConnection.origin = _origin;
-        subscribeConnection.UUID = _sessionUUID;
+        subscribeObject.origin = _origin;
+        subscribeObject.UUID = _sessionUUID;
 
         if (config.publish_key)
             _publishKey = config.publish_key;
 
         if (config.sub_key)
             _subscribeKey = config.sub_key;
-        subscribeConnection.subscribeKey = _subscribeKey;
+        subscribeObject.subscribeKey = _subscribeKey;
 
         if (config.secret_key)
             secretKey = config.secret_key;
-        subscribeConnection.secretKey = secretKey;
+        subscribeObject.secretKey = secretKey;
 
 
         if (config.cipher_key)
             cipherKey = config.cipher_key;
-        subscribeConnection.cipherKey = cipherKey;
+        subscribeObject.cipherKey = cipherKey;
 
-        subscribeConnection.addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);
+        subscribeObject.addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);
     }
 
     protected function addSubscribeEventListeners():void {
-        subscribeConnection.addEventListener(SubscribeEvent.CONNECT, onSubscribe);
-        subscribeConnection.addEventListener(SubscribeEvent.DATA, onSubscribe);
-        subscribeConnection.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
-        subscribeConnection.addEventListener(SubscribeEvent.ERROR, onSubscribe);
-        subscribeConnection.addEventListener(SubscribeEvent.WARNING, onSubscribe);
-        subscribeConnection.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);
+        subscribeObject.addEventListener(SubscribeEvent.CONNECT, onSubscribe);
+        subscribeObject.addEventListener(SubscribeEvent.DATA, onSubscribe);
+        subscribeObject.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
+        subscribeObject.addEventListener(SubscribeEvent.ERROR, onSubscribe);
+        subscribeObject.addEventListener(SubscribeEvent.WARNING, onSubscribe);
+        subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);
     }
 
     private function onSubscribeTimeout(e:NetMonEvent):void {
         trace("PN onSubscribeTimeout");
 
         Log.log("Disabling network due to subscribe timeout", Log.DEBUG, new Operation("Aux Ping"));
-        if (subscribeConnection) {
-            subscribeConnection.networkEnabled = false;
+        if (subscribeObject) {
+            subscribeObject.networkEnabled = false;
         }
         dispatchEvent(e);
     }
@@ -118,10 +118,10 @@ public class Pn extends EventDispatcher {
         // TODO: Also bounce the nonSubConnection here
         nonSubConnection.networkEnabled = true;
 
-        if (subscribeConnection) {
-            subscribeConnection.retryMode = false;
-            subscribeConnection.retryCount = 0;
-            subscribeConnection.networkEnabled = true;
+        if (subscribeObject) {
+            subscribeObject.retryMode = false;
+            subscribeObject.retryCount = 0;
+            subscribeObject.networkEnabled = true;
         }
 
         if (_initialized == false) {
@@ -138,12 +138,12 @@ public class Pn extends EventDispatcher {
     private function shutdown(reason:String = ''):void {
         var channels:String = 'no channels';
         var lastToken:String = null;
-        if (subscribeConnection) {
-            if (subscribeConnection.channels) {
-                channels = subscribeConnection.channels.join(',');
+        if (subscribeObject) {
+            if (subscribeObject.channels) {
+                channels = subscribeObject.channels.join(',');
             }
-            lastToken = subscribeConnection.lastToken;
-            subscribeConnection.close();
+            lastToken = subscribeObject.lastReceivedTimetoken;
+            subscribeObject.close();
 
         }
 
@@ -162,18 +162,27 @@ public class Pn extends EventDispatcher {
 
     private function attemptDelayedResubscribe(e:NetMonEvent):void {
 
-        Log.log("Retrying " + subscribeConnection.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
+        trace("***********");
+        trace("Retrying " + subscribeObject.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
+        Log.log("Retrying " + subscribeObject.retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
-        if (subscribeConnection) {
-            subscribeConnection.networkEnabled = false;
-            subscribeConnection.retryMode = true;
-            subscribeConnection.retryCount++;
+        if (subscribeObject) {
+            //subscribeConnection.networkEnabled = false;
+
+            subscribeObject.saveTimetokenAndChannelsAndClose();
+
+            subscribeObject.retryMode = true;
+            subscribeObject.retryCount++;
+            //subscribeObject.subscribeInit();
         }
 
         // try to turn it back on
-        if (subscribeConnection.retryCount < Settings.MAX_RECONNECT_RETRIES) {
-            subscribeConnection.networkEnabled = true;
+        if (subscribeObject.retryCount < Settings.MAX_RECONNECT_RETRIES) {
+            //subscribeConnection.networkEnabled = true;
             //subscribeConnection.saveChannelsAndSubscribe();
+
+            subscribeObject.saveChannelsAndSubscribe();
+
             dispatchEvent(e);
         } else {
             dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
@@ -192,7 +201,7 @@ public class Pn extends EventDispatcher {
 
     /*---------------SUBSCRIBE---------------*/
     public static function subscribe(channel:String, token:String = null):void {
-        Pn.__instance.subscribeConnection.subscribe(channel, token);
+        Pn.__instance.subscribeObject.subscribe(channel, token);
     }
 
     private function onSubscribe(e:SubscribeEvent):void {
@@ -238,9 +247,9 @@ public class Pn extends EventDispatcher {
     protected function dispatchAndFlagTimeIn():void {
         Log.log("Recovering from Subscribe Timeout", Log.DEBUG, new Operation("Aux Ping"));
 
-        subscribeConnection.retryMode = false;
-        subscribeConnection.networkEnabled = true;
-        subscribeConnection.retryCount = 0;
+        subscribeObject.retryMode = false;
+        subscribeObject.networkEnabled = true;
+        subscribeObject.retryCount = 0;
 
         dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
 
@@ -252,7 +261,7 @@ public class Pn extends EventDispatcher {
     }
 
     public function unsubscribe(channel:String):void {
-        subscribeConnection.unsubscribe(channel);
+        subscribeObject.unsubscribe(channel);
     }
 
     public static function unsubscribeAll():void {
@@ -260,7 +269,7 @@ public class Pn extends EventDispatcher {
     }
 
     public function unsubscribeAll():void {
-        if (subscribeConnection) subscribeConnection.unsubscribeAll();
+        if (subscribeObject) subscribeObject.unsubscribeAll();
     }
 
     /*---------------DETAILED HISTORY---------------*/
@@ -367,8 +376,8 @@ public class Pn extends EventDispatcher {
     }
 
     public static function getSubscribeChannels():Array {
-        if (instance.subscribeConnection) {
-            return instance.subscribeConnection.channels;
+        if (instance.subscribeObject) {
+            return instance.subscribeObject.channels;
         } else {
             return null;
         }
@@ -381,15 +390,15 @@ public class Pn extends EventDispatcher {
         nonSubConnection.destroy();
         nonSubConnection = null;
 
-        subscribeConnection.destroy();
-        subscribeConnection = null;
+        subscribeObject.destroy();
+        subscribeObject = null;
 
         environment.destroy();
         environment.removeEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
         environment.removeEventListener(EnvironmentEvent.RECONNECT, onSubscribeTimein);
         environment = null;
 
-        subscribeConnection = null;
+        subscribeObject = null;
         _initialized = false;
         __instance = null;
     }
@@ -423,8 +432,8 @@ public class Pn extends EventDispatcher {
         else {
             _origin = "http://" + value;
         }
-        if (subscribeConnection) {
-            subscribeConnection.origin = _origin;
+        if (subscribeObject) {
+            subscribeObject.origin = _origin;
         }
         environment.origin = _origin;
     }
