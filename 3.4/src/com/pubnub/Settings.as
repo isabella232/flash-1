@@ -7,6 +7,7 @@ package com.pubnub {
          // retry to connect a maximum of this many times before Pn.shutdown()
          public static const MAX_RECONNECT_RETRIES:uint = 500; //100;
          public static const RECONNECT_RETRY_DELAY:uint = 1000; //100;
+         public static const TIME_IN_ON_ZERO_TIMETOKEN:Boolean = true;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
          public static const RESUME_ON_RECONNECT:Boolean = true;

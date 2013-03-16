@@ -77,7 +77,6 @@ public class Pn extends EventDispatcher {
 
         if (config.publish_key)
             _publishKey = config.publish_key;
-        subscribeConnection.publishKey = _publishKey
 
         if (config.sub_key)
             _subscribeKey = config.sub_key;
@@ -85,7 +84,8 @@ public class Pn extends EventDispatcher {
 
         if (config.secret_key)
             secretKey = config.secret_key;
-            subscribeConnection.secretKey = secretKey;
+        subscribeConnection.secretKey = secretKey;
+
 
         if (config.cipher_key)
             cipherKey = config.cipher_key;
@@ -204,18 +204,14 @@ public class Pn extends EventDispatcher {
         switch (e.type) {
             case SubscribeEvent.CONNECT:
                 status = OperationStatus.CONNECT;
+                if (Settings.TIME_IN_ON_ZERO_TIMETOKEN) {
+                    dispatchAndFlagTimeIn();
+                }
+
                 break;
 
             case SubscribeEvent.DATA:
-
-                if (subscribeConnection.retryMode == true) {
-                    Log.log("Recovering from Subscribe Timeout", Log.DEBUG, new Operation("Aux Ping"));
-                    subscribeConnection.retryMode = false;
-                    subscribeConnection.networkEnabled = true;
-
-                    dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
-                }
-
+                dispatchAndFlagTimeIn();
                 status = OperationStatus.DATA;
                 break;
 
@@ -237,6 +233,17 @@ public class Pn extends EventDispatcher {
                 status = OperationStatus.ERROR;
         }
         dispatchEvent(new PnEvent(PnEvent.SUBSCRIBE, e.data, e.data.channel, status));
+    }
+
+    protected function dispatchAndFlagTimeIn():void {
+        Log.log("Recovering from Subscribe Timeout", Log.DEBUG, new Operation("Aux Ping"));
+
+        subscribeConnection.retryMode = false;
+        subscribeConnection.networkEnabled = true;
+        subscribeConnection.retryCount = 0;
+
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEIN));
+
     }
 
     /*---------------UNSUBSCRIBE---------------*/

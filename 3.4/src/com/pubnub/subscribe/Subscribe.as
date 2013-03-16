@@ -23,21 +23,16 @@ public class Subscribe extends EventDispatcher {
     static public const SUBSCRIBE:String = 'subscribe';
 
     public var subscribeKey:String;
-    public var publishKey:String;
     public var cipherKey:String;
     public var secretKey:String;
 
     protected var _origin:String = "";
-    protected var _connected:Boolean;
-
     protected var _retryMode:Boolean = false;
-    protected var _subscribeDelay:int = 0;
     protected var _retryCount:int = 0;
 
     protected var _UUID:String = null;
     protected var _lastToken:String;
     protected var _existingTimeToken:String;
-    protected var factory:Dictionary;
     protected var _destroyed:Boolean;
     protected var _channels:Array;
     protected var savedChannels:Array;
@@ -74,7 +69,6 @@ public class Subscribe extends EventDispatcher {
         var channelsToModify:Array = modifyChannelList("subscribe", channelList);
         return channelsToModify.length > 0;
     }
-
 
     public function unsubscribe(channelList:String, reason:Object = null):Boolean {
 
@@ -181,17 +175,11 @@ public class Subscribe extends EventDispatcher {
         unsubscribe(allChannels, reason);
     }
 
-
-    /*---------------------------INIT---------------------------*/
-
     protected function onSubscribeInit(e:OperationEvent):void {
-        if (_networkEnabled == false) return;
-
-        if (e.data == null) {
-            subscribeInit();
+        if (_networkEnabled == false || e.data == null) {
             return;
         }
-        _connected = true;
+
         _lastToken = e.data[1];
 
         if (_existingTimeToken) {
@@ -242,26 +230,20 @@ public class Subscribe extends EventDispatcher {
 
         if (_networkEnabled == false) return;
 
-        var RESPONSE:Object = e.data;
-
-        //Log.log('RESPONSE : '
-        // something is wrong
-        if (RESPONSE == null) {
+        if (e.data == null) {
             Log.log("SubConnect: notOK: is null. TT: " + _lastToken, Log.DEBUG);
             doSubscribe();
             return;
         }
 
         try {
-            var messages:Array = RESPONSE[0] as Array;
-            _lastToken = RESPONSE[1];
-            var chStr:String = RESPONSE[2];
+            var messages:Array = e.data[0] as Array;
+            _lastToken = e.data[1];
+            var chStr:String = e.data[2];
         } catch (e) {
             Log.log("SubConnect: notOK: broken response: " + e + " , TT: " + _lastToken, Log.DEBUG);
             doSubscribe();
         }
-
-        retryCount = 0;
 
         var multiplexRESPONSE:Boolean = chStr && chStr.length > 0 && chStr.indexOf(',') > -1;
         var presenceRESPONSE:Boolean = chStr && chStr.indexOf(PNPRES_PREFIX) > -1;
@@ -330,11 +312,6 @@ public class Subscribe extends EventDispatcher {
         op.destroy();
     }
 
-
-    public function get connected():Boolean {
-        return _connected;
-    }
-
     public function get origin():String {
         return _origin;
     }
@@ -363,7 +340,6 @@ public class Subscribe extends EventDispatcher {
             leave(_channels.join(','));
         }
         _channels.length = 0;
-        _connected = false;
         _lastToken = null;
     }
 
@@ -437,10 +413,6 @@ public class Subscribe extends EventDispatcher {
 
     public function get UUID():String {
         return _UUID;
-    }
-
-    public function set subscribeDelay(value:int):void {
-        _subscribeDelay = value;
     }
 
     public function get networkEnabled():Boolean {
