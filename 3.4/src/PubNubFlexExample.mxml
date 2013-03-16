@@ -28,7 +28,7 @@
 
         [Bindable]
 
-        public var channel:String = 'hello_world';
+        public var channel:String = 'hello_world,ping_3';
         //public var channel:String = 'rand_seq';
 
 
@@ -209,7 +209,7 @@
                 ExternalInterface.call(functionName, rest);
             }
 
-            if (consoleCounter == 50) {
+            if (consoleCounter == 1000) {
                 consoleArea.text = "";
                 consoleCounter = 0;
             }

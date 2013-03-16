@@ -220,7 +220,10 @@ public class Pn extends EventDispatcher {
                 break;
 
             case SubscribeEvent.DATA:
-                dispatchAndFlagTimeIn();
+                if (!subscribeObject.networkEnabled) {
+                    dispatchAndFlagTimeIn();
+                }
+
                 status = OperationStatus.DATA;
                 break;
 
@@ -309,7 +312,13 @@ public class Pn extends EventDispatcher {
     }
 
     /*---------------PUBLISH---------------*/
+
+    // TODO: Install URLLoader connectError handler for auto-reconnect
+
     public static function publish(args:Object):void {
+        if (!nonSubConnection.networkEnabled) {
+            nonSubConnection.networkEnabled = true;
+        }
         instance.publish(args);
     }
 

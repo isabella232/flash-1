@@ -10,7 +10,7 @@ package com.pubnub {
          public static const TIME_IN_ON_ZERO_TIMETOKEN:Boolean = true;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
-         public static const RESUME_ON_RECONNECT:Boolean = true;
+         public static const RESUME_ON_RECONNECT:Boolean = false;
          // Given the above defaults
          // the client would check for 5 minutes (300s) after network loss
          // ie, 100 times, every 3 seconds for a network connection
