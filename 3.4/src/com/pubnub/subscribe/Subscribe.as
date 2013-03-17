@@ -84,7 +84,7 @@ public class Subscribe extends EventDispatcher {
                 readSavedChannelsAndSubscribe();
             } else {
                 trace("Sub.onNetworkEnable: doSubscribe()");
-                doSubscribe();
+                subscribe(_channels.join(","));
 
             }
         }
@@ -99,7 +99,7 @@ public class Subscribe extends EventDispatcher {
         retryCount++;
     }
 
-    private function onTimeout(e:OperationEvent):void {
+    public function onTimeout(e:OperationEvent):void {
         trace("Subscribe.onTimeout")
         delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
     }

@@ -29,7 +29,7 @@
 
         [Bindable]
 
-        public var channel:String = 'hello_world'; //ping_3';
+        public var channel:String = 'hello_world,a'; //ping_3';
         //public var channel:String = 'rand_seq';
 
 
@@ -209,6 +209,12 @@
             }
         }
 
+
+
+        protected function forceTimeoutBtn_clickHandler(event:MouseEvent):void {
+            Pn.forceTimeout();
+        }
+
         protected function unsubscribeBtn_clickHandler(event:MouseEvent):void {
             Pn.unsubscribeAll();
         }
@@ -334,6 +340,8 @@
             <s:Button id="subscribeBtn" x="10" y="5" label="Subscribe" click="onSubscribeClick(event)" />
             <s:Button id="unsubscribeBtn" x="356" y="5" label="Unsubscribe all" 
                       click="unsubscribeBtn_clickHandler(event)"/>
+            <s:Button id="forceTimeoutBtn" x="500" y="5" label="Force Timeout"
+                      click="forceTimeoutBtn_clickHandler(event)"/>
 			<s:Button id="unsubscribeChannelBtn" x="355" y="39" label="Unsubscribe channel"
 					  click="unsubscribeChannel_clickHandler(event)"/>
 			<s:TextInput id="unsubChannelName" x="502" y="39" width="214" text="{subsChannelList.selectedItems}"/>

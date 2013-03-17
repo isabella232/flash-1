@@ -4,6 +4,7 @@ import com.pubnub.connection.*;
 import com.pubnub.environment.*;
 import com.pubnub.log.*;
 import com.pubnub.operation.*;
+import com.pubnub.operation.OperationEvent;
 import com.pubnub.subscribe.*;
 
 import flash.errors.*;
@@ -225,6 +226,11 @@ public class Pn extends EventDispatcher {
 
 
     /*---------------UNSUBSCRIBE---------------*/
+
+    public static function forceTimeout():void {
+        instance.subscribeObject.onTimeout(new OperationEvent(OperationEvent.TIMEOUT));
+    }
+
     public static function unsubscribe(channel:String):void {
         instance.unsubscribe(channel);
     }
