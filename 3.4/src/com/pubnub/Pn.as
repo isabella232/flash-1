@@ -8,7 +8,7 @@ import com.pubnub.subscribe.*;
 
 import flash.errors.*;
 import flash.events.*;
-import flash.utils.*;
+
 
 use namespace pn_internal;
 
@@ -51,7 +51,7 @@ public class Pn extends EventDispatcher {
     private function onNonSubNet(e:NetMonEvent):void {
         var status:String;
 
-        trace("onNetStatus: " + e);
+        trace("PN.onNonSubNet: " + e);
 
         switch (e.type) {
 
@@ -170,7 +170,7 @@ public class Pn extends EventDispatcher {
         var subscribe:Subscribe = e.target as Subscribe;
         var status:String;
 
-        trace("onSubscribe: " + e);
+        trace("PN.onSubscribe: " + e);
 
         switch (e.type) {
             case SubscribeEvent.CONNECT:
@@ -205,7 +205,7 @@ public class Pn extends EventDispatcher {
     private function onNetStatus(e:NetMonEvent):void {
         var status:String;
 
-        trace("onNetStatus: " + e);
+        trace("PN.onNetStatus: " + e);
 
         switch (e.type) {
 

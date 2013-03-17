@@ -39,7 +39,7 @@ public class Subscribe extends EventDispatcher {
     protected var savedChannels:Array;
 
     protected var subscribeConnection:SubscribeConnection;
-    protected var _networkEnabled:Boolean = true;
+    protected var _networkEnabled:Boolean = false;
 
 
     public function Subscribe() {
@@ -59,35 +59,53 @@ public class Subscribe extends EventDispatcher {
 
     protected function onConnect(e:OperationEvent):void {
         Log.log("Subscribe: onConnect", Log.DEBUG);
-        if (Settings.SUB_NET_UP_ON_ZERO_TIMETOKEN) {
             onNetworkEnable();
-        }
+
     }
 
     private function onNetworkEnable():void {
 
-        trace("entering onNetworkEnable");
+        trace("Sub.onNetworkEnable");
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
 
         if (!networkEnabled) {
-            trace("!networkEnabled");
+            trace("Sub.onNetworkEnable: Re-enabling network now!");
             clearTimeout(_retryTimer);
             retryMode = false;
             retryCount = 0;
             networkEnabled = true;
 
-            trace("running saveChannelsAndSubscribe")
-            saveChannelsAndSubscribe();
+            trace("Sub.onNetworkEnable about to run saveChannelsAndSubscribe");
+            trace("Sub.onNetworkEnable savedChannels: " + savedChannels);
+            trace("Sub.onNetworkEnable _channels: " + _channels);
+
+            if (savedChannels && savedChannels.length > 0) {
+                trace("Sub.onNetworkEnable: readSavedChannelsAndSubscribe");
+                readSavedChannelsAndSubscribe();
+            } else {
+                trace("Sub.onNetworkEnable: doSubscribe()");
+                doSubscribe();
+
+            }
         }
     }
 
+    private function onNetworkDisable():void {
+        trace("Sub.onNetworkDisable");
+        saveChannelsAndUnsubscribe();
+        networkEnabled = false;
+
+        retryMode = true;
+        retryCount++;
+    }
+
     private function onTimeout(e:OperationEvent):void {
-        trace("subscribe: onTimeout thrown.")
+        trace("Subscribe.onTimeout")
         delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
     }
 
     private function onConnectError(e:OperationEvent):void {
-        trace("subscribe: onTimeout thrown.")
+        trace("Subscribe.onConnectError")
         dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
         delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
     }
@@ -95,29 +113,27 @@ public class Subscribe extends EventDispatcher {
     private function delayedSubscribeRetry(e:NetMonEvent):void {
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
 
-        trace("Running attemptDelayedResubscribe in: " + Settings.RECONNECT_RETRY_DELAY);
+        trace("Subscribe.delayedSubscribeRetry: " + Settings.RECONNECT_RETRY_DELAY);
 
         //dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
         clearTimeout(_retryTimer);
+
+        onNetworkDisable();
+
+        trace("Sub.delayedSubscribeRetry settingTimeout");
 
         _retryTimer = setTimeout(attemptDelayedResubscribe, Settings.RECONNECT_RETRY_DELAY, e);
     }
 
     private function attemptDelayedResubscribe(e:NetMonEvent):void {
+        Log.log("Sub.attemptDelayedResubscribe: " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
-        Log.log("*********** Retrying last/saved, retry/retryMax: " + lastReceivedTimetoken + "/" + savedTimetoken +
-                " " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
-
-        saveChannelsAndUnsubscribe();
-        networkEnabled = false;
-
-        retryMode = true;
-        retryCount++;
-
-        // try to turn it back on
         if (retryCount < Settings.MAX_RECONNECT_RETRIES) {
-            saveChannelsAndSubscribe();
-            dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, "re-attempting subscribe retry"));
+            trace("Sub.attemptDelayedResubscribe not yet at max retries. retrying.");
+            readSavedChannelsAndSubscribe();
+
+            //dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, "re-attempting subscribe retry"));
+
         } else {
             dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
         }
@@ -125,10 +141,15 @@ public class Subscribe extends EventDispatcher {
 
     public function subscribe(channelList:String, useThisTimeokenInstead:String = null):Boolean {
 
+
+
         if (useThisTimeokenInstead) {
             savedTimetoken = useThisTimeokenInstead;
             lastReceivedTimetoken = useThisTimeokenInstead;
         }
+
+        trace("Sub.subscribe " + channelList.toString());
+
 
         var channelsToModify:Array = modifyChannelList("subscribe", channelList);
         return channelsToModify.length > 0;
@@ -144,12 +165,16 @@ public class Subscribe extends EventDispatcher {
         trace("modifyChannelList: " + operationType);
 
         if (!isNetworkEnabled()) {
+            trace("modifyChannelList: net not enabled, so returning a blank array");
+
             if (operationType == "unsubscribe") {
                 return [];
             }
         }
 
         if (!isChannelListValid(channelList)) {
+            trace("modifyChannelList: not a valid channellist, so returning a blank array");
+
             dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL, channels]));
             return [];
         }
@@ -181,8 +206,10 @@ public class Subscribe extends EventDispatcher {
         }
 
         if (operationType == "subscribe") {
+            trace("modifyChannelList: subscribe calling processNewActiveChannelList with " + channelsToModify.toString());
             processNewActiveChannelList(channelsToModify);
         } else if (operationType == "unsubscribe") {
+            trace("modifyChannelList: unsubscribe calling processNewActiveChannelList with " + channelsToModify.toString());
             processNewActiveChannelList(null, channelsToModify);
         }
 
@@ -191,7 +218,7 @@ public class Subscribe extends EventDispatcher {
 
     private function processNewActiveChannelList(addCh:Array = null, removeCh:Array = null, reason:Object = null):void {
 
-        trace("processNewActiveChannelList");
+        trace("Sub.processNewActiveChannelList");
 
         var needAdd:Boolean = addCh && addCh.length > 0;
         var needRemove:Boolean = removeCh && removeCh.length > 0;
@@ -200,6 +227,8 @@ public class Subscribe extends EventDispatcher {
             if (needRemove) {
                 var removeChStr:String = removeCh.join(',');
                 leave(removeChStr);
+                trace("Sub.processNewActiveChannelList: leaving " + removeChStr);
+
                 ArrayUtil.removeItems(_channels, removeCh);
                 dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: removeChStr, reason: (reason ? reason : '') }));
             }
@@ -209,12 +238,12 @@ public class Subscribe extends EventDispatcher {
             }
 
             if (_channels.length > 0) {
-                if (lastReceivedTimetoken) {
-                    trace("running doSubscribe");
-                    doSubscribe();
-                } else {
-                    dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL]));
-                }
+                trace("Sub.processNewActiveChannelList: running doSubscribe " + _channels);
+                doSubscribe();
+
+            } else {
+                trace("Sub.processNewActiveChannelList: no channels");
+                dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL]));
             }
         }
     }
@@ -234,23 +263,39 @@ public class Subscribe extends EventDispatcher {
 
     /*---------------------------SUBSCRIBE---------------------------*/
     private function doSubscribe():void {
+        currentNW();
+
         UUID ||= PnUtils.getUID();
 
+        trace("Sub.doSubscribe");
+
         var subscribeOperation:SubscribeOperation = new SubscribeOperation(origin);
-        subscribeOperation.setURL(null, {
-            timetoken: lastReceivedTimetoken,
+
+        var tt:String = "";
+
+        if (retryMode) {
+            tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
+            trace("Sub.doSubscribe retry mode is set, choosing timetoken: " + tt);
+        } else {
+            tt = lastReceivedTimetoken;
+            trace("Sub.doSubscribe retry mode is NOT set, choosing timetoken: " + tt);
+        }
+
+        var subObject = {
+            timetoken: tt,
             subscribeKey: subscribeKey,
             channel: this.channelsString,
-            uid: UUID});
+            uid: UUID};
+        subscribeOperation.setURL(null, subObject);
         subscribeOperation.addEventListener(OperationEvent.RESULT, onMessageReceived);
         subscribeOperation.addEventListener(OperationEvent.FAULT, onConnectError);
 
+        trace("Sub.doSubscribe executing subscribe request on wire.");
         subscribeConnection.executeGet(subscribeOperation);
     }
 
     protected function onMessageReceived(e:OperationEvent):void {
 
-        onNetworkEnable();
 
         if (e.data == null) {
             Log.log("onMessageReceived: e.data is null at: " + lastReceivedTimetoken, Log.DEBUG);
@@ -390,7 +435,6 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function set networkEnabled(value:Boolean):void {
-        currentNW();
         _networkEnabled = value;
 
         trace("NW_ENABLED = " + value)
@@ -410,19 +454,24 @@ public class Subscribe extends EventDispatcher {
         trace("retryMode: " + retryMode);
         trace("networkEnabled: " + networkEnabled);
         trace("retryCount: " + retryCount);
+        trace("lastReceivedTimetoken: " + lastReceivedTimetoken);
+        trace("savedTimetoken: " + savedTimetoken);
     }
 
     // on false
     public function saveChannelsAndUnsubscribe():void {
-        currentNW();
         savedChannels = _channels.concat();
+        trace("Sub.saveChannelsAndUnsubscribe: savedChannels: " + savedChannels);
+
         unsubscribeAndLeave('network disabled, retrying to connect');
     }
 
     // on true
-    public function saveChannelsAndSubscribe():void {
-        currentNW();
+    public function readSavedChannelsAndSubscribe():void {
+        trace("Sub.readSavedChannelsAndSubscribe");
+
         if (savedChannels && savedChannels.length > 0) {
+            trace("Sub.readSavedChannelsAndSubscribe subscribing because savedChannels exist");
             subscribe(savedChannels.join(','));
         }
 

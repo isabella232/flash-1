@@ -34,7 +34,7 @@ public class SubscribeConnection extends Connection {
     }
 
     override protected function onConnect(e:Event):void {
-        trace("subscribe connection: onConnect");
+        trace("SubscribeConnection: onConnect");
         dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
 
         if (queue.length > 0) {
@@ -75,7 +75,7 @@ public class SubscribeConnection extends Connection {
     }
 
     override protected function onClose(e:Event):void {
-        trace('onClose');
+        trace('subscribeConnection onClose');
         clearTimeout(timeout);
         super.onClose(e);
     }
