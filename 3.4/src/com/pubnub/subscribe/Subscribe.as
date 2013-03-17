@@ -39,7 +39,7 @@ public class Subscribe extends EventDispatcher {
     protected var savedChannels:Array;
 
     protected var subscribeConnection:SubscribeConnection;
-    protected var _networkEnabled:Boolean = false;
+    protected var _networkEnabled:Boolean = true;
 
 
     public function Subscribe() {
