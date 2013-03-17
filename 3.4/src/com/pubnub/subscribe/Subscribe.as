@@ -25,7 +25,6 @@ public class Subscribe extends EventDispatcher {
     public var secretKey:String;
 
     protected var _origin:String = "";
-    protected var _retryMode:Boolean = false;
     protected var _retryCount:int = 0;
     protected var _retryTimer:int = 0;
 
@@ -71,7 +70,6 @@ public class Subscribe extends EventDispatcher {
         if (!networkEnabled) {
             trace("Sub.onNetworkEnable: Re-enabling network now!");
             clearTimeout(_retryTimer);
-            retryMode = false;
             retryCount = 0;
             networkEnabled = true;
 
@@ -94,8 +92,6 @@ public class Subscribe extends EventDispatcher {
         trace("Sub.onNetworkDisable");
         saveChannelsAndUnsubscribe();
         networkEnabled = false;
-
-        retryMode = true;
         retryCount++;
     }
 
@@ -277,7 +273,7 @@ public class Subscribe extends EventDispatcher {
 
         var tt:String = "";
 
-        if (retryMode) {
+        if (!networkEnabled) {
             tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
             trace("Sub.doSubscribe retry mode is set, choosing timetoken: " + tt);
         } else {
@@ -455,7 +451,6 @@ public class Subscribe extends EventDispatcher {
     private function currentNW():void {
         trace("** Current NW **");
 
-        trace("retryMode: " + retryMode);
         trace("networkEnabled: " + networkEnabled);
         trace("retryCount: " + retryCount);
         trace("lastReceivedTimetoken: " + lastReceivedTimetoken);
@@ -490,13 +485,6 @@ public class Subscribe extends EventDispatcher {
         _retryCount = value;
     }
 
-    public function get retryMode():Boolean {
-        return _retryMode;
-    }
-
-    public function set retryMode(value:Boolean):void {
-        _retryMode = value;
-    }
 
     public function set UUID(value:String):void {
         _UUID = value;
