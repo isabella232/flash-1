@@ -22,7 +22,7 @@ package com.pubnub {
 
          // time in millseconds to wait for web server to return a response. DO NOT CHANGE unless requested by support
          public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 3000;
-         public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 15000;
+         public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 5000;
 
          /////////////////////////////////////////////////////////////////////////////
 

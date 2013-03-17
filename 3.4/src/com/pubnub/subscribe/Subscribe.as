@@ -106,8 +106,12 @@ public class Subscribe extends EventDispatcher {
 
     private function onConnectError(e:OperationEvent):void {
         trace("Subscribe.onConnectError")
-        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
-        delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+
+        if (!networkEnabled) {
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
+            delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+        }
+
     }
 
     private function delayedSubscribeRetry(e:NetMonEvent):void {

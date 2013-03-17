@@ -30,7 +30,7 @@ public class Log {
 
         try {
 
-            Pn.publish({channel: "airdebug", message: message});
+            //Pn.publish({channel: "airdebug", message: message});
         }
         catch (error:Error) {
             trace("error publishing log: " + error);

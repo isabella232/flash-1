@@ -38,9 +38,9 @@ public class SubscribeConnection extends Connection {
         dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
 
         if (queue.length > 0) {
-            for (var i:int = 0; i < queue.length; i++) {
-                executeGet(queue[i]);
-            }
+            //for (var i:int = 0; i < queue.length; i++) {
+                executeGet(queue[0]);
+            //}
             queue.length = 0;
         }
     }
