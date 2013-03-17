@@ -60,7 +60,7 @@ public class Subscribe extends EventDispatcher {
 
     protected function onConnect(e:OperationEvent):void {
         Log.log("Subscribe: onConnect", Log.DEBUG);
-        if (Settings.TIME_IN_ON_ZERO_TIMETOKEN) {
+        if (Settings.SUB_NET_UP_ON_ZERO_TIMETOKEN) {
             onNetworkEnable();
         }
     }

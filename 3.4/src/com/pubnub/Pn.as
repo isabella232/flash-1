@@ -230,8 +230,14 @@ public class Pn extends EventDispatcher {
             dispatchEvent(new PnEvent(PnEvent.DETAILED_HISTORY, [ -1, 'Channel and subKey are missing'], channel, OperationStatus.ERROR));
             return;
         }
-        var operation:Operation = createDetailedHistoryOperation(args);
-        nonSubConnection.executeGet(operation);
+
+        var history:HistoryOperation = new HistoryOperation(origin);
+        history.cipherKey = cipherKey;
+        history.setURL(null, args);
+        history.addEventListener(OperationEvent.RESULT, onHistoryResult);
+        history.addEventListener(OperationEvent.FAULT, onHistoryFault);
+
+        nonSubConnection.executeGet(history);
     }
 
     private function onHistoryResult(e:OperationEvent):void {
@@ -246,24 +252,12 @@ public class Pn extends EventDispatcher {
         dispatchEvent(pnEvent);
     }
 
-    private function createDetailedHistoryOperation(args:Object = null):Operation {
-        var history:HistoryOperation = new HistoryOperation(origin);
-        history.cipherKey = cipherKey;
-        history.setURL(null, args);
-        history.addEventListener(OperationEvent.RESULT, onHistoryResult);
-        history.addEventListener(OperationEvent.FAULT, onHistoryFault);
-        return history;
-    }
 
     /*---------------PUBLISH---------------*/
 
     // TODO: Install URLLoader connectError handler for auto-reconnect
 
     public static function publish(args:Object):void {
-        if (!nonSubConnection.networkEnabled) {
-            nonSubConnection.networkEnabled = true;
-
-        }
         instance.publish(args);
     }
 
@@ -305,10 +299,13 @@ public class Pn extends EventDispatcher {
 
     public function time():void {
         //throwInit();
-        var operation:Operation = createTimeOperation();
-        operation.addEventListener(OperationEvent.RESULT, onTimeResult);
-        operation.addEventListener(OperationEvent.FAULT, onTimeFault);
-        nonSubConnection.executeGet(operation);
+
+        var time:TimeOperation = new TimeOperation(origin);
+        time.addEventListener(OperationEvent.RESULT, onTimeResult);
+        time.addEventListener(OperationEvent.FAULT, onTimeFault);
+        time.setURL();
+
+        nonSubConnection.executeGet(time);
     }
 
     private function onTimeFault(e:OperationEvent):void {
@@ -321,13 +318,6 @@ public class Pn extends EventDispatcher {
         dispatchEvent(pnEvent);
     }
 
-    private function createTimeOperation(args:Object = null):Operation {
-        var time:TimeOperation = new TimeOperation(origin);
-        time.addEventListener(OperationEvent.RESULT, onTimeResult);
-        time.addEventListener(OperationEvent.FAULT, onTimeFault);
-        time.setURL();
-        return time;
-    }
 
     public static function getSubscribeChannels():Array {
         if (instance.subscribeObject) {
