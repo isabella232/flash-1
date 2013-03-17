@@ -32,7 +32,7 @@ package com.pubnub.connection {
 		}
 		
 		protected function get ready():Boolean{
-			return loader && loader.ready && queue && queue.length == 0;
+			return loader && loader.ready;
 		}
 		
 		protected function onConnect(e:Event):void {

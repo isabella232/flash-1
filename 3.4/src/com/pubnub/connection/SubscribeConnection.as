@@ -1,83 +1,115 @@
 package com.pubnub.connection {
+import com.pubnub.Errors;
+import com.pubnub.environment.NetMonEvent;
 import com.pubnub.log.Log;
 import com.pubnub.net.URLLoaderEvent;
 import com.pubnub.operation.Operation;
 import com.pubnub.operation.OperationEvent;
 import com.pubnub.Settings;
-import com.pubnub.subscribe.SubscribeEvent;
 
 import flash.events.Event;
 import flash.utils.clearTimeout;
+import flash.utils.getTimer;
 import flash.utils.setTimeout;
 
-/**
- * ...
- * @author firsoff maxim, firsoffmaxim@gmail.com, icq : 235859730
- */
 public class SubscribeConnection extends Connection {
 
-    protected var timeout:int;
+    protected var _timeout:int;
+    protected var subTimer:int;
+    protected var initialized:Boolean
 
-    override protected function init():void {
-        super.init();
+    public function SubscribeConnection(timeout:int = Settings.SUBSCRIBE_OPERATION_TIMEOUT) {
+        super();
+        _timeout = timeout;
     }
 
     override public function executeGet(operation:Operation):void {
-        super.executeGet(operation);
-        if (ready) {
+        if (!operation) {
+            trace("SubscribeConnection.executeGet: operation is null.");
+            return;
+        }
+
+        if (ready && _networkEnabled) {
+            Log.log("SubscribeConnection.executeGet: ready for: " + operation.toString(), Log.DEBUG);
             doSendOperation(operation);
         } else {
-            Log.log("executeGet: connection not ready for op: " + operation.toString(), Log.DEBUG);
-            loader.connect(operation.request);
-            queue.push(operation);
+            Log.log("SubscribeConnection.executeGet: not ready trying to restart loader for: " + operation.toString(), Log.DEBUG);
+            if (loader.connected == false) {
+                loader.connect(operation.request);
+            }
         }
+
+        queue[0] = operation;
+
     }
 
     override protected function onConnect(e:Event):void {
         trace("SubscribeConnection: onConnect");
         dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
+        _networkEnabled = true;
+        super.onConnect(e);
 
-        if (queue.length > 0) {
-            //for (var i:int = 0; i < queue.length; i++) {
-                executeGet(queue[0]);
-            //}
+        if (queue && queue[0]) {
+            executeGet(queue[0]);
             queue.length = 0;
         }
     }
 
     override protected function get ready():Boolean {
-        return loader.ready;
+        return super.ready
     }
 
     private function doSendOperation(operation:Operation):void {
-        //trace('doSendOperation');
-        clearTimeout(timeout);
-        timeout = setTimeout(onTimeout, Settings.SUBSCRIBE_OPERATION_TIMEOUT, operation);
+        if (!operation) {
+            trace("NonSubConnection.doSendOperation: operation is null.");
+            return;
+        }
+
+        clearTimeout(subTimer);
+        subTimer = setTimeout(onTimeout, _timeout, operation);
+
         this.operation = operation;
+        this.operation.startTime = getTimer();
         loader.load(operation);
     }
 
     private function onTimeout(operation:Operation):void {
-        trace('subscribeConnection onTimeout');
         dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, operation));
-        Log.log("Operation timeout: " + operation.toString(), Log.DEBUG, operation);
+        Log.log("SubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
+
+        operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
+
+        this.operation = null;
     }
 
     override public function close():void {
-        clearTimeout(timeout);
+        if (queue && queue[0]) {
+            queue[0].destroy();
+        }
+
         super.close();
+        initialized = false;
+        clearTimeout(subTimer);
     }
 
     override protected function onError(e:URLLoaderEvent):void {
-        clearTimeout(timeout);
+        _networkEnabled = false;
+        clearTimeout(subTimer);
         dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
         super.onError(e);
     }
 
     override protected function onClose(e:Event):void {
         trace('subscribeConnection onClose');
-        clearTimeout(timeout);
+        clearTimeout(subTimer);
         super.onClose(e);
+    }
+
+    override protected function onComplete(e:URLLoaderEvent):void {
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP, operation));
+        clearTimeout(subTimer);
+        super.onComplete(e);
+        //this.operation = null;
     }
 }
 }
