@@ -27,19 +27,14 @@ public class Subscribe extends EventDispatcher {
     protected var _origin:String = "";
     protected var _retryCount:int = 0;
     protected var _retryTimer:int = 0;
-
     protected var _UUID:String = null;
-
     protected var _lastReceivedTimetoken:String = "0";
     protected var _savedTimetoken:String = "0";
-
     protected var _destroyed:Boolean;
     protected var _channels:Array;
     protected var savedChannels:Array;
-
     protected var subscribeConnection:SubscribeConnection;
-    protected var _networkEnabled:Boolean = true;
-
+    protected var _networkEnabled:Boolean = false;
 
     public function Subscribe() {
         super(null);
@@ -75,9 +70,7 @@ public class Subscribe extends EventDispatcher {
             retryCount = 0;
             networkEnabled = true;
 
-            trace("Sub.onNetworkEnable about to run saveChannelsAndSubscribe");
-            trace("Sub.onNetworkEnable savedChannels: " + savedChannels);
-            trace("Sub.onNetworkEnable _channels: " + _channels);
+            trace("Sub.onNetworkEnable savedChannels/_channels: " + savedChannels + " / " + _channels );
 
             if (savedChannels && savedChannels.length > 0) {
                 trace("Sub.onNetworkEnable: readSavedChannelsAndSubscribe");
@@ -85,7 +78,6 @@ public class Subscribe extends EventDispatcher {
             } else {
                 trace("Sub.onNetworkEnable: doSubscribe()");
                 subscribe(_channels.join(","));
-
             }
         }
     }
@@ -117,9 +109,7 @@ public class Subscribe extends EventDispatcher {
 
         trace("Subscribe.delayedSubscribeRetry: " + Settings.RECONNECT_RETRY_DELAY);
 
-        //dispatchEvent(new NetMonEvent(NetMonEvent.SUBSCRIBE_TIMEOUT));
         clearTimeout(_retryTimer);
-
         onNetworkDisable();
 
         trace("Sub.delayedSubscribeRetry settingTimeout");
