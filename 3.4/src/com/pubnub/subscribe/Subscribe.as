@@ -70,15 +70,7 @@ public class Subscribe extends EventDispatcher {
             retryCount = 0;
             networkEnabled = true;
 
-            trace("Sub.onNetworkEnable savedChannels/_channels: " + savedChannels + " / " + _channels );
-
-            if (savedChannels && savedChannels.length > 0) {
-                trace("Sub.onNetworkEnable: readSavedChannelsAndSubscribe");
-                readSavedChannelsAndSubscribe();
-            } else {
-                trace("Sub.onNetworkEnable: doSubscribe()");
-                subscribe(_channels.join(","));
-            }
+            subscribeToSavedOrExisting();
         }
     }
 
@@ -122,10 +114,7 @@ public class Subscribe extends EventDispatcher {
 
         if (retryCount < Settings.MAX_RECONNECT_RETRIES) {
             trace("Sub.attemptDelayedResubscribe not yet at max retries. retrying.");
-            readSavedChannelsAndSubscribe();
-
-            //dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, "re-attempting subscribe retry"));
-
+            subscribeToSavedOrExisting();
         } else {
             dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
         }
@@ -151,7 +140,7 @@ public class Subscribe extends EventDispatcher {
 
         if (!isNetworkEnabled() && operationType == "unsubscribe") {
             trace("modifyChannelListAndResubscribe: net not enabled, so returning a blank array");
-                return [];
+            return [];
         }
 
         if (!isChannelListValid(channelList)) {
@@ -454,15 +443,18 @@ public class Subscribe extends EventDispatcher {
     }
 
     // on true
-    public function readSavedChannelsAndSubscribe():void {
-        trace("Sub.readSavedChannelsAndSubscribe");
+    public function subscribeToSavedOrExisting():void {
+
+        trace("Sub.subscribeToSavedOrExisting savedChannels/_channels: " + savedChannels + " / " + _channels);
 
         if (savedChannels && savedChannels.length > 0) {
-            trace("Sub.readSavedChannelsAndSubscribe subscribing because savedChannels exist");
+            trace("Sub.readSavedChannelsAndSubscribe subscribing to savedChannels");
             subscribe(savedChannels.join(','));
+            savedChannels = [];
+        } else {
+            trace("Sub.readSavedChannelsAndSubscribe subscribing to _channels");
+            subscribe(_channels.join(","));
         }
-
-        savedChannels = [];
     }
 
     public function get retryCount():int {
