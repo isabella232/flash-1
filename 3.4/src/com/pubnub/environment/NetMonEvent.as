@@ -10,8 +10,11 @@ package com.pubnub.environment {
 		public static const HTTP_ENABLE:String = 'enable';
 		public static const HTTP_DISABLE:String = 'disable';
 
-        public static const NET_DOWN:String = 'net_down';
-        public static const NET_UP:String = 'net_up';
+        public static const SUB_NET_DOWN:String = 'sub_net_down';
+        public static const SUB_NET_UP:String = 'sub_net_up';
+
+        public static const NON_SUB_NET_DOWN:String = 'non_sub_net_down';
+        public static const NON_SUB_NET_UP:String = 'non_sub_net_up'
 
 		public static const MAX_RETRIES:String = 'max_retries';
 		

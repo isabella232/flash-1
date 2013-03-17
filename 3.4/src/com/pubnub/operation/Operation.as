@@ -32,10 +32,10 @@ import com.pubnub.net.URLRequest;
 		protected var _request:URLRequest;
 		protected var _timeout:int;
 		
-		public function Operation(origin:String) {
+		public function Operation(origin:String, timeout:uint = Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT) {
 			super();
 			_origin = origin;
-			_timeout = Settings.OPERATION_TIMEOUT;
+			_timeout = timeout;
 			init();
 		}
 		

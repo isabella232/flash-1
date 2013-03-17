@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
 			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
@@ -89,19 +90,31 @@
             Pn.instance.addEventListener(PnEvent.TIME, onPnTime);
             Pn.instance.addEventListener(EnvironmentEvent.SHUTDOWN, onPnShutdown);
 
-            Pn.instance.addEventListener(NetMonEvent.NET_UP, onPnConnected);
-            Pn.instance.addEventListener(NetMonEvent.NET_DOWN, onPnDisconnected);
+            Pn.instance.addEventListener(NetMonEvent.SUB_NET_UP, onPnConnected);
+            Pn.instance.addEventListener(NetMonEvent.SUB_NET_DOWN, onPnDisconnected);
+
+            Pn.instance.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubUp);
+            Pn.instance.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubDown);
 
             Pn.init(config);
         }
 
         private function onPnDisconnected(e:NetMonEvent):void {
 
-            this.connectionStatus.setStyle('backgroundColor', "#FC0000");
+            this.subConnectionStatus.setStyle('backgroundColor', "#FC0000");
         }
 
         private function onPnConnected(e:NetMonEvent):void {
-            this.connectionStatus.setStyle('backgroundColor', "#00FC00");
+            this.subConnectionStatus.setStyle('backgroundColor', "#00FC00");
+        }
+
+        private function onNonSubDown(e:NetMonEvent):void {
+
+            this.nonSubConnectionStatus.setStyle('backgroundColor', "#FC0000");
+        }
+
+        private function onNonSubUp(e:NetMonEvent):void {
+            this.nonSubConnectionStatus.setStyle('backgroundColor', "#00FC00");
         }
 
         private function onPnShutdown(e:EnvironmentEvent):void {
@@ -418,8 +431,14 @@
 	<s:CheckBox id="sslCheckBox" x="656" y="35" label="SSL" selected="@{ssl}"/>
     <s:CheckBox id="customChannel" x="656" y="67" label="Noisy Test Config" selected="false"
             click="OnCustomClick(event)"/>
-	<s:BorderContainer id="connectionStatus" x="114" y="90" width="53" height="13"
+	<s:BorderContainer id="subConnectionStatus" x="114" y="90" width="53" height="13"
 					   backgroundColor="#FC0000">
 	</s:BorderContainer>
-	<s:Label x="9" y="92" color="#626262" fontStyle="italic" text="Connection status:"/>
+
+    <s:BorderContainer id="nonSubConnectionStatus" x="304" y="90" width="53" height="13"
+                       backgroundColor="#FC0000">
+    </s:BorderContainer>
+
+	<s:Label x="9" y="92" color="#626262" fontStyle="italic" text="SUB Net status:"/>
+    <s:Label x="180" y="92" color="#626262" fontStyle="italic" text="NON-SUB Net status:"/>
 </s:Application>

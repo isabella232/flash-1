@@ -1,5 +1,6 @@
 package com.pubnub.operation{
-	import com.pubnub.net.URLRequest;
+import com.pubnub.Settings;
+import com.pubnub.net.URLRequest;
 	import com.pubnub.PnUtils;
 	
 	/**
@@ -8,8 +9,8 @@ package com.pubnub.operation{
 	 */
 	public class SubscribeOperation extends Operation{
 		
-		public function SubscribeOperation(origin:String) {
-			super(origin);
+		public function SubscribeOperation(origin:String, timeout = Settings.SUBSCRIBE_OPERATION_TIMEOUT) {
+			super(origin, timeout);
 		}
 		
 		override public function setURL(url:String = null, args:Object = null):URLRequest{

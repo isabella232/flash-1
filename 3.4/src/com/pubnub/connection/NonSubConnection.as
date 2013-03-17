@@ -1,5 +1,7 @@
 package com.pubnub.connection {
 import com.pubnub.*;
+import com.pubnub.environment.NetMon;
+import com.pubnub.environment.NetMonEvent;
 import com.pubnub.log.*;
 import com.pubnub.net.*;
 import com.pubnub.operation.*;
@@ -55,6 +57,8 @@ public class NonSubConnection extends Connection {
 
     private function onTimeout(operation:Operation):void {
         //trace(this, 'onTimeout');
+        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_DOWN, operation));
+
         if (operation) {
             logError(operation);
             operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
@@ -111,7 +115,7 @@ public class NonSubConnection extends Connection {
     }
 
     override protected function onConnect(e:Event):void {
-        //trace('onConnect : ' + queue[0]);
+        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP, operation));
         _networkEnabled = true;
         super.onConnect(e);
         doSendOperation(queue[0]);
@@ -130,6 +134,8 @@ public class NonSubConnection extends Connection {
 
     override protected function onComplete(e:URLLoaderEvent):void {
         //trace('onComplete : ' + operation);
+        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP, operation));
+
         clearTimeout(nonSubTimer);
         removeOperation(operation);
         super.onComplete(e);

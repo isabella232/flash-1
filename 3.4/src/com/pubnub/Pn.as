@@ -39,10 +39,32 @@ public class Pn extends EventDispatcher {
     }
 
     private function setup():void {
-        nonSubConnection = new NonSubConnection(Settings.OPERATION_TIMEOUT);
+        nonSubConnection = new NonSubConnection(Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT);
+
+        nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubNet);
+        nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubNet);
 
         environment = new Environment(origin);
         environment.addEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
+    }
+
+    private function onNonSubNet(e:NetMonEvent):void {
+        var status:String;
+
+        trace("onNetStatus: " + e);
+
+        switch (e.type) {
+
+            case NetMonEvent.NON_SUB_NET_UP:
+                status = NetMonEvent.NON_SUB_NET_UP;
+                break;
+
+            case NetMonEvent.NON_SUB_NET_DOWN:
+                status = NetMonEvent.NON_SUB_NET_DOWN;
+                break;
+
+        }
+        dispatchEvent(e);
     }
 
     public static function get instance():Pn {
@@ -90,7 +112,7 @@ public class Pn extends EventDispatcher {
             cipherKey = config.cipher_key;
         subscribeObject.cipherKey = cipherKey;
 
-        //subscribeObject.addEventListener(NetMonEvent.SUBSCRIBE_TIMEOUT, delayedSubscribeRetry);
+        time(); // warm the non-sub connection
     }
 
     protected function addSubscribeEventListeners():void {
@@ -101,8 +123,8 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(SubscribeEvent.WARNING, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);
 
-        subscribeObject.addEventListener(NetMonEvent.NET_UP, onNetStatus);
-        subscribeObject.addEventListener(NetMonEvent.NET_DOWN, onNetStatus);
+        subscribeObject.addEventListener(NetMonEvent.SUB_NET_UP, onNetStatus);
+        subscribeObject.addEventListener(NetMonEvent.SUB_NET_DOWN, onNetStatus);
     }
 
     private function onEnvironmentShutdown(e:EnvironmentEvent):void {
@@ -187,12 +209,12 @@ public class Pn extends EventDispatcher {
 
         switch (e.type) {
 
-            case NetMonEvent.NET_UP:
-                status = NetMonEvent.NET_UP;
+            case NetMonEvent.SUB_NET_UP:
+                status = NetMonEvent.SUB_NET_UP;
                 break;
 
-            case NetMonEvent.NET_DOWN:
-                status = NetMonEvent.NET_DOWN;
+            case NetMonEvent.SUB_NET_DOWN:
+                status = NetMonEvent.SUB_NET_DOWN;
                 break;
 
             default:

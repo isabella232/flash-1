@@ -7,6 +7,9 @@ package com.pubnub {
          // retry to connect a maximum of this many times before Pn.shutdown()
          public static const MAX_RECONNECT_RETRIES:uint = 500; //100;
          public static const RECONNECT_RETRY_DELAY:uint = 2000; //100;
+
+         // should we send a "NetMon.SUB_NET_UP" when we connect to a PubNub server?
+         // if not, only PnEvent.Subscribe will setting "NetMon.SUB_NET_UP"
          public static const SUB_NET_UP_ON_ZERO_TIMETOKEN:Boolean = false;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
@@ -18,7 +21,7 @@ package com.pubnub {
          // ie, 100 times, every 3 seconds for a network connection
 
          // time in millseconds to wait for web server to return a response. DO NOT CHANGE unless requested by support
-         public static const OPERATION_TIMEOUT:uint = 5000;
+         public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 5000;
          public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 15000;
 
          /////////////////////////////////////////////////////////////////////////////

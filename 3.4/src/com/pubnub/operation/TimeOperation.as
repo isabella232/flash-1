@@ -9,7 +9,7 @@ package com.pubnub.operation {
 		
 		public function TimeOperation (origin:String, timeout:int = 0) {
 			super(origin);
-			if (timeout > 0 && timeout < Settings.OPERATION_TIMEOUT) {
+			if (timeout > 0 && timeout < Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT) {
 				_timeout = timeout;
 			}
 		}
