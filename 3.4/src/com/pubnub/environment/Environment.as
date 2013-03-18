@@ -85,7 +85,7 @@ public class Environment extends EventDispatcher {
         sysMon = new SysMon();
         sysMon.addEventListener(SysMonEvent.RESTORE_FROM_SLEEP, onRestoreFromSleep);
 
-        maxTimeout = Settings.MAX_RECONNECT_RETRIES * Math.max(Settings.PING_OPERATION_RETRY_INTERVAL, Settings.PING_OPERATION_INTERVAL);
+        //maxTimeout = Settings.MAX_RECONNECT_RETRIES * Math.max(Settings.PING_OPERATION_RETRY_INTERVAL, Settings.PING_OPERATION_INTERVAL);
     }
 
 //    private function onMaxRetries(e:NetMonEvent):void {
@@ -97,11 +97,11 @@ public class Environment extends EventDispatcher {
 //    }
 
     private function onRestoreFromSleep(e:SysMonEvent):void {
-        if (e.timeout > maxTimeout) {
-            dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_TIMEOUT_EXCEEDED));
-        } else {
+        //if (e.timeout > maxTimeout) {
+        //    dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_TIMEOUT_EXCEEDED));
+        //} else {
             dispatchEvent(new EnvironmentEvent(EnvironmentEvent.RECONNECT));
-        }
+        //}
     }
 
 //    private function onAuxHTTPEnable(e:AuxNetMonEvent):void {
@@ -125,8 +125,6 @@ public class Environment extends EventDispatcher {
 //        Log.log("Subscribe Failed!", Log.DEBUG);
 //        dispatchEvent(e);
 //    }
-    
-    
 
     public function get origin():String {
         return _origin;

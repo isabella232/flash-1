@@ -46,7 +46,7 @@ public class Pn extends EventDispatcher {
         nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubNet);
 
         environment = new Environment(origin);
-        environment.addEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
+        environment.addEventListener(EnvironmentEvent.RECONNECT, onEnvironmentReconnect);
     }
 
     private function onNonSubNet(e:NetMonEvent):void {
@@ -128,6 +128,13 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(NetMonEvent.SUB_NET_DOWN, onNetStatus);
     }
 
+    private function onEnvironmentReconnect(e:EnvironmentEvent):void {
+        if (subscribeObject) {
+            dispatchEvent(new PnEvent(PnEvent.RESUME_FROM_SLEEP));
+            instance.subscribeObject.onTimeout(new OperationEvent(OperationEvent.TIMEOUT));
+
+        }
+    }
     private function onEnvironmentShutdown(e:EnvironmentEvent):void {
         shutdown(Errors.NETWORK_LOST);
     }

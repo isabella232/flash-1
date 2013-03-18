@@ -10,7 +10,7 @@ package com.pubnub {
 
          // should we send a "NetMon.SUB_NET_UP" when we connect to a PubNub server?
          // if not, only PnEvent.Subscribe will setting "NetMon.SUB_NET_UP"
-         public static const SUB_NET_UP_ON_TCP_CONNECT:Boolean = false;
+//         public static const SUB_NET_UP_ON_TCP_CONNECT:Boolean = false;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 
@@ -29,26 +29,26 @@ package com.pubnub {
          // First level net test before subscribe is on, Using below POT as timeout
          // Do not exceed 15000 !!!!
 
-         public static const PING_OPERATION_INTERVAL:uint = 15000;
-         public static const REMOTE_OPERATION_INTERVAL:uint = 5000;
+//         public static const PING_OPERATION_INTERVAL:uint = 15000;
+//         public static const REMOTE_OPERATION_INTERVAL:uint = 5000;
 
          // Timeout, in ms, for above POI
-         public static const PING_OPERATION_TIMEOUT:uint = 10000;
-         public static const REMOTE_OPERATION_TIMEOUT:uint = 3000;
+//         public static const PING_OPERATION_TIMEOUT:uint = 10000;
+//         public static const REMOTE_OPERATION_TIMEOUT:uint = 3000;
 
          ////////////////////////////////////////////////////////////////////////////
 		 
 		 // When in subscribe recovery mode, try to hit POU endpoint every PORI ms
-		 public static const PING_OPERATION_RETRY_INTERVAL:uint = 1000;
-         public static const REMOTE_OPERATION_RETRY_INTERVAL:uint = 1000;
+//		 public static const PING_OPERATION_RETRY_INTERVAL:uint = 1000;
+//         public static const REMOTE_OPERATION_RETRY_INTERVAL:uint = 1000;
 
          // URL Endpoint for recovery mode net detection
 
          //public static const PING_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
          //public static const REMOTE_OPERATION_URL:String = 'http://localhost:3000/';
 
-         public static const REMOTE_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
-         public static const PING_OPERATION_URL:String = 'http://localhost:3000/';
+//         public static const REMOTE_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
+//         public static const PING_OPERATION_URL:String = 'http://localhost:3000/';
 
          //public static const REMOTE_OPERATION_URL:String = 'http://pubsub.pubnub.com/crossdomain.xml';
 

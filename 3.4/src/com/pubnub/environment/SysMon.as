@@ -16,7 +16,6 @@ package com.pubnub.environment {
 		
 		public function SysMon() {
 			super(null);
-			init();
 		}
 		
 		public function start():void {
@@ -27,10 +26,6 @@ package com.pubnub.environment {
 		
 		public function stop():void {
 			clearInterval(interval);
-		}
-		
-		private function init():void {
-			
 		}
 		
 		private function ping():void {
