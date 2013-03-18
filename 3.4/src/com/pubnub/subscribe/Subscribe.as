@@ -55,6 +55,9 @@ public class Subscribe extends EventDispatcher {
         Log.log("Subscribe: onConnect", Log.DEBUG);
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
 
+        dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, { channel: "", reason: ('') }));
+
+
         if (!networkEnabled) {
             onNetworkEnable();
         }
@@ -78,6 +81,7 @@ public class Subscribe extends EventDispatcher {
         trace("Sub.onNetworkDisable");
 
         subscribeConnection.close();
+        dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: "", reason: ('') }));
 
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
         if (_channels && _channels.length > 0) {
@@ -202,7 +206,6 @@ public class Subscribe extends EventDispatcher {
             trace("Sub.activateNewChannelList: leaving " + removeChStr);
 
             ArrayUtil.removeItems(_channels, newChannelList);
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: removeChStr, reason: ('') }));
         }
 
         else if (operationType == "subscribe") {
