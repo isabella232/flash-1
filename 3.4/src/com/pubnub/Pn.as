@@ -140,8 +140,6 @@ public class Pn extends EventDispatcher {
                 channels = subscribeObject.channels.join(',');
             }
             lastToken = subscribeObject.lastReceivedTimetoken;
-            subscribeObject.unsubscribeAndLeave();
-
         }
 
         nonSubConnection.close();

@@ -34,7 +34,7 @@ public class Subscribe extends EventDispatcher {
     protected var _channels:Array;
     protected var savedChannels:Array;
     protected var subscribeConnection:SubscribeConnection;
-    protected var _networkEnabled:Boolean = false;
+    protected var _networkEnabled:Boolean = true;
 
     public function Subscribe() {
         super(null);
@@ -73,7 +73,7 @@ public class Subscribe extends EventDispatcher {
             retryCount = 0;
             networkEnabled = true;
 
-            subscribeToSavedOrExisting();
+            executeSubscribeOperation();
         }
     }
 
@@ -84,10 +84,8 @@ public class Subscribe extends EventDispatcher {
         dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: "", reason: ('') }));
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
 
-        if (_channels && _channels.length > 0) {
-            saveChannelsAndUnsubscribe();
-            retryCount++;
-        }
+        retryCount++;
+
 
         networkEnabled = false;
 
@@ -109,8 +107,8 @@ public class Subscribe extends EventDispatcher {
     }
 
     private function delayedSubscribeRetry(e:NetMonEvent):void {
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
 
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
         trace("Subscribe.delayedSubscribeRetry: " + Settings.RECONNECT_RETRY_DELAY);
 
         clearTimeout(_retryTimer);
@@ -118,9 +116,6 @@ public class Subscribe extends EventDispatcher {
 
         trace("attemptDelayedResubscribe SET");
         _retryTimer = setTimeout(attemptDelayedResubscribe, Settings.RECONNECT_RETRY_DELAY, e);
-
-
-
     }
 
     private function attemptDelayedResubscribe(e:NetMonEvent):void {
@@ -129,7 +124,14 @@ public class Subscribe extends EventDispatcher {
 
         if (retryCount < Settings.MAX_RECONNECT_RETRIES) {
             trace("Sub.attemptDelayedResubscribe not yet at max retries. retrying.");
-            subscribeToSavedOrExisting();
+
+            var time:TimeOperation = new TimeOperation(origin);
+            time.addEventListener(OperationEvent.RESULT, onConnect);  // TODO: Remove these event listeners on success so there arent multi
+            time.addEventListener(OperationEvent.FAULT, onTimeout);
+            time.setURL();
+
+            subscribeConnection.executeGet(time);
+
         } else {
             dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
         }
@@ -156,7 +158,7 @@ public class Subscribe extends EventDispatcher {
         trace("Sub.validateNewChannelList: " + operationType);
 
         // TODO: Comment this out -- it should never run
-        if (!isNetworkEnabled() && operationType == "unsubscribe") {
+        if (!_networkEnabled && operationType == "unsubscribe") {
             trace("validateNewChannelList: net not enabled, so returning a blank array");
             return [];
         }
@@ -386,7 +388,6 @@ public class Subscribe extends EventDispatcher {
     public function destroy():void {
         if (_destroyed) return;
         _destroyed = true;
-        unsubscribeAndLeave();
         subscribeConnection.removeEventListener(OperationEvent.TIMEOUT, onTimeout);
         subscribeConnection.destroy();
         subscribeConnection = null;
@@ -395,10 +396,6 @@ public class Subscribe extends EventDispatcher {
     public function unsubscribeAndLeave(reason:String = null):void {
         doUnsubscribeAll(reason);
         subscribeConnection.close();
-        if (_channels.length > 0) {
-            leave(_channels.join(','));
-        }
-        _channels.length = 0;
 
     }
 
@@ -443,29 +440,6 @@ public class Subscribe extends EventDispatcher {
         trace("savedTimetoken: " + savedTimetoken);
         trace("_channels: ") + _channels;
         trace("savedChannels: ") + savedChannels;
-    }
-
-    // on false
-    public function saveChannelsAndUnsubscribe():void {
-        savedChannels = _channels.concat();
-        trace("Sub.saveChannelsAndUnsubscribe: savedChannels: " + savedChannels);
-
-        unsubscribeAndLeave('network disabled, retrying to connect');
-    }
-
-    // on true
-    public function subscribeToSavedOrExisting():void {
-
-        trace("Sub.subscribeToSavedOrExisting savedChannels/_channels: " + savedChannels + " / " + _channels);
-
-        if (savedChannels && savedChannels.length > 0) {
-            trace("Sub.readSavedChannelsAndSubscribe subscribing to savedChannels");
-            subscribe(savedChannels.join(','));
-            savedChannels = [];
-        } else {
-            trace("Sub.readSavedChannelsAndSubscribe subscribing to _channels");
-            executeSubscribeOperation();
-        }
     }
 
     public function get retryCount():int {
