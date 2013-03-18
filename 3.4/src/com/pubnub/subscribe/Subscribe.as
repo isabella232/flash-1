@@ -53,6 +53,7 @@ public class Subscribe extends EventDispatcher {
 
     protected function onConnect(e:OperationEvent):void {
         Log.log("Subscribe: onConnect", Log.DEBUG);
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
 
         if (!networkEnabled) {
             onNetworkEnable();
@@ -62,7 +63,6 @@ public class Subscribe extends EventDispatcher {
     private function onNetworkEnable():void {
 
         trace("Sub.onNetworkEnable");
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
 
         if (!networkEnabled) {
             trace("Sub.onNetworkEnable: Re-enabling network now!");
@@ -80,9 +80,13 @@ public class Subscribe extends EventDispatcher {
         subscribeConnection.close();
 
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
-        saveChannelsAndUnsubscribe();
+        if (_channels && _channels.length > 0) {
+            saveChannelsAndUnsubscribe();
+            retryCount++;
+        }
+
         networkEnabled = false;
-        retryCount++;
+
     }
 
     public function onTimeout(e:OperationEvent):void {
@@ -130,25 +134,26 @@ public class Subscribe extends EventDispatcher {
             lastReceivedTimetoken = useThisTimeokenInstead;
         }
         trace("Sub.subscribe " + channelList.toString());
-        return modifyChannelListAndResubscribe("subscribe", channelList).length > 0;
+        return validateNewChannelList("subscribe", channelList).length > 0;
     }
 
     public function unsubscribe(channelList:String, reason:Object = null):Boolean {
 
-        var channelsToModify:Array = modifyChannelListAndResubscribe("unsubscribe", channelList, reason);
+        var channelsToModify:Array = validateNewChannelList("unsubscribe", channelList, reason);
         return channelsToModify.length > 0;
     }
 
-    protected function modifyChannelListAndResubscribe(operationType:String, channelList:String, reason:Object = null):Array {
-        trace("modifyChannelListAndResubscribe: " + operationType);
+    protected function validateNewChannelList(operationType:String, channelList:String, reason:Object = null):Array {
+        trace("validateNewChannelList: " + operationType);
 
+        // TODO: Comment this out -- it should never run
         if (!isNetworkEnabled() && operationType == "unsubscribe") {
-            trace("modifyChannelListAndResubscribe: net not enabled, so returning a blank array");
+            trace("validateNewChannelList: net not enabled, so returning a blank array");
             return [];
         }
 
         if (!isChannelListValid(channelList)) {
-            trace("modifyChannelListAndResubscribe: not a valid channellist, so returning a blank array");
+            trace("validateNewChannelList: not a valid channellist, so returning a blank array");
             dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL, channels]));
             return [];
         }
@@ -157,76 +162,63 @@ public class Subscribe extends EventDispatcher {
         var channelListAsArray:Array = channelList.split(',');
         var channelString:String;
 
-            for (var i:int = 0; i < channelListAsArray.length; i++) {
-                channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
+        for (var i:int = 0; i < channelListAsArray.length; i++) {
+            channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
 
-                if (operationType == "subscribe") {
-                    if (channelIsInChannelList(channelString)) {
-                        dispatchEvent(new SubscribeEvent(SubscribeEvent.WARNING, [ 0, Errors.SUBSCRIBE_ALREADY_SUBSCRIBED, channelString]));
-                    } else {
-                        channelsToModify.push(channelString);
-                    }
-                }
-                if (operationType == "unsubscribe") {
-                    if (channelIsInChannelList(channelString)) {
-                        channelsToModify.push(channelString);
-                    } else {
-                        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CANT_UNSUB_NON_SUB, channelString]));
-                    }
+            if (operationType == "subscribe") {
+                if (channelIsInChannelList(channelString)) {
+                    dispatchEvent(new SubscribeEvent(SubscribeEvent.WARNING, [ 0, Errors.SUBSCRIBE_ALREADY_SUBSCRIBED, channelString]));
+                } else {
+                    channelsToModify.push(channelString);
                 }
             }
-
-        if (operationType == "subscribe") {
-            trace("modifyChannelListAndResubscribe: subscribe calling resubscribeWithNewChannelList with " + channelsToModify.toString());
-
-            resubscribeWithNewChannelList(channelsToModify);
-        } else if (operationType == "unsubscribe") {
-            trace("modifyChannelListAndResubscribe: unsubscribe calling resubscribeWithNewChannelList with " + channelsToModify.toString());
-
-            resubscribeWithNewChannelList(null, channelsToModify);
+            if (operationType == "unsubscribe") {
+                if (channelIsInChannelList(channelString)) {
+                    channelsToModify.push(channelString);
+                } else {
+                    dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CANT_UNSUB_NON_SUB, channelString]));
+                }
+            }
         }
+
+        trace("validateNewChannelList: activateNewChannelList with " +
+                channelsToModify.toString() + " " + operationType);
+
+        activateNewChannelList(channelsToModify, operationType);
 
         return channelsToModify;
     }
 
 
+    private function activateNewChannelList(newChannelList:Array, operationType:String):void {
 
-    private function resubscribeWithNewChannelList(channelsToAdd:Array = null, channelsToRemove:Array = null, reason:Object = null):void {
+        trace("Sub.activateNewChannelList");
 
-        trace("Sub.resubscribeWithNewChannelList");
+        subscribeConnection.close();
 
-        var addFlag:Boolean = channelsToAdd && channelsToAdd.length > 0;
-        var removeFlag:Boolean = channelsToRemove && channelsToRemove.length > 0;
-        if (addFlag || removeFlag) {
+        if (operationType == "unsubscribe") {
+            var removeChStr:String = newChannelList.join(',');
+            leave(removeChStr);
+            trace("Sub.activateNewChannelList: leaving " + removeChStr);
 
-            subscribeConnection.close();
+            ArrayUtil.removeItems(_channels, newChannelList);
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: removeChStr, reason: ('') }));
+        }
 
-            if (removeFlag) {
-                var removeChStr:String = channelsToRemove.join(',');
-                leave(removeChStr);
-                trace("Sub.resubscribeWithNewChannelList: leaving " + removeChStr);
+        else if (operationType == "subscribe") {
+            _channels = _channels.concat(newChannelList);
+        }
 
-                ArrayUtil.removeItems(_channels, channelsToRemove);
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: removeChStr, reason: (reason ? reason : '') }));
-            }
+        if (_channels.length > 0) {
+            trace("Sub.activateNewChannelList: running executeSubscribeOperation " + _channels);
+            executeSubscribeOperation();
 
-            if (addFlag) {
-                _channels = _channels.concat(channelsToAdd);
-            }
-
-            if (_channels.length > 0) {
-                trace("Sub.resubscribeWithNewChannelList: running executeSubscribeOperation " + _channels);
-                executeSubscribeOperation();
-
-            } else {
-                trace("Sub.resubscribeWithNewChannelList: no channels, will not continue with subscribe.");
-                if (savedChannels == null || savedChannels && savedChannels.length == 0) {
-                    trace("Sub.resubscribeWithNewChannelList: resetting lastTimetoken to 0");
-                    lastReceivedTimetoken = "0"
-
-                    onNetworkDisable();
-
-                }
+        } else {
+            trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
+            if (savedChannels == null || savedChannels && savedChannels.length == 0) {
+                trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
+                lastReceivedTimetoken = "0"
+                onNetworkDisable();
             }
         }
     }
