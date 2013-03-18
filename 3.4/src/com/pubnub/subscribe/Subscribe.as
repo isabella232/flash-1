@@ -189,27 +189,27 @@ public class Subscribe extends EventDispatcher {
         return channelString;
     }
 
-    private function resubscribeWithNewChannelList(addCh:Array = null, removeCh:Array = null, reason:Object = null):void {
+    private function resubscribeWithNewChannelList(channelsToAdd:Array = null, channelsToRemove:Array = null, reason:Object = null):void {
 
         trace("Sub.resubscribeWithNewChannelList");
 
-        var needAdd:Boolean = addCh && addCh.length > 0;
-        var needRemove:Boolean = removeCh && removeCh.length > 0;
-        if (needAdd || needRemove) {
+        var addFlag:Boolean = channelsToAdd && channelsToAdd.length > 0;
+        var removeFlag:Boolean = channelsToRemove && channelsToRemove.length > 0;
+        if (addFlag || removeFlag) {
 
             subscribeConnection.close();
 
-            if (needRemove) {
-                var removeChStr:String = removeCh.join(',');
+            if (removeFlag) {
+                var removeChStr:String = channelsToRemove.join(',');
                 leave(removeChStr);
                 trace("Sub.resubscribeWithNewChannelList: leaving " + removeChStr);
 
-                ArrayUtil.removeItems(_channels, removeCh);
+                ArrayUtil.removeItems(_channels, channelsToRemove);
                 dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: removeChStr, reason: (reason ? reason : '') }));
             }
 
-            if (needAdd) {
-                _channels = _channels.concat(addCh);
+            if (addFlag) {
+                _channels = _channels.concat(channelsToAdd);
             }
 
             if (_channels.length > 0) {
