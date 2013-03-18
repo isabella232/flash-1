@@ -34,7 +34,7 @@ public class Subscribe extends EventDispatcher {
     protected var _channels:Array;
     protected var savedChannels:Array;
     protected var subscribeConnection:SubscribeConnection;
-    protected var _networkEnabled:Boolean = false;
+    protected var _networkEnabled:Boolean = true;
 
     public function Subscribe() {
         super(null);
@@ -76,6 +76,10 @@ public class Subscribe extends EventDispatcher {
 
     private function onNetworkDisable():void {
         trace("Sub.onNetworkDisable");
+
+        subscribeConnection.close();
+
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
         saveChannelsAndUnsubscribe();
         networkEnabled = false;
         retryCount++;
@@ -221,6 +225,9 @@ public class Subscribe extends EventDispatcher {
                 if (savedChannels == null || savedChannels && savedChannels.length == 0) {
                     trace("Sub.resubscribeWithNewChannelList: resetting lastTimetoken to 0");
                     lastReceivedTimetoken = "0"
+
+                    onNetworkDisable();
+
                 }
             }
         }
@@ -459,7 +466,7 @@ public class Subscribe extends EventDispatcher {
             savedChannels = [];
         } else {
             trace("Sub.readSavedChannelsAndSubscribe subscribing to _channels");
-            subscribe(_channels.join(","));
+            executeSubscribeOperation();
         }
     }
 
