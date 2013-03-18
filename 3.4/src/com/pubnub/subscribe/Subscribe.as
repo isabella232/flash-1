@@ -211,8 +211,8 @@ public class Subscribe extends EventDispatcher {
             }
 
             if (_channels.length > 0) {
-                trace("Sub.resubscribeWithNewChannelList: running doSubscribe " + _channels);
-                doSubscribe();
+                trace("Sub.resubscribeWithNewChannelList: running executeSubscribeOperation " + _channels);
+                executeSubscribeOperation();
 
             } else {
                 trace("Sub.resubscribeWithNewChannelList: no channels");
@@ -235,12 +235,12 @@ public class Subscribe extends EventDispatcher {
     }
 
     /*---------------------------SUBSCRIBE---------------------------*/
-    private function doSubscribe():void {
+    private function executeSubscribeOperation():void {
         currentNW();
 
         UUID ||= PnUtils.getUID();
 
-        trace("Sub.doSubscribe");
+        trace("Sub.executeSubscribeOperation");
 
         var subscribeOperation:SubscribeOperation = new SubscribeOperation(origin);
 
@@ -248,10 +248,10 @@ public class Subscribe extends EventDispatcher {
 
         if (!networkEnabled) {
             tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
-            trace("Sub.doSubscribe retry mode is set, choosing timetoken: " + tt);
+            trace("Sub.executeSubscribeOperation retry mode is set, choosing timetoken: " + tt);
         } else {
             tt = lastReceivedTimetoken;
-            trace("Sub.doSubscribe retry mode is NOT set, choosing timetoken: " + tt);
+            trace("Sub.executeSubscribeOperation retry mode is NOT set, choosing timetoken: " + tt);
         }
 
         var subObject = {
@@ -263,7 +263,7 @@ public class Subscribe extends EventDispatcher {
         subscribeOperation.addEventListener(OperationEvent.RESULT, onMessageReceived);
         subscribeOperation.addEventListener(OperationEvent.FAULT, onConnectError);
 
-        trace("Sub.doSubscribe executing subscribe request on wire.");
+        trace("Sub.executeSubscribeOperation executing subscribe request on wire.");
         subscribeConnection.executeGet(subscribeOperation);
     }
 
@@ -272,7 +272,7 @@ public class Subscribe extends EventDispatcher {
 
         if (e.data == null) {
             Log.log("onMessageReceived: e.data is null at: " + lastReceivedTimetoken, Log.DEBUG);
-            doSubscribe();
+            executeSubscribeOperation();
             return;
         }
 
@@ -285,7 +285,7 @@ public class Subscribe extends EventDispatcher {
             var chStr:String = e.data[2];
         } catch (e) {
             Log.log("onMessageReceived: broken response array: " + e + " , TT: " + lastReceivedTimetoken, Log.DEBUG);
-            doSubscribe();
+            executeSubscribeOperation();
             return
         }
 
@@ -324,7 +324,7 @@ public class Subscribe extends EventDispatcher {
             }
         }
 
-        doSubscribe();
+        executeSubscribeOperation();
     }
 
     private function decryptMessages(messages:Array):void {
