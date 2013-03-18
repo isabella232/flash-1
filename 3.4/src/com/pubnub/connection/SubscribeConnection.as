@@ -60,6 +60,8 @@ public class SubscribeConnection extends Connection {
     }
 
     private function doSendOperation(operation:Operation):void {
+        trace("NonSubConnection.doSendOperation");
+
         if (!operation) {
             trace("NonSubConnection.doSendOperation: operation is null.");
             return;
@@ -96,6 +98,7 @@ public class SubscribeConnection extends Connection {
     }
 
     override protected function onError(e:URLLoaderEvent):void {
+        trace('subscribeConnection onError');
         _networkEnabled = false;
         clearTimeout(subTimer);
         dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
@@ -109,6 +112,8 @@ public class SubscribeConnection extends Connection {
     }
 
     override protected function onComplete(e:URLLoaderEvent):void {
+        trace('subscribeConnection onComplete');
+
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP, operation));
         clearTimeout(subTimer);
         super.onComplete(e);

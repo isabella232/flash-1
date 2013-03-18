@@ -50,7 +50,7 @@ public class Log {
     static public function log(message:String, level:String = NORMAL, operation:Operation = null):void {
 
         if (operation && operation.toString() != "[object PublishOperation]") {
-            trace("logging: " + operation.toString());
+            //trace("logging: " + operation.toString());
             debugMessage(new Date().toString() + " " + message)
         }
 

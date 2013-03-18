@@ -95,7 +95,7 @@ public class URLLoader extends EventDispatcher {
             if (normalSocket.connected) normalSocket.close();
         } catch (err:IOError) {
 
-            Log.log("Close: " + err, Log.WARNING, this.operation);
+            Log.log("URLLoader.Close non-SSL: " + err, Log.WARNING, this.operation);
         }
 
         try {
@@ -103,7 +103,7 @@ public class URLLoader extends EventDispatcher {
                 secureSocket.close();
             }
         } catch (err:IOError) {
-            Log.log("Close: " + err, Log.WARNING, this.operation);
+            Log.log("URLLoader.Close SSL: " + err, Log.WARNING, this.operation);
         }
         destroyRESPONSE();
         request = null;

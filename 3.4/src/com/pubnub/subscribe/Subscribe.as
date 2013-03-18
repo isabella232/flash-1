@@ -82,8 +82,8 @@ public class Subscribe extends EventDispatcher {
 
         subscribeConnection.close();
         dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: "", reason: ('') }));
-
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+
         if (_channels && _channels.length > 0) {
             saveChannelsAndUnsubscribe();
             retryCount++;
@@ -116,12 +116,15 @@ public class Subscribe extends EventDispatcher {
         clearTimeout(_retryTimer);
         onNetworkDisable();
 
-        trace("Sub.delayedSubscribeRetry settingTimeout");
-
+        trace("attemptDelayedResubscribe SET");
         _retryTimer = setTimeout(attemptDelayedResubscribe, Settings.RECONNECT_RETRY_DELAY, e);
+
+
+
     }
 
     private function attemptDelayedResubscribe(e:NetMonEvent):void {
+        trace("attemptDelayedResubscribe CALLED");
         Log.log("Sub.attemptDelayedResubscribe: " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
         if (retryCount < Settings.MAX_RECONNECT_RETRIES) {
@@ -133,6 +136,8 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function subscribe(channelList:String, useThisTimeokenInstead:String = null):Boolean {
+        trace("Sub.subscribe");
+
         if (useThisTimeokenInstead) {
             savedTimetoken = useThisTimeokenInstead;
             lastReceivedTimetoken = useThisTimeokenInstead;
@@ -148,7 +153,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     protected function validateNewChannelList(operationType:String, channelList:String, reason:Object = null):Array {
-        trace("validateNewChannelList: " + operationType);
+        trace("Sub.validateNewChannelList: " + operationType);
 
         // TODO: Comment this out -- it should never run
         if (!isNetworkEnabled() && operationType == "unsubscribe") {
@@ -418,7 +423,7 @@ public class Subscribe extends EventDispatcher {
     public function set networkEnabled(value:Boolean):void {
         _networkEnabled = value;
 
-        trace("NW_ENABLED = " + value)
+        trace("networkEnabled.setter called with NW_ENABLED = " + value)
 
         if (value == true) {
             trace("*** ENABLING NETWORK ***");
