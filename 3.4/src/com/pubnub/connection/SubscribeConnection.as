@@ -16,7 +16,7 @@ public class SubscribeConnection extends Connection {
 
     protected var _timeout:int;
     protected var subTimer:int;
-    protected var initialized:Boolean
+    protected var initialized:Boolean;
 
     public function SubscribeConnection(timeout:int = Settings.SUBSCRIBE_OPERATION_TIMEOUT) {
         super();
@@ -83,6 +83,9 @@ public class SubscribeConnection extends Connection {
     }
 
     override public function close():void {
+
+        Log.log("SubConnection.close");
+
         if (queue && queue[0]) {
             queue[0].destroy();
         }

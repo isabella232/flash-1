@@ -13,7 +13,7 @@ package com.pubnub {
 		static public const NOT_CONNECTED:String = "NOT_CONNECTED";
 
         static public const SUBSCRIBE_INIT_ERROR:String = "SUBSCRIBE_INIT_ERROR";
-		static public const SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL:String = "Channel list is null or too big";
+		static public const SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL:String = "Won't subscribe because channel list is empty or too big";
         static public const SUBSCRIBE_ALREADY_SUBSCRIBED:String = "Channel already subscribed";
         static public const SUBSCRIBE_CANT_UNSUB_NON_SUB:String = "Cannot unsubscribe: not subscribed";
 

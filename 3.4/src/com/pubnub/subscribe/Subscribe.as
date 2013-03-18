@@ -196,7 +196,9 @@ public class Subscribe extends EventDispatcher {
         var needAdd:Boolean = addCh && addCh.length > 0;
         var needRemove:Boolean = removeCh && removeCh.length > 0;
         if (needAdd || needRemove) {
+
             subscribeConnection.close();
+
             if (needRemove) {
                 var removeChStr:String = removeCh.join(',');
                 leave(removeChStr);
@@ -215,8 +217,11 @@ public class Subscribe extends EventDispatcher {
                 executeSubscribeOperation();
 
             } else {
-                trace("Sub.resubscribeWithNewChannelList: no channels");
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL]));
+                trace("Sub.resubscribeWithNewChannelList: no channels, will not continue with subscribe.");
+                if (savedChannels == null || savedChannels && savedChannels.length == 0) {
+                    trace("Sub.resubscribeWithNewChannelList: resetting lastTimetoken to 0");
+                    lastReceivedTimetoken = "0"
+                }
             }
         }
     }
@@ -432,6 +437,7 @@ public class Subscribe extends EventDispatcher {
         trace("lastReceivedTimetoken: " + lastReceivedTimetoken);
         trace("savedTimetoken: " + savedTimetoken);
         trace("_channels: ") + _channels;
+        trace("savedChannels: ") + savedChannels;
     }
 
     // on false
