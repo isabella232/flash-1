@@ -57,10 +57,8 @@ public class Subscribe extends EventDispatcher {
 
         dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, { channel: "", reason: ('') }));
 
+        onNetworkEnable();
 
-        if (!networkEnabled) {
-            onNetworkEnable();
-        }
     }
 
     private function onNetworkEnable():void {
@@ -85,8 +83,6 @@ public class Subscribe extends EventDispatcher {
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
 
         retryCount++;
-
-
         networkEnabled = false;
 
     }
@@ -114,22 +110,23 @@ public class Subscribe extends EventDispatcher {
         clearTimeout(_retryTimer);
         onNetworkDisable();
 
-        trace("attemptDelayedResubscribe SET");
-        _retryTimer = setTimeout(attemptDelayedResubscribe, Settings.RECONNECT_RETRY_DELAY, e);
+        trace("timePing delay being SET");
+        _retryTimer = setTimeout(timePing, Settings.RECONNECT_RETRY_DELAY, e);
     }
 
-    private function attemptDelayedResubscribe(e:NetMonEvent):void {
-        trace("attemptDelayedResubscribe CALLED");
-        Log.log("Sub.attemptDelayedResubscribe: " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
+    private function timePing(e:NetMonEvent):void {
+        trace("timePing CALLED");
+        Log.log("Sub.timePing: " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
         if (retryCount < Settings.MAX_RECONNECT_RETRIES) {
-            trace("Sub.attemptDelayedResubscribe not yet at max retries. retrying.");
+            trace("Sub.timePing not yet at max retries. retrying.");
 
             var time:TimeOperation = new TimeOperation(origin);
             time.addEventListener(OperationEvent.RESULT, onConnect);  // TODO: Remove these event listeners on success so there arent multi
             time.addEventListener(OperationEvent.FAULT, onTimeout);
             time.setURL();
 
+            trace("Sub.timePing request NOW:");
             subscribeConnection.executeGet(time);
 
         } else {
@@ -439,7 +436,6 @@ public class Subscribe extends EventDispatcher {
         trace("lastReceivedTimetoken: " + lastReceivedTimetoken);
         trace("savedTimetoken: " + savedTimetoken);
         trace("_channels: ") + _channels;
-        trace("savedChannels: ") + savedChannels;
     }
 
     public function get retryCount():int {

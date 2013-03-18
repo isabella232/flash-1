@@ -50,6 +50,7 @@ public class SubscribeConnection extends Connection {
         super.onConnect(e);
 
         if (queue && queue[0]) {
+            trace("SubscribeConnection: onConnect QUEUE EXECUTION");
             executeGet(queue[0]);
             queue.length = 0;
         }
@@ -60,10 +61,10 @@ public class SubscribeConnection extends Connection {
     }
 
     private function doSendOperation(operation:Operation):void {
-        trace("NonSubConnection.doSendOperation");
+        trace("SubConnection.doSendOperation");
 
         if (!operation) {
-            trace("NonSubConnection.doSendOperation: operation is null.");
+            trace("SubConnection.doSendOperation: operation is null.");
             return;
         }
 

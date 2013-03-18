@@ -5,7 +5,7 @@ package com.pubnub {
       */
      public class Settings {
          // retry to connect a maximum of this many times before Pn.shutdown()
-         public static const MAX_RECONNECT_RETRIES:uint = 5; //100;
+         public static const MAX_RECONNECT_RETRIES:uint = 500; //100;
          public static const RECONNECT_RETRY_DELAY:uint = 2000; //100;
 
          // should we send a "NetMon.SUB_NET_UP" when we connect to a PubNub server?
@@ -14,7 +14,7 @@ package com.pubnub {
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 
-         public static const RESUME_ON_RECONNECT:Boolean = true;
+         public static const RESUME_ON_RECONNECT:Boolean = false;
 
          // Given the above defaults
          // the client would check for 5 minutes (300s) after network loss
