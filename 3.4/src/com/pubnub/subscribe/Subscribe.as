@@ -156,7 +156,25 @@ public class Subscribe extends EventDispatcher {
         var channelsToModify:Array = [];
         var channelListAsArray:Array = channelList.split(',');
         var channelString:String;
-        channelString = buildChannelListBasedOnOperation(channelListAsArray, channelString, operationType, channelsToModify);
+
+            for (var i:int = 0; i < channelListAsArray.length; i++) {
+                channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
+
+                if (operationType == "subscribe") {
+                    if (channelIsInChannelList(channelString)) {
+                        dispatchEvent(new SubscribeEvent(SubscribeEvent.WARNING, [ 0, Errors.SUBSCRIBE_ALREADY_SUBSCRIBED, channelString]));
+                    } else {
+                        channelsToModify.push(channelString);
+                    }
+                }
+                if (operationType == "unsubscribe") {
+                    if (channelIsInChannelList(channelString)) {
+                        channelsToModify.push(channelString);
+                    } else {
+                        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CANT_UNSUB_NON_SUB, channelString]));
+                    }
+                }
+            }
 
         if (operationType == "subscribe") {
             trace("modifyChannelListAndResubscribe: subscribe calling resubscribeWithNewChannelList with " + channelsToModify.toString());
@@ -171,27 +189,7 @@ public class Subscribe extends EventDispatcher {
         return channelsToModify;
     }
 
-    private function buildChannelListBasedOnOperation(channelListAsArray:Array, channelString:String, operationType:String, channelsToModify:Array):String {
-        for (var i:int = 0; i < channelListAsArray.length; i++) {
-            channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
 
-            if (operationType == "subscribe") {
-                if (channelIsInChannelList(channelString)) {
-                    dispatchEvent(new SubscribeEvent(SubscribeEvent.WARNING, [ 0, Errors.SUBSCRIBE_ALREADY_SUBSCRIBED, channelString]));
-                } else {
-                    channelsToModify.push(channelString);
-                }
-            }
-            if (operationType == "unsubscribe") {
-                if (channelIsInChannelList(channelString)) {
-                    channelsToModify.push(channelString);
-                } else {
-                    dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CANT_UNSUB_NON_SUB, channelString]));
-                }
-            }
-        }
-        return channelString;
-    }
 
     private function resubscribeWithNewChannelList(channelsToAdd:Array = null, channelsToRemove:Array = null, reason:Object = null):void {
 
