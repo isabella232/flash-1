@@ -5,7 +5,7 @@ package com.pubnub {
       */
      public class Settings {
          // retry to connect a maximum of this many times before Pn.shutdown()
-         public static const MAX_RECONNECT_RETRIES:uint = 500; //100;
+         public static const MAX_RECONNECT_RETRIES:uint = 500; // when this limit is hit, unsubscribe all, and connection.close()
          public static const RECONNECT_RETRY_DELAY:uint = 2000; //100;
 
          // should we send a "NetMon.SUB_NET_UP" when we connect to a PubNub server?

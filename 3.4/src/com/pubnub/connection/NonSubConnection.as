@@ -34,8 +34,24 @@ public class NonSubConnection extends Connection {
             if (loader.connected == false) {
                 loader.connect(operation.request);
             }
+
+            // the point of the above code is to "warm" the connection and retry the operation if it is not ready
+            // but we need to be able to obey
+
+            // this low level (embryonic), operation on this timeout instead?
+            // public static const RECONNECT_RETRY_DELAY:uint
+
+            // for all subscribe network operations
+
+            // should this be here? or below?
+            // queue[0] = operation;
+
         }
 
+        // the way to test this is with network off and on
+
+        // operations should never auto-retry!!!
+        //should the below queue[0] be one level up instead?
         queue[0] = operation;
 
     }

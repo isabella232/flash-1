@@ -74,6 +74,8 @@ public class Subscribe extends EventDispatcher {
 
     public function onNetworkDisable():void {
 
+        // not sure if this is neccesary
+
         if (timePingOperation) {
             timePingOperation.removeEventListener(OperationEvent.RESULT, onNetworkEnable);
             timePingOperation.removeEventListener(OperationEvent.FAULT, onNetworkDisable);
@@ -132,7 +134,7 @@ public class Subscribe extends EventDispatcher {
             timePingOperation.setURL();
 
             trace("Sub.timePing request NOW:");
-            subscribeConnection.executeGet(timePingOperation);
+            subscribeConnection.executeGet(timePingOperation);  // Time Ping over Subscribe connection uses Subscribe Connection Timeouts?
 
         } else {
             dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
@@ -143,6 +145,7 @@ public class Subscribe extends EventDispatcher {
 
         trace("onTimePingResult removing listeners");
 
+        // are these removeEL needed?
         timePingOperation.removeEventListener(OperationEvent.RESULT, onNetworkEnable);
         timePingOperation.removeEventListener(OperationEvent.FAULT, onNetworkDisable);
 
@@ -270,6 +273,10 @@ public class Subscribe extends EventDispatcher {
         var subscribeOperation:SubscribeOperation = new SubscribeOperation(origin);
 
         var tt:String = "";
+
+        // this block is broken. Upon resuming from onNetworkEnable
+        // if Settings.RESUME_ON_RECONNECT == true) use lastReceivedTimetoken other wise, use  "0";
+        // but ALWAYS use lastTimetoken under normal network state
 
         if (!networkEnabled) {
             tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";

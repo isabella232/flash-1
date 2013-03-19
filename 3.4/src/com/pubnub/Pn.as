@@ -11,6 +11,9 @@ import flash.errors.*;
 import flash.events.*;
 
 
+// refactoring of this file will include consolidation of
+// Environment.as, NetMon.as SysMon.as
+
 use namespace pn_internal;
 
 [Event(name="initError", type="com.pubnub.PnEvent")]
@@ -40,15 +43,23 @@ public class Pn extends EventDispatcher {
     }
 
     private function setup():void {
+
+        // This should be a singleton class
         nonSubConnection = new NonSubConnection(Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT);
 
         nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubNet);
         nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubNet);
 
+        // For every Pn instance, there should be two singleton connections:
+        // SubscribeConnection, and NonSubscribeConnection
+
+        // environment stuff -- this can probably be rolled into another class
+
         environment = new Environment(origin);
         environment.addEventListener(EnvironmentEvent.RECONNECT, onEnvironmentReconnect);
     }
 
+    // these are handlers for nonSubscribeConnection network events
     private function onNonSubNet(e:NetMonEvent):void {
         var status:String;
 
@@ -83,6 +94,9 @@ public class Pn extends EventDispatcher {
         }
         _initialized = false;
 
+
+        // this looks sloppy, looks like Subscribe class should be doing this initialization?
+
         _ssl = config.ssl;
         origin = config.origin;
 
@@ -116,6 +130,8 @@ public class Pn extends EventDispatcher {
         time(); // warm the non-sub connection
     }
 
+    // adding listeners for the subscribe object
+
     protected function addSubscribeEventListeners():void {
         subscribeObject.addEventListener(SubscribeEvent.CONNECT, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.DATA, onSubscribe);
@@ -128,6 +144,9 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(NetMonEvent.SUB_NET_DOWN, onNetStatus);
     }
 
+
+    // this is what runs when we resume from sleep
+
     private function onEnvironmentReconnect(e:EnvironmentEvent):void {
         if (subscribeObject) {
             dispatchEvent(new PnEvent(PnEvent.RESUME_FROM_SLEEP));
@@ -138,6 +157,16 @@ public class Pn extends EventDispatcher {
     private function onEnvironmentShutdown(e:EnvironmentEvent):void {
         shutdown(Errors.NETWORK_LOST);
     }
+
+    // currently, there is the notion of "shutdown". Remove this state. There only needs to be:
+
+    // Connected
+    //      -   Subscribed
+    //      -   Unsubscribed
+    // Not Connected
+
+
+    // remove "shutdown" we dont need this.
 
     private function shutdown(reason:String = ''):void {
         var channels:String = 'no channels';
@@ -156,6 +185,8 @@ public class Pn extends EventDispatcher {
         Log.log('Shutdown', Log.WARNING);
         dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, null, [0, reason, channels, lastToken]));
     }
+
+    // this can probably be refactored up.
 
     private function startEnvironment():void {
         _initialized = true;
@@ -191,6 +222,7 @@ public class Pn extends EventDispatcher {
                 status = OperationStatus.DISCONNECT;
                 break;
 
+            // we do not need a presence event
             case SubscribeEvent.PRESENCE:
                 status = OperationStatus.DISCONNECT;
                 dispatchEvent(new PnEvent(PnEvent.PRESENCE, e.data, e.data.channel));
@@ -207,7 +239,7 @@ public class Pn extends EventDispatcher {
         dispatchEvent(new PnEvent(PnEvent.SUBSCRIBE, e.data, e.data.channel, status));
     }
 
-
+    // these are handlers for subscribeConnection network events
     private function onNetStatus(e:NetMonEvent):void {
         var status:String;
 
