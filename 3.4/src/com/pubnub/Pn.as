@@ -233,7 +233,7 @@ public class Pn extends EventDispatcher {
     /*---------------UNSUBSCRIBE---------------*/
 
     public static function forceTimeout():void {
-        instance.subscribeObject.onTimeout(new OperationEvent(OperationEvent.TIMEOUT));
+        instance.subscribeObject.onNetworkDisable();
     }
 
     public static function unsubscribe(channel:String):void {
