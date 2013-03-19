@@ -74,8 +74,10 @@ public class Subscribe extends EventDispatcher {
 
     public function onNetworkDisable():void {
 
-        timePingOperation.removeEventListener(OperationEvent.RESULT, onNetworkEnable);
-        timePingOperation.removeEventListener(OperationEvent.FAULT, onNetworkDisable);
+        if (timePingOperation) {
+            timePingOperation.removeEventListener(OperationEvent.RESULT, onNetworkEnable);
+            timePingOperation.removeEventListener(OperationEvent.FAULT, onNetworkDisable);
+        }
 
         trace("Sub.onNetworkDisable");
 
