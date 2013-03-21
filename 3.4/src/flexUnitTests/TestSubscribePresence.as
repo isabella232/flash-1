@@ -63,7 +63,7 @@ package flexUnitTests
 		private function requestSubscribe():void
 		{
 			pn.unsubscribeAll();
-			pn.subscribe(this.singleChannel);
+			Pn.subscribe(this.singleChannel);	//pn.subscribe(this.singleChannel);
 		}
 		
 		public function handleIntendedResult(e:PnEvent,  passThroughData:Object):void

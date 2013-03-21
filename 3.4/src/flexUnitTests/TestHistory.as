@@ -68,7 +68,7 @@ package flexUnitTests
 		private function requestSubscribe():void
 		{
 			pn.unsubscribeAll();
-			pn.subscribe(this.singleChannel);
+			Pn.subscribe(this.singleChannel);	//pn.subscribe(this.singleChannel);
 			Async.delayCall(this, SendFirstMessage, 2000);
 		}
 		
