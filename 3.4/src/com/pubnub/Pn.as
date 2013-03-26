@@ -103,6 +103,9 @@ public class Pn extends EventDispatcher {
         _sessionUUID ||= PnUtils.getUID();
 
         environment.start();
+		if (subscribeObject) {
+			subscribeObject.unsubscribeAll();
+		}
 
         subscribeObject ||= new Subscribe();
 
