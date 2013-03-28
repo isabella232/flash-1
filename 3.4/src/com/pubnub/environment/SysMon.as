@@ -29,6 +29,7 @@ package com.pubnub.environment {
 		}
 		
 		private function ping():void {
+			trace("ping: " + lastTime.toString());
 			var time:Number = getTimer();
 			var timeout:int = time - lastTime;
 			if ( timeout > 2 * TIMEOUT) {

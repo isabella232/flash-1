@@ -131,7 +131,7 @@ public class SubscribeConnection extends Connection {
     override protected function onComplete(e:URLLoaderEvent):void {
         trace('subscribeConnection onComplete');
 
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP, operation));
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
         clearTimeout(subTimer);
         super.onComplete(e);
         //this.operation = null;

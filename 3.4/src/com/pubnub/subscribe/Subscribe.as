@@ -137,11 +137,11 @@ public class Subscribe extends EventDispatcher {
             subscribeConnection.executeGet(timePingOperation);  // Time Ping over Subscribe connection uses Subscribe Connection Timeouts?
 
         } else {
-            dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));
+            /*dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, Errors.NETWORK_RECONNECT_MAX_RETRIES_EXCEEDED));*/
         }
     }
 
-    private function onTimePingResult(e:OperationEvent) {
+    private function onTimePingResult(e:OperationEvent):void {
 
         trace("onTimePingResult removing listeners");
 
@@ -286,7 +286,7 @@ public class Subscribe extends EventDispatcher {
             trace("Sub.executeSubscribeOperation retry mode is NOT set, choosing timetoken: " + tt);
         }
 
-        var subObject = {
+        var subObject:Object = {
             timetoken: tt,
             subscribeKey: subscribeKey,
             channel: this.channelsString,
@@ -314,7 +314,7 @@ public class Subscribe extends EventDispatcher {
             lastReceivedTimetoken = e.data[1];
 
             var chStr:String = e.data[2];
-        } catch (e) {
+        } catch (e:*) {
             Log.log("onMessageReceived: broken response array: " + e + " , TT: " + lastReceivedTimetoken, Log.DEBUG);
             executeSubscribeOperation();
             return
@@ -325,7 +325,7 @@ public class Subscribe extends EventDispatcher {
         var channel:String;
 
         if (presenceRESPONSE) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: chStr, message: messages, timetoken: lastReceivedTimetoken}));
+            /*dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: chStr, message: messages, timetoken: lastReceivedTimetoken}));*/
         } else {
             if (!messages) {
                 return;

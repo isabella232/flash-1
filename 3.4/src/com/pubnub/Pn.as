@@ -9,6 +9,7 @@ import com.pubnub.subscribe.*;
 
 import flash.errors.*;
 import flash.events.*;
+import flash.utils.setTimeout;
 
 
 // refactoring of this file will include consolidation of
@@ -21,7 +22,7 @@ use namespace pn_internal;
 public class Pn extends EventDispatcher {
     static private var __instance:Pn;
 
-    private var _initialized:Boolean = false;
+    /*private var _initialized:Boolean = false;	// gut out unused code*/
 
     private var subscribeObject:Subscribe;
 
@@ -45,10 +46,11 @@ public class Pn extends EventDispatcher {
     private function setup():void {
 
         // This should be a singleton class
-        nonSubConnection = new NonSubConnection(Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT);
+		
+        Pn.nonSubConnection = new NonSubConnection(Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT);
 
-        nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubNet);
-        nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubNet);
+		Pn.nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubNet);
+        Pn.nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubNet);
 
         // For every Pn instance, there should be two singleton connections:
         // SubscribeConnection, and NonSubscribeConnection
@@ -89,11 +91,14 @@ public class Pn extends EventDispatcher {
     }
 
     public function init(config:Object):void {
-        if (_initialized) {
+        /**
+		 * gut out unused code
+		 *  
+		if (_initialized) {
             shutdown('reinitializing');
         }
         _initialized = false;
-
+		*/
 
         // this looks sloppy, looks like Subscribe class should be doing this initialization?
 
@@ -141,7 +146,7 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.ERROR, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.WARNING, onSubscribe);
-        subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);
+        /*subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);*/
 
         subscribeObject.addEventListener(NetMonEvent.SUB_NET_UP, onNetStatus);
         subscribeObject.addEventListener(NetMonEvent.SUB_NET_DOWN, onNetStatus);
@@ -157,9 +162,12 @@ public class Pn extends EventDispatcher {
 
         }
     }
-    private function onEnvironmentShutdown(e:EnvironmentEvent):void {
+    /**
+	 * 
+	 * 
+	private function onEnvironmentShutdown(e:EnvironmentEvent):void {
         shutdown(Errors.NETWORK_LOST);
-    }
+    }*/
 
     // currently, there is the notion of "shutdown". Remove this state. There only needs to be:
 
@@ -171,6 +179,9 @@ public class Pn extends EventDispatcher {
 
     // remove "shutdown" we dont need this.
 
+	/**
+	 * 
+	 * 
     private function shutdown(reason:String = ''):void {
         var channels:String = 'no channels';
         var lastToken:String = null;
@@ -183,14 +194,18 @@ public class Pn extends EventDispatcher {
 
         nonSubConnection.close();
         environment.stop();
-        _initialized = false;
+        //_initialized = false;	// gut out unused code
 
         Log.log('Shutdown', Log.WARNING);
         dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, null, [0, reason, channels, lastToken]));
     }
+*/
 
     // this can probably be refactored up.
 
+	/**
+	 *  gut out unused code
+	 * 
     private function startEnvironment():void {
         _initialized = true;
         environment.start();
@@ -199,7 +214,7 @@ public class Pn extends EventDispatcher {
 
     private function onInitError(event:OperationEvent):void {
         dispatchEvent(new PnEvent(PnEvent.INIT_ERROR, Errors.INIT_OPERATION_ERROR));
-    }
+    }*/
 
     /*---------------SUBSCRIBE---------------*/
     public static function subscribe(channel:String, token:String = null):void {
@@ -226,11 +241,14 @@ public class Pn extends EventDispatcher {
                 break;
 
             // we do not need a presence event
+			/**
+			 * 
+			 * 
             case SubscribeEvent.PRESENCE:
                 status = OperationStatus.DISCONNECT;
                 dispatchEvent(new PnEvent(PnEvent.PRESENCE, e.data, e.data.channel));
                 return;
-                break;
+                break;*/
 
             case SubscribeEvent.WARNING:
                 status = OperationStatus.WARNING;
@@ -305,7 +323,7 @@ public class Pn extends EventDispatcher {
         history.addEventListener(OperationEvent.RESULT, onHistoryResult);
         history.addEventListener(OperationEvent.FAULT, onHistoryFault);
 
-        nonSubConnection.executeGet(history);
+        Pn.nonSubConnection.executeGet(history);
     }
 
     private function onHistoryResult(e:OperationEvent):void {
@@ -331,7 +349,7 @@ public class Pn extends EventDispatcher {
 
     public function publish(args:Object):void {
         var operation:Operation = createPublishOperation(args)
-        nonSubConnection.executeGet(operation);
+        Pn.nonSubConnection.executeGet(operation);
     }
 
     private function onPublishFault(e:OperationEvent):void {
@@ -373,12 +391,16 @@ public class Pn extends EventDispatcher {
         time.addEventListener(OperationEvent.FAULT, onTimeFault);
         time.setURL();
 
-        nonSubConnection.executeGet(time);
+        Pn.nonSubConnection.executeGet(time);
     }
 
     private function onTimeFault(e:OperationEvent):void {
-        var pnEvent:PnEvent = new PnEvent(PnEvent.TIME, e.data, null, OperationStatus.ERROR);
-        dispatchEvent(pnEvent);
+		if (e.data.hasOwnProperty("reTry")) {
+			flash.utils.setTimeout(time, 1000);
+		} else {
+	        var pnEvent:PnEvent = new PnEvent(PnEvent.TIME, e.data, null, OperationStatus.ERROR);
+	        dispatchEvent(pnEvent);
+		}
     }
 
     private function onTimeResult(e:OperationEvent):void {
@@ -397,20 +419,20 @@ public class Pn extends EventDispatcher {
 
 
     public function destroy():void {
-        shutdown();
+        //shutdown();	//
 
-        nonSubConnection.destroy();
-        nonSubConnection = null;
+        Pn.nonSubConnection.destroy();
+        Pn.nonSubConnection = null;
 
         subscribeObject.destroy();
         subscribeObject = null;
 
         environment.destroy();
-        environment.removeEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);
+        //environment.removeEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);	//
         environment = null;
 
         subscribeObject = null;
-        _initialized = false;
+        /*_initialized = false;	// gut out unused code*/
         __instance = null;
     }
 
@@ -425,10 +447,12 @@ public class Pn extends EventDispatcher {
     public function get subscribeKey():String {
         return _subscribeKey;
     }
-
+	/**
+	 *  gut out unused code
+	 * 
     public function get initialized():Boolean {
         return _initialized;
-    }
+    }*/
 
     public function get origin():String {
         return _origin;

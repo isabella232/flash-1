@@ -16,15 +16,15 @@
         import com.pubnub.json.*;
         import com.pubnub.log.Log;
         import com.pubnub.operation.*;
-
+        
         import flash.events.*;
         import flash.external.*;
         import flash.utils.*;
-
+        
         import mx.binding.utils.*;
         import mx.collections.ArrayCollection;
         import mx.events.*;
-
+        
         import utils.*;
 
         [Bindable]
@@ -138,6 +138,10 @@
 
         private function onSubscribe(e:PnEvent):void {
             //if (perfomance.isRun) return;
+			
+			var selectedSubsChannelListIndex:int = subsChannelList.selectedIndex;
+			var selectedPublishChannelListIndex:int = publishChannelList.selectedIndex;
+			
             switch (e.status) {
                 case OperationStatus.DATA:
                     callExternalInterface("console.log", ("Subscribe [DATA]: " + PnJSON.stringify(e.data)));
@@ -160,11 +164,30 @@
                     break;
             }
             channelsDataProvider = new ArrayCollection(Pn.getSubscribeChannels());
+			if (channelsDataProvider.length > selectedSubsChannelListIndex) {
+				subsChannelList.selectedIndex = selectedSubsChannelListIndex;
+			}
+			
+			if (channelsDataProvider.length > selectedPublishChannelListIndex) {
+				publishChannelList.selectedIndex = selectedPublishChannelListIndex;
+			}
         }
 
         private function onPresence(e:PnEvent):void {
+			
+			var selectedSubsChannelListIndex:int = subsChannelList.selectedIndex;
+			var selectedPublishChannelListIndex:int = publishChannelList.selectedIndex;
             callExternalInterface("console.log", ("Presence : " + PnJSON.stringify(e.data)));
             channelsDataProvider = new ArrayCollection(Pn.getSubscribeChannels());
+			
+			channelsDataProvider = new ArrayCollection(Pn.getSubscribeChannels());
+			if (channelsDataProvider.length > selectedSubsChannelListIndex) {
+				subsChannelList.selectedIndex = selectedSubsChannelListIndex;
+			}
+			
+			if (channelsDataProvider.length > selectedPublishChannelListIndex) {
+				publishChannelList.selectedIndex = selectedPublishChannelListIndex;
+			}
         }
 
         protected function OnCustomClick(event:MouseEvent):void {

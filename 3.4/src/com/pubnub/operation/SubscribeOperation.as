@@ -1,7 +1,7 @@
 package com.pubnub.operation{
+import com.pubnub.PnUtils;
 import com.pubnub.Settings;
 import com.pubnub.net.URLRequest;
-	import com.pubnub.PnUtils;
 	
 	/**
 	 * ...
@@ -9,7 +9,7 @@ import com.pubnub.net.URLRequest;
 	 */
 	public class SubscribeOperation extends Operation{
 		
-		public function SubscribeOperation(origin:String, timeout = Settings.SUBSCRIBE_OPERATION_TIMEOUT) {
+		public function SubscribeOperation(origin:String, timeout:uint = Settings.SUBSCRIBE_OPERATION_TIMEOUT) {
 			super(origin, timeout);
 		}
 		

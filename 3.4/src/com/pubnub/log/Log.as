@@ -114,7 +114,7 @@ class LogRecord {
         date = new Date();
     }
 
-    public function toString(recordsCount = 0):String {
+    public function toString(recordsCount:int = 0):String {
         //return (index+1) + '.' +  date.toString() + ' [' + level+  '] '+': ' + message;
         return (recordsCount) + '.' + ' [' + level.toUpperCase() + '], \n' + message + ', \ndate: [' + date.toString() + ']';
     }

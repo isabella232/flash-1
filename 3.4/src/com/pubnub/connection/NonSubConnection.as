@@ -14,10 +14,12 @@ public class NonSubConnection extends Connection {
     protected var nonSubTimer:int;
     protected var initialized:Boolean
     private var busy:Boolean;
+	private var reTryEnabled:Boolean;
 
     public function NonSubConnection(timeout:int = Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT) {
         super();
         _timeout = timeout;
+		this.reTryEnabled = true;
     }
 
     override public function executeGet(operation:Operation):void {
@@ -58,7 +60,7 @@ public class NonSubConnection extends Connection {
 
     override protected function onConnect(e:Event):void {
         trace("NonSubConnection: onConnect");
-        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP, operation));
+        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
         _networkEnabled = true;
         super.onConnect(e);
 
@@ -85,17 +87,26 @@ public class NonSubConnection extends Connection {
 
         this.operation = operation;
         this.operation.startTime = getTimer();
+		trace("doSendOperation startTime:" + this.operation.startTime.toString());
         loader.load(operation);
     }
 
     private function onTimeout(operation:Operation):void {
-        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_DOWN, operation));
+		var tmpOperation:Operation = new Operation(operation.origin, operation.timeout);
+		tmpOperation.setURL(operation.url);
+		
+        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_DOWN));
         Log.log("NonSubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
-
-        operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
-
-        this.operation = null;
+		
+		if (reTryEnabled) {
+			reTryEnabled = false;
+			operation.onError({ reTry: true, message: Errors.OPERATION_TIMEOUT, operation: operation });
+		} else {
+        	operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
+		}
+		this.operation = null;
         busy = false;
+		this.close();
     }
 
     override public function close():void {
@@ -123,7 +134,7 @@ public class NonSubConnection extends Connection {
     }
 
     override protected function onComplete(e:URLLoaderEvent):void {
-        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP, operation));
+        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
         clearTimeout(nonSubTimer);
         super.onComplete(e);
         busy = false;

@@ -126,7 +126,7 @@ public class URLResponse {
 
     //TODO: Refactor into URLLoader getEndSymbol
 
-    static function isChunked(headers:Array):Boolean {
+    static public function isChunked(headers:Array):Boolean {
         if (headers && headers.length > 1) {
             for each(var o:Object  in headers) {
                 var name:String = String(o.name).toLowerCase();
@@ -139,7 +139,7 @@ public class URLResponse {
         return false;
     }
 
-    static function getHeaders(str:String):Array {
+    static public function getHeaders(str:String):Array {
         var result:Array = [];
         var ind:int = str.indexOf(END_LINE + END_LINE);
 //			if (ind > -1) {
