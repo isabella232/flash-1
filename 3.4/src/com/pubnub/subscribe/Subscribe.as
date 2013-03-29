@@ -75,6 +75,8 @@ public class Subscribe extends EventDispatcher {
 
     public function onNetworkDisable():void {
 
+        subscribeConnection.close();
+
         // not sure if this is neccesary
 
         if (timePingOperation) {

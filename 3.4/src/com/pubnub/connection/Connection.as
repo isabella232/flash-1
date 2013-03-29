@@ -23,6 +23,7 @@ import flash.net.URLLoader;
 		
 		protected function init():void {
 			queue = [];
+            _networkEnabled = false;
 			loader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, 	onComplete)
 			loader.addEventListener(IOErrorEvent.IO_ERROR, 		onError);

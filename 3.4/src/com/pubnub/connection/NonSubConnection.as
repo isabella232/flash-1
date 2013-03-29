@@ -2,7 +2,6 @@ package com.pubnub.connection {
 import com.pubnub.*;
 import com.pubnub.environment.NetMonEvent;
 import com.pubnub.log.*;
-import com.pubnub.net.*;
 import com.pubnub.operation.*;
 
 import flash.events.*;
@@ -30,10 +29,6 @@ public class NonSubConnection extends Connection {
         trace("NonSubConnection: onConnect");
         dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
         super.onConnect(e);
-    }
-
-    override protected function get ready():Boolean {
-        return super.ready && !busy;
     }
 
     private function doSendOperation(operation:Operation):void {

@@ -2,7 +2,6 @@ package com.pubnub.connection {
 import com.pubnub.Errors;
 import com.pubnub.environment.NetMonEvent;
 import com.pubnub.log.Log;
-import com.pubnub.net.URLLoaderEvent;
 import com.pubnub.operation.Operation;
 import com.pubnub.operation.OperationEvent;
 import com.pubnub.Settings;
@@ -28,13 +27,11 @@ public class SubscribeConnection extends Connection {
     }
 
     override protected function onConnect(e:Event):void {
-        trace("SubscribeConnection: onConnect");
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
-        super.onConnect(e);
-    }
+        // TODO: Why doesn't this fire?
 
-    override protected function get ready():Boolean {
-        return super.ready
+        trace("SubscribeConnection: onConnect");
+        dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
+        super.onConnect(e);
     }
 
     private function doSendOperation(operation:Operation):void {
@@ -71,6 +68,8 @@ public class SubscribeConnection extends Connection {
         }
 
         super.close();
+        _networkEnabled = false;
+
         initialized = false;
         clearTimeout(subTimer);
     }
@@ -92,7 +91,12 @@ public class SubscribeConnection extends Connection {
     override protected function onComplete(e:Event):void {
         trace('subscribeConnection onComplete');
 
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
+        if (_networkEnabled == false) {
+            _networkEnabled = true
+            dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
+            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
+        }
+
         clearTimeout(subTimer);
         super.onComplete(e);
         //this.operation = null;
