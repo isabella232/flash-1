@@ -9,20 +9,18 @@ import flash.utils.*;
 
 public class NonSubConnection extends Connection {
 
-    protected var _timeout:int = Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT;
-    protected var nonSubTimer:int;
     protected var initialized:Boolean
-    private var busy:Boolean;
     private var reTryEnabled:Boolean;
 
     public function NonSubConnection(timeout:int = Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT) {
-        super();
         _timeout = timeout;
+        super();
         this.reTryEnabled = true;
     }
 
     override public function executeGet(operation:Operation):void {
         doSendOperation(operation);
+        super.doSendOperation(operation);
     }
 
     override protected function onConnect(e:Event):void {
@@ -31,71 +29,55 @@ public class NonSubConnection extends Connection {
         super.onConnect(e);
     }
 
-    private function doSendOperation(operation:Operation):void {
-        if (!operation) {
-            trace("NonSubConnection.doSendOperation: operation is null.");
-            return;
-        }
-
-        clearTimeout(nonSubTimer);
-
-        nonSubTimer = setTimeout(onTimeout, _timeout, operation);
-        busy = true;
-
-        this.operation = operation;
-        this.operation.startTime = getTimer();
-        trace("doSendOperation startTime:" + this.operation.startTime.toString());
-        loader.load(operation.request);
+    override protected function doSendOperation(operation:Operation):void {
+        trace("NonSubConnection.doSendOperation");
+        super.doSendOperation(operation);
     }
 
-    private function onTimeout(operation:Operation):void {
-        var tmpOperation:Operation = new Operation(operation.origin, operation.timeout);
-        tmpOperation.setURL(operation.url);
+    override protected function onTimeout(operation:Operation):void {
+        dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, operation));
 
-        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_DOWN));
         Log.log("NonSubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
 
-        if (reTryEnabled) {
-            reTryEnabled = false;
-            operation.onError({ reTry: true, message: Errors.OPERATION_TIMEOUT, operation: operation });
-        } else {
-            operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
-        }
+        // TODO: Remove onError invokations
+        operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
         this.operation = null;
-        busy = false;
         this.close();
     }
 
     override public function close():void {
-        if (queue && queue[0]) {
-            queue[0].destroy();
-        }
+
+        Log.log("SubConnection.close");
 
         super.close();
-        busy = false;
         initialized = false;
-        clearTimeout(nonSubTimer);
+        clearTimeout(operationTimer);
     }
 
     override protected function onError(e:Event):void {
-        _networkEnabled = false;
-        clearTimeout(nonSubTimer);
+        clearTimeout(operationTimer);
         dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
         super.onError(e);
     }
 
     override protected function onClose(e:Event):void {
         trace('subscribeConnection onClose');
-        clearTimeout(nonSubTimer);
+        clearTimeout(operationTimer);
         super.onClose(e);
     }
 
     override protected function onComplete(e:Event):void {
-        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
-        clearTimeout(nonSubTimer);
+        trace('nonsubscribeConnection onComplete');
+
+        if (_networkEnabled == false) {
+            _networkEnabled = true
+            dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
+            dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
+        }
+
+        clearTimeout(operationTimer);
         super.onComplete(e);
-        busy = false;
-        this.operation = null;
+        //this.operation = null;
     }
 }
 }
