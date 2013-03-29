@@ -24,52 +24,13 @@ public class SubscribeConnection extends Connection {
     }
 
     override public function executeGet(operation:Operation):void {
-        if (!operation) {
-            trace("SubscribeConnection.executeGet: operation is null.");
-            return;
-        }
-
-        if (ready && _networkEnabled) {
-            Log.log("SubscribeConnection.executeGet: ready for: " + operation.toString(), Log.DEBUG);
-            doSendOperation(operation);
-        } else {
-            Log.log("SubscribeConnection.executeGet: not ready trying to restart loader for: " + operation.toString(), Log.DEBUG);
-            if (!loader) {
-                loader.load(operation.request);
-            }
-
-            // the point of the above code is to "warm" the connection and retry the operation if it is not ready
-            // but we need to be able to obey
-
-            // this low level (embryonic), operation on this timeout instead?
-            // public static const RECONNECT_RETRY_DELAY:uint
-
-            // for all subscribe network operations
-
-            // should this be here? or below?
-            // queue[0] = operation;
-
-        }
-
-        // the way to test this is with network off and on
-
-        // operations should never auto-retry!!!
-        //should the below queue[0] be one level up instead?
-        queue[0] = operation;
-
+        doSendOperation(operation);
     }
 
     override protected function onConnect(e:Event):void {
         trace("SubscribeConnection: onConnect");
-        dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
-        _networkEnabled = true;
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
         super.onConnect(e);
-
-        if (queue && queue[0]) {
-            trace("SubscribeConnection: onConnect QUEUE EXECUTION");
-            executeGet(queue[0]);
-            queue.length = 0;
-        }
     }
 
     override protected function get ready():Boolean {

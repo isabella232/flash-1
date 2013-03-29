@@ -29,13 +29,7 @@ public class NonSubConnection extends Connection {
     override protected function onConnect(e:Event):void {
         trace("NonSubConnection: onConnect");
         dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
-        _networkEnabled = true;
         super.onConnect(e);
-
-        if (queue && queue[0]) {
-            executeGet(queue[0]);
-            queue.length = 0;
-        }
     }
 
     override protected function get ready():Boolean {

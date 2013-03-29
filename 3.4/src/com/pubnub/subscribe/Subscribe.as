@@ -37,8 +37,9 @@ public class Subscribe extends EventDispatcher {
     protected var timePingOperation:TimeOperation;
     protected var _networkEnabled:Boolean = false;
 
-    public function Subscribe() {
+    public function Subscribe(origin) {
         super(null);
+        _origin = origin;
         init();
     }
 

@@ -123,7 +123,7 @@
 
         private function onInit(e:PnEvent):void {
             //if (perfomance.isRun) return;
-            sslCheckBox.enabled = false;
+            //sslCheckBox.enabled = false;
             callExternalInterface("console.log", ("Pn init : " + Pn.instance.sessionUUID));
         }
 

@@ -112,7 +112,7 @@ public class Pn extends EventDispatcher {
 			subscribeObject.unsubscribeAll();
 		}
 
-        subscribeObject ||= new Subscribe();
+        subscribeObject ||= new Subscribe(origin);
 
         addSubscribeEventListeners();
 
