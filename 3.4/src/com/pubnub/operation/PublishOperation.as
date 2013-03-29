@@ -2,7 +2,11 @@ package com.pubnub.operation {
 	import com.adobe.crypto.*;
 	import com.pubnub.*;
 	import com.pubnub.json.*;
-	import com.pubnub.net.*;
+
+import flash.net.URLRequest;
+
+//import com.pubnub.net.*;
+
 	/**
 	 * ...
 	 * @author firsoff maxim, support@pubnub.com

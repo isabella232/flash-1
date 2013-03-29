@@ -1,8 +1,11 @@
 package com.pubnub.connection {
-	import com.pubnub.net.*;
-	import com.pubnub.operation.*;
+	//import com.pubnub.net.*;
+//import com.pubnub.net.URLLoaderEvent;
+import com.pubnub.operation.*;
 	import flash.events.*;
-	/**
+import flash.net.URLLoader;
+
+/**
 	 * ...
 	 * @author firsoff maxim, firsoffmaxim@gmail.com, icq : 235859730
 	 */
@@ -21,8 +24,8 @@ package com.pubnub.connection {
 		protected function init():void {
 			queue = [];
 			loader = new URLLoader();
-			loader.addEventListener(URLLoaderEvent.COMPLETE, 	onComplete)
-			loader.addEventListener(URLLoaderEvent.ERROR, 		onError);
+			loader.addEventListener(Event.COMPLETE, 	onComplete)
+			loader.addEventListener(IOErrorEvent.IO_ERROR, 		onError);
 			loader.addEventListener(Event.CONNECT, 				onConnect);
 			loader.addEventListener(Event.CLOSE, 				onClose);
 		}
@@ -32,7 +35,7 @@ package com.pubnub.connection {
 		}
 		
 		protected function get ready():Boolean{
-			return loader && loader.ready;
+			return loader
 		}
 		
 		protected function onConnect(e:Event):void {
@@ -40,14 +43,14 @@ package com.pubnub.connection {
 			_closed = false;
 		}
 		
-		protected function onError(e:URLLoaderEvent):void {
+		protected function onError(e:Event):void {
 			// abstract
 		}
 		
-		protected function onComplete(e:URLLoaderEvent):void {
-			var response:URLResponse = e.data as URLResponse;
-			if (operation && !operation.destroyed && response && response.body) {
-				operation.onData(response.body);
+		protected function onComplete(e:Event):void {
+			//var response:URLResponse = e.data as URLResponse;
+			if (operation && !operation.destroyed && loader.data.body ) {
+				operation.onData(loader.data.body);
 			}
 		}
 		
@@ -61,12 +64,12 @@ package com.pubnub.connection {
 		
 		public function destroy():void {
 			if (_destroyed) return;
-			loader.removeEventListener(URLLoaderEvent.COMPLETE, onComplete)
-			loader.removeEventListener(URLLoaderEvent.ERROR, 	onError);
+			loader.removeEventListener(Event.COMPLETE, onComplete)
+			loader.removeEventListener(IOErrorEvent.IO_ERROR, 	onError);
 			loader.removeEventListener(Event.CONNECT, 			onConnect);
 			loader.removeEventListener(Event.CLOSE, 			onClose);
 			close();
-			loader.destroy();
+			loader.close();
 			loader = null;
 			
 			_destroyed = true;
@@ -78,11 +81,21 @@ package com.pubnub.connection {
 			_closed = true;
 			queue.length = 0;
 			operation = null;
-			loader.close();
+            try {
+                loader.close();
+            } catch(e) {
+                if (e.errorID == 2029) {
+                    trace("Will not close because the connection is not open.")
+                } else {
+                    trace("Unknown connection close error: " + e.message)
+                }
+
+            }
+
 		}
 		
 		public function get connected():Boolean{
-			return loader && loader.connected;
+			return loader;
 		}
 		
 		public function get destroyed():Boolean {

@@ -33,8 +33,8 @@ public class NonSubConnection extends Connection {
             doSendOperation(operation);
         } else {
             Log.log("NonSubConnection.executeGet: not ready trying to restart loader for: " + operation.toString(), Log.DEBUG);
-            if (loader.connected == false) {
-                loader.connect(operation.request);
+            if (!loader) {
+                loader.load(operation.request);
             }
 
             // the point of the above code is to "warm" the connection and retry the operation if it is not ready
@@ -88,7 +88,7 @@ public class NonSubConnection extends Connection {
         this.operation = operation;
         this.operation.startTime = getTimer();
 		trace("doSendOperation startTime:" + this.operation.startTime.toString());
-        loader.load(operation);
+        loader.load(operation.request);
     }
 
     private function onTimeout(operation:Operation):void {
@@ -120,7 +120,7 @@ public class NonSubConnection extends Connection {
         clearTimeout(nonSubTimer);
     }
 
-    override protected function onError(e:URLLoaderEvent):void {
+    override protected function onError(e:Event):void {
         _networkEnabled = false;
         clearTimeout(nonSubTimer);
         dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
@@ -133,7 +133,7 @@ public class NonSubConnection extends Connection {
         super.onClose(e);
     }
 
-    override protected function onComplete(e:URLLoaderEvent):void {
+    override protected function onComplete(e:Event):void {
         dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
         clearTimeout(nonSubTimer);
         super.onComplete(e);

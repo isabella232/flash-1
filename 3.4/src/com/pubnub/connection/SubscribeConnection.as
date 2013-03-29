@@ -34,8 +34,8 @@ public class SubscribeConnection extends Connection {
             doSendOperation(operation);
         } else {
             Log.log("SubscribeConnection.executeGet: not ready trying to restart loader for: " + operation.toString(), Log.DEBUG);
-            if (loader.connected == false) {
-                loader.connect(operation.request);
+            if (!loader) {
+                loader.load(operation.request);
             }
 
             // the point of the above code is to "warm" the connection and retry the operation if it is not ready
@@ -89,7 +89,7 @@ public class SubscribeConnection extends Connection {
 
         this.operation = operation;
         this.operation.startTime = getTimer();
-        loader.load(operation);
+        loader.load(operation.request);
     }
 
     private function onTimeout(operation:Operation):void {
@@ -114,7 +114,7 @@ public class SubscribeConnection extends Connection {
         clearTimeout(subTimer);
     }
 
-    override protected function onError(e:URLLoaderEvent):void {
+    override protected function onError(e:Event):void {
         trace('subscribeConnection onError');
         _networkEnabled = false;
         clearTimeout(subTimer);
@@ -128,7 +128,7 @@ public class SubscribeConnection extends Connection {
         super.onClose(e);
     }
 
-    override protected function onComplete(e:URLLoaderEvent):void {
+    override protected function onComplete(e:Event):void {
         trace('subscribeConnection onComplete');
 
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));

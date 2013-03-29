@@ -2,7 +2,10 @@ package com.pubnub.operation {
 
 	import com.pubnub.json.PnJSON;
 import com.pubnub.log.Log;
-import com.pubnub.net.URLRequest;
+
+import flash.net.URLRequest;
+
+//import com.pubnub.net.URLRequest;
 	import com.pubnub.net.URLRequestHeader;
 	import com.pubnub.Settings;
 	import flash.events.IEventDispatcher;
@@ -53,7 +56,7 @@ import com.pubnub.net.URLRequest;
 			_completed = false;
 			_request = new URLRequest(url);
 			_request.method = URLRequestMethod.GET;
-			_request.header = new URLRequestHeader();
+			//_request.header = new URLRequestHeader();
 			return request;
 		}
 		
@@ -92,7 +95,7 @@ import com.pubnub.net.URLRequest;
 			if (destroyed) return;
 			super.destroy();
 			args = null;
-			_request.destroy();
+			//_request.close();
 			_request = null;
 			
 		}

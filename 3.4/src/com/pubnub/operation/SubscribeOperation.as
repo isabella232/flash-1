@@ -1,7 +1,10 @@
 package com.pubnub.operation{
 import com.pubnub.PnUtils;
 import com.pubnub.Settings;
-import com.pubnub.net.URLRequest;
+
+import flash.net.URLRequest;
+
+//import com.pubnub.net.URLRequest;
 	
 	/**
 	 * ...

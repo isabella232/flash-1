@@ -1,7 +1,12 @@
 package com.pubnub.operation {
-	import com.pubnub.*;
-	import com.pubnub.json.*;
-	import com.pubnub.net.*;
+	//import com.pubnub.*;
+import com.pubnub.PnCrypto;
+import com.pubnub.PnUtils;
+import com.pubnub.json.*;
+
+import flash.net.URLRequest;
+
+//import com.pubnub.net.*;
 	/**
 	 * ...
 	 * @author firsoff maxim, support@pubnub.com
