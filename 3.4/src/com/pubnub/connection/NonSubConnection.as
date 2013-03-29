@@ -14,48 +14,16 @@ public class NonSubConnection extends Connection {
     protected var nonSubTimer:int;
     protected var initialized:Boolean
     private var busy:Boolean;
-	private var reTryEnabled:Boolean;
+    private var reTryEnabled:Boolean;
 
     public function NonSubConnection(timeout:int = Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT) {
         super();
         _timeout = timeout;
-		this.reTryEnabled = true;
+        this.reTryEnabled = true;
     }
 
     override public function executeGet(operation:Operation):void {
-        if (!operation) {
-            trace("NonSubConnection.executeGet: operation is null.");
-            return;
-        }
-
-        if (ready && _networkEnabled) {
-            Log.log("NonSubConnection.executeGet: ready for: " + operation.toString(), Log.DEBUG);
-            doSendOperation(operation);
-        } else {
-            Log.log("NonSubConnection.executeGet: not ready trying to restart loader for: " + operation.toString(), Log.DEBUG);
-            if (!loader) {
-                loader.load(operation.request);
-            }
-
-            // the point of the above code is to "warm" the connection and retry the operation if it is not ready
-            // but we need to be able to obey
-
-            // this low level (embryonic), operation on this timeout instead?
-            // public static const RECONNECT_RETRY_DELAY:uint
-
-            // for all subscribe network operations
-
-            // should this be here? or below?
-            // queue[0] = operation;
-
-        }
-
-        // the way to test this is with network off and on
-
-        // operations should never auto-retry!!!
-        //should the below queue[0] be one level up instead?
-        queue[0] = operation;
-
+        doSendOperation(operation);
     }
 
     override protected function onConnect(e:Event):void {
@@ -87,26 +55,26 @@ public class NonSubConnection extends Connection {
 
         this.operation = operation;
         this.operation.startTime = getTimer();
-		trace("doSendOperation startTime:" + this.operation.startTime.toString());
+        trace("doSendOperation startTime:" + this.operation.startTime.toString());
         loader.load(operation.request);
     }
 
     private function onTimeout(operation:Operation):void {
-		var tmpOperation:Operation = new Operation(operation.origin, operation.timeout);
-		tmpOperation.setURL(operation.url);
-		
+        var tmpOperation:Operation = new Operation(operation.origin, operation.timeout);
+        tmpOperation.setURL(operation.url);
+
         dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_DOWN));
         Log.log("NonSubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
-		
-		if (reTryEnabled) {
-			reTryEnabled = false;
-			operation.onError({ reTry: true, message: Errors.OPERATION_TIMEOUT, operation: operation });
-		} else {
-        	operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
-		}
-		this.operation = null;
+
+        if (reTryEnabled) {
+            reTryEnabled = false;
+            operation.onError({ reTry: true, message: Errors.OPERATION_TIMEOUT, operation: operation });
+        } else {
+            operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
+        }
+        this.operation = null;
         busy = false;
-		this.close();
+        this.close();
     }
 
     override public function close():void {

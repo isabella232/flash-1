@@ -117,7 +117,7 @@
             this.nonSubConnectionStatus.setStyle('backgroundColor', "#00FC00");
         }
 
-        private function onPnResumeFromSleep(e:EnvironmentEvent):void {
+        private function onPnResumeFromSleep(e:PnEvent):void {
             callExternalInterface("console.log", ("Pn ResumeFromSleep"));
         }
 

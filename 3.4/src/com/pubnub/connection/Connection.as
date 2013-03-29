@@ -41,6 +41,7 @@ import flash.net.URLLoader;
 		protected function onConnect(e:Event):void {
 			// abstract
 			_closed = false;
+            _networkEnabled = true;
 		}
 		
 		protected function onError(e:Event):void {
@@ -49,8 +50,8 @@ import flash.net.URLLoader;
 		
 		protected function onComplete(e:Event):void {
 			//var response:URLResponse = e.data as URLResponse;
-			if (operation && !operation.destroyed && loader.data.body ) {
-				operation.onData(loader.data.body);
+			if (operation && !operation.destroyed && loader.data ) {
+				operation.onData(loader.data);
 			}
 		}
 		
