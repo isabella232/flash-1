@@ -40,7 +40,7 @@ public class SubscribeConnection extends Connection {
         Log.log("SubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
 
         // TODO: Remove onError invokations
-        operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
+        //operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
     }
 
     override public function close():void {

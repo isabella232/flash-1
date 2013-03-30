@@ -7,7 +7,9 @@ import com.pubnub.log.Log;
 import com.pubnub.operation.*;
 
 import flash.events.*;
+import flash.utils.clearInterval;
 import flash.utils.clearTimeout;
+import flash.utils.setInterval;
 import flash.utils.setTimeout;
 
 import org.casalib.util.*;
@@ -26,7 +28,7 @@ public class Subscribe extends EventDispatcher {
 
     protected var _origin:String = "";
     protected var _retryCount:int = 0;
-    protected var _retryTimer:int = 0;
+    protected var retryInterval:int = 0;
     protected var _UUID:String = null;
     protected var _lastReceivedTimetoken:String = "0";
     protected var _savedTimetoken:String = "0";
@@ -52,7 +54,7 @@ public class Subscribe extends EventDispatcher {
         subscribeConnection.addEventListener(OperationEvent.TIMEOUT, onTimeout);
         subscribeConnection.addEventListener(OperationEvent.CONNECTION_ERROR, onConnectError);
 
-        onNetworkDisable();
+        delayedOnNetworkDisable(new NetMonEvent("foo"));
 
     }
 
@@ -62,8 +64,31 @@ public class Subscribe extends EventDispatcher {
         dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, { channel: "", reason: ('') }));
     }
 
+
+
+    public function onTimeout(e:OperationEvent):void {
+        trace("Subscribe.onTimeout")
+        delayedOnNetworkDisable(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+
+        delayedOnNetworkDisable(new NetMonEvent("foo"));
+
+    }
+
+    private function onConnectError(e:OperationEvent):void {
+        trace("Subscribe.onConnectError")
+
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
+
+        delayedOnNetworkDisable(new NetMonEvent("foo"));
+
+    }
+
     private function onNetworkEnable():void {
         trace("Sub.onNetworkEnable: Re-enabling network now!");
+
+        clearInterval(retryInterval);
+        retryInterval = 0;
+        removeTimePingListeners();
 
         retryCount = 0;
         networkEnabled = true;
@@ -73,53 +98,34 @@ public class Subscribe extends EventDispatcher {
         }
     }
 
-    public function onNetworkDisable():void {
 
-        subscribeConnection.close();
 
-        // not sure if this is neccesary
+    public function delayedOnNetworkDisable(e:NetMonEvent):void {
 
-        if (timePingOperation) {
-            timePingOperation.removeEventListener(OperationEvent.RESULT, onNetworkEnable);
-            timePingOperation.removeEventListener(OperationEvent.FAULT, onNetworkDisable);
+        if (retryInterval > 0) {
+            return;
         }
 
-        trace("Sub.onNetworkDisable");
-
-        retryCount++;
-        networkEnabled = false;
-        subscribeConnection.close();
+        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+        trace("Subscribe.delayedOnNetworkDisable: " + Settings.RECONNECT_RETRY_DELAY);
 
         dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: "", reason: ('') }));
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
 
+        retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
+    }
+
+    public function onNetworkDisable():void {
+
+        subscribeConnection.close();
+
+        removeTimePingListeners();
+        trace("Sub.onNetworkDisable");
+
+        retryCount++;
+        networkEnabled = false;
+
         timePing();
-
-    }
-
-    public function onTimeout(e:OperationEvent):void {
-        trace("Subscribe.onTimeout")
-        delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
-
-        onNetworkDisable();
-
-    }
-
-    private function onConnectError(e:OperationEvent):void {
-        trace("Subscribe.onConnectError")
-
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
-
-        onNetworkDisable();
-
-    }
-
-    private function delayedSubscribeRetry(e:NetMonEvent):void {
-
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
-        trace("Subscribe.delayedSubscribeRetry: " + Settings.RECONNECT_RETRY_DELAY);
-
-        onNetworkDisable();
     }
 
     private function timePing():void {
@@ -136,7 +142,7 @@ public class Subscribe extends EventDispatcher {
 
             timePingOperation = new TimeOperation(origin);
             timePingOperation.addEventListener(OperationEvent.RESULT, onTimePingResult);
-            timePingOperation.addEventListener(OperationEvent.FAULT, onNetworkDisable);
+            //timePingOperation.addEventListener(OperationEvent.FAULT, onNetworkDisable);
             timePingOperation.setURL();
 
             trace("Sub.timePing request NOW:");
@@ -147,13 +153,14 @@ public class Subscribe extends EventDispatcher {
         }
     }
 
+    private function removeTimePingListeners():void {
+        if (timePingOperation) {
+            timePingOperation.removeEventListener(OperationEvent.RESULT, onNetworkEnable);
+            //timePingOperation.removeEventListener(OperationEvent.FAULT, delayedOnNetworkDisable);
+        }
+    }
+
     private function onTimePingResult(e:OperationEvent):void {
-
-        trace("onTimePingResult removing listeners");
-
-        // are these removeEL needed?
-        timePingOperation.removeEventListener(OperationEvent.RESULT, onNetworkEnable);
-        timePingOperation.removeEventListener(OperationEvent.FAULT, onNetworkDisable);
 
         trace("onTimePingResult calling networkEnable");
         onNetworkEnable();
@@ -250,7 +257,7 @@ public class Subscribe extends EventDispatcher {
             if (savedChannels == null || savedChannels && savedChannels.length == 0) {
                 trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
                 lastReceivedTimetoken = "0"
-                onNetworkDisable();
+                delayedOnNetworkDisable(new NetMonEvent("foo"));
             }
         }
     }

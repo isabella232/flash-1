@@ -37,7 +37,7 @@ public class NonSubConnection extends Connection {
         Log.log("NonSubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
 
         // TODO: Remove onError invokations
-        operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
+        //operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
         this.close();
     }
 
@@ -50,7 +50,6 @@ public class NonSubConnection extends Connection {
 
     override protected function onError(e:Event):void {
         clearTimeout(operationTimer);
-        dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
         super.onError(e);
     }
 

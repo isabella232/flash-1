@@ -286,7 +286,7 @@ public class Pn extends EventDispatcher {
     /*---------------UNSUBSCRIBE---------------*/
 
     public static function forceTimeout():void {
-        instance.subscribeObject.onNetworkDisable();
+        instance.subscribeObject.delayedOnNetworkDisable(new NetMonEvent("foo"));
     }
 
     public static function unsubscribe(channel:String):void {
