@@ -100,6 +100,9 @@ public class Subscribe extends EventDispatcher {
     public function onTimeout(e:OperationEvent):void {
         trace("Subscribe.onTimeout")
         delayedSubscribeRetry(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+
+        onNetworkDisable();
+
     }
 
     private function onConnectError(e:OperationEvent):void {

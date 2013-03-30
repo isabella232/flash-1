@@ -9,13 +9,9 @@ import flash.utils.*;
 
 public class NonSubConnection extends Connection {
 
-    protected var initialized:Boolean
-    private var reTryEnabled:Boolean;
-
     public function NonSubConnection(timeout:int = Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT) {
         _timeout = timeout;
         super();
-        this.reTryEnabled = true;
     }
 
     override public function executeGet(operation:Operation):void {
@@ -35,13 +31,13 @@ public class NonSubConnection extends Connection {
     }
 
     override protected function onTimeout(operation:Operation):void {
+        super.onTimeout(operation);
         dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, operation));
 
         Log.log("NonSubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
 
         // TODO: Remove onError invokations
         operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
-        this.operation = null;
         this.close();
     }
 
@@ -50,8 +46,6 @@ public class NonSubConnection extends Connection {
         Log.log("SubConnection.close");
 
         super.close();
-        initialized = false;
-        clearTimeout(operationTimer);
     }
 
     override protected function onError(e:Event):void {
@@ -62,7 +56,6 @@ public class NonSubConnection extends Connection {
 
     override protected function onClose(e:Event):void {
         trace('subscribeConnection onClose');
-        clearTimeout(operationTimer);
         super.onClose(e);
     }
 
@@ -77,7 +70,6 @@ public class NonSubConnection extends Connection {
 
         clearTimeout(operationTimer);
         super.onComplete(e);
-        //this.operation = null;
     }
 }
 }

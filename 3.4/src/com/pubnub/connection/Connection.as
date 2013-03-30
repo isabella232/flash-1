@@ -22,7 +22,6 @@ public class Connection extends EventDispatcher {
     protected var _timeout:int;
 
 
-
     public function Connection() {
         init();
     }
@@ -37,8 +36,8 @@ public class Connection extends EventDispatcher {
     }
 
     protected function onClose(e:Event):void {
+        clearTimeout(operationTimer);
         _networkEnabled = false;
-        dispatchEvent(e);
     }
 
     protected function get ready():Boolean {
@@ -100,6 +99,8 @@ public class Connection extends EventDispatcher {
 
     public function close():void {
 
+        clearTimeout(operationTimer);
+
         operation = null;
         try {
             loader.close();
@@ -109,25 +110,8 @@ public class Connection extends EventDispatcher {
             } else {
                 trace("Unknown connection close error: " + e.message)
             }
-
         }
-
     }
 
-    public function get connected():Boolean {
-        return loader;
-    }
-
-    public function get destroyed():Boolean {
-        return _destroyed;
-    }
-
-    public function get networkEnabled():Boolean {
-        return _networkEnabled;
-    }
-
-    public function set networkEnabled(value:Boolean):void {
-        _networkEnabled = value;
-    }
 }
 }

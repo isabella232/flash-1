@@ -11,8 +11,6 @@ import flash.utils.setTimeout;
 
 public class SubscribeConnection extends Connection {
 
-    protected var initialized:Boolean;
-
     public function SubscribeConnection(timeout:int = Settings.SUBSCRIBE_OPERATION_TIMEOUT) {
         _timeout = timeout;
         super();
@@ -36,23 +34,19 @@ public class SubscribeConnection extends Connection {
     }
 
     override protected function onTimeout(operation:Operation):void {
+        super.onTimeout(operation);
         dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, operation));
 
         Log.log("SubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
 
         // TODO: Remove onError invokations
         operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
-        this.operation = null;
-        this.close();
     }
 
     override public function close():void {
 
         Log.log("SubConnection.close");
-
         super.close();
-        initialized = false;
-        clearTimeout(operationTimer);
     }
 
     override protected function onError(e:Event):void {
@@ -64,7 +58,6 @@ public class SubscribeConnection extends Connection {
 
     override protected function onClose(e:Event):void {
         trace('subscribeConnection onClose');
-        clearTimeout(operationTimer);
         super.onClose(e);
     }
 
@@ -79,7 +72,6 @@ public class SubscribeConnection extends Connection {
 
         clearTimeout(operationTimer);
         super.onComplete(e);
-        //this.operation = null;
     }
 }
 }
