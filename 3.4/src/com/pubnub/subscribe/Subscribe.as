@@ -8,9 +8,7 @@ import com.pubnub.operation.*;
 
 import flash.events.*;
 import flash.utils.clearInterval;
-import flash.utils.clearTimeout;
 import flash.utils.setInterval;
-import flash.utils.setTimeout;
 
 import org.casalib.util.*;
 
@@ -52,8 +50,6 @@ public class Subscribe extends EventDispatcher {
         subscribeConnection.addEventListener(OperationEvent.CONNECT, onConnect);
         subscribeConnection.addEventListener(OperationEvent.TIMEOUT, onError);
         subscribeConnection.addEventListener(OperationEvent.CONNECTION_ERROR, onError);
-
-        retryToConnect(new NetMonEvent("foo"));
     }
 
     protected function onConnect(e:OperationEvent):void {
@@ -86,6 +82,11 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function onNetworkDisable():void {
+
+        if (Settings.SUB_NET_DOWN_ON_SILENCE == true && networkEnabled) {
+            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to silence"]));
+        }
 
         subscribeConnection.close();
         trace("Sub.onNetworkDisable");
@@ -203,6 +204,11 @@ public class Subscribe extends EventDispatcher {
             trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
             trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
 
+            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to no active subscriptions"]));
+
+            networkEnabled = false;
+            clearInterval(retryInterval);
             lastReceivedTimetoken = "0";
             savedTimetoken = "0";
         }
@@ -254,6 +260,12 @@ public class Subscribe extends EventDispatcher {
 
         if (!networkEnabled) {
             // recoverying!
+
+            if (Settings.SUB_NET_DOWN_ON_SILENCE == true) {
+                dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [1, "silence has been broken" ]));
+                dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP))
+            }
+
             onNetworkEnable();
         }
 

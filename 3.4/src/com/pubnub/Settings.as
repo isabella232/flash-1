@@ -6,7 +6,7 @@ package com.pubnub {
      public class Settings {
          // retry to connect a maximum of this many times before Pn.shutdown()
          public static const MAX_RECONNECT_RETRIES:uint = 500; // when this limit is hit, unsubscribe all, and connection.close()
-         public static const RECONNECT_RETRY_DELAY:uint = 2000; //100;
+         public static const RECONNECT_RETRY_DELAY:uint = 2000;
 
          public static const SUB_NET_DOWN_ON_SILENCE:Boolean = true; //100;
 
@@ -16,7 +16,7 @@ package com.pubnub {
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 
-         public static const RESUME_ON_RECONNECT:Boolean = false;
+         public static const RESUME_ON_RECONNECT:Boolean = true;
 
          // Given the above defaults
          // the client would check for 5 minutes (300s) after network loss
@@ -26,33 +26,6 @@ package com.pubnub {
          public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 5000;
          public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 5000;
 
-         /////////////////////////////////////////////////////////////////////////////
-
-         // First level net test before subscribe is on, Using below POT as timeout
-         // Do not exceed 15000 !!!!
-
-//         public static const PING_OPERATION_INTERVAL:uint = 15000;
-//         public static const REMOTE_OPERATION_INTERVAL:uint = 5000;
-
-         // Timeout, in ms, for above POI
-//         public static const PING_OPERATION_TIMEOUT:uint = 10000;
-//         public static const REMOTE_OPERATION_TIMEOUT:uint = 3000;
-
-         ////////////////////////////////////////////////////////////////////////////
-		 
-		 // When in subscribe recovery mode, try to hit POU endpoint every PORI ms
-//		 public static const PING_OPERATION_RETRY_INTERVAL:uint = 1000;
-//         public static const REMOTE_OPERATION_RETRY_INTERVAL:uint = 1000;
-
-         // URL Endpoint for recovery mode net detection
-
-         //public static const PING_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
-         //public static const REMOTE_OPERATION_URL:String = 'http://localhost:3000/';
-
-//         public static const REMOTE_OPERATION_URL:String = 'http://pubsub.pubnub.com/time/0';
-//         public static const PING_OPERATION_URL:String = 'http://localhost:3000/';
-
-         //public static const REMOTE_OPERATION_URL:String = 'http://pubsub.pubnub.com/crossdomain.xml';
 
 
 

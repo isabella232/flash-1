@@ -29,7 +29,7 @@
 
         [Bindable]
 
-        public var channel:String = 'hello_world'; //ping_3';
+        public var channel:String = 'hello_world,a'; //ping_3';
         //public var channel:String = 'rand_seq';
 
 
