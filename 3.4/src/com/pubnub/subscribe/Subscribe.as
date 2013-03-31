@@ -65,7 +65,6 @@ public class Subscribe extends EventDispatcher {
     }
 
 
-
     public function onTimeout(e:OperationEvent):void {
         trace("Subscribe.onTimeout")
         delayedOnNetworkDisable(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
@@ -77,7 +76,7 @@ public class Subscribe extends EventDispatcher {
     private function onConnectError(e:OperationEvent):void {
         trace("Subscribe.onConnectError")
 
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
+        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
 
         delayedOnNetworkDisable(new NetMonEvent("foo"));
 
@@ -90,14 +89,12 @@ public class Subscribe extends EventDispatcher {
         retryInterval = 0;
         removeTimePingListeners();
 
-        retryCount = 0;
         networkEnabled = true;
 
         if (channels && channels.length > 0) {
             executeSubscribeOperation();
         }
     }
-
 
 
     public function delayedOnNetworkDisable(e:NetMonEvent):void {
@@ -291,12 +288,14 @@ public class Subscribe extends EventDispatcher {
         // if Settings.RESUME_ON_RECONNECT == true) use lastReceivedTimetoken other wise, use  "0";
         // but ALWAYS use lastTimetoken under normal network state
 
-        if (!networkEnabled) {
+        if (retryCount > 0) {
+            retryCount = 0;
+
             tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
             trace("Sub.executeSubscribeOperation retry mode is set, choosing timetoken: " + tt);
         } else {
             tt = lastReceivedTimetoken;
-            trace("Sub.executeSubscribeOperation retry mode is NOT set, choosing timetoken: " + tt);
+            trace("Sub.executeSubscribeOperation resuming subscribe loop, choosing timetoken: " + tt);
         }
 
         var subObject:Object = {

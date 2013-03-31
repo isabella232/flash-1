@@ -14,7 +14,7 @@ package com.pubnub {
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 
-         public static const RESUME_ON_RECONNECT:Boolean = false;
+         public static const RESUME_ON_RECONNECT:Boolean = true;
 
          // Given the above defaults
          // the client would check for 5 minutes (300s) after network loss
