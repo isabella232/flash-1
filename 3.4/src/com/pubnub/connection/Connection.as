@@ -40,10 +40,6 @@ public class Connection extends EventDispatcher {
         _networkEnabled = false;
     }
 
-    protected function get ready():Boolean {
-        return loader
-    }
-
     protected function doSendOperation(operation:Operation):void {
         clearTimeout(operationTimer);
         operationTimer = setTimeout(onTimeout, _timeout, operation);
@@ -60,14 +56,18 @@ public class Connection extends EventDispatcher {
     }
 
     protected function onError(e:Event):void {
+        clearTimeout(operationTimer);
         _networkEnabled = false;
     }
 
     protected function onTimeout(operation:Operation):void {
+        clearTimeout(operationTimer);
         _networkEnabled = false;
     }
 
     protected function onComplete(e:Event):void {
+        clearTimeout(operationTimer);
+
         _networkEnabled = true;
 
         if (operation && !operation.destroyed && loader.data) {
@@ -84,6 +84,8 @@ public class Connection extends EventDispatcher {
     }
 
     public function destroy():void {
+        clearTimeout(operationTimer);
+
         if (_destroyed) return;
         loader.removeEventListener(Event.COMPLETE, onComplete)
         loader.removeEventListener(IOErrorEvent.IO_ERROR, onError);

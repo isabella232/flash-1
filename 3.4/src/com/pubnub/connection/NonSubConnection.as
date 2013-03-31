@@ -16,7 +16,6 @@ public class NonSubConnection extends Connection {
 
     override public function executeGet(operation:Operation):void {
         doSendOperation(operation);
-        super.doSendOperation(operation);
     }
 
     override protected function onConnect(e:Event):void {
@@ -49,7 +48,6 @@ public class NonSubConnection extends Connection {
     }
 
     override protected function onError(e:Event):void {
-        clearTimeout(operationTimer);
         super.onError(e);
     }
 
@@ -66,8 +64,6 @@ public class NonSubConnection extends Connection {
             dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
             dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
         }
-
-        clearTimeout(operationTimer);
         super.onComplete(e);
     }
 }

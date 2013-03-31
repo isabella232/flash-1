@@ -18,7 +18,6 @@ public class SubscribeConnection extends Connection {
 
     override public function executeGet(operation:Operation):void {
         doSendOperation(operation);
-        super.doSendOperation(operation);
     }
 
     override protected function onConnect(e:Event):void {
@@ -51,7 +50,6 @@ public class SubscribeConnection extends Connection {
 
     override protected function onError(e:Event):void {
         trace('subscribeConnection onError');
-        clearTimeout(operationTimer);
         dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
         super.onError(e);
     }
@@ -69,8 +67,6 @@ public class SubscribeConnection extends Connection {
             dispatchEvent(new OperationEvent(OperationEvent.CONNECT, [1, "connection up to server"]));
             dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
         }
-
-        clearTimeout(operationTimer);
         super.onComplete(e);
     }
 }
