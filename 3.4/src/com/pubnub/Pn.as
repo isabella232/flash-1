@@ -86,16 +86,7 @@ public class Pn extends EventDispatcher {
     }
 
     public function init(config:Object):void {
-        /**
-		 * gut out unused code
-		 *  
-		if (_initialized) {
-            shutdown('reinitializing');
-        }
-        _initialized = false;
-		*/
 
-        // this looks sloppy, looks like Subscribe class should be doing this initialization?
 
         _ssl = config.ssl;
         origin = config.origin;

@@ -54,6 +54,12 @@ public class Subscribe extends EventDispatcher {
 
     protected function onConnect(e:OperationEvent):void {
         Log.log("Subscribe: onConnect", Log.DEBUG);
+
+        if (Settings.PANIC_ON_SILENCE == false) {
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [1, "silence has been broken" ]));
+            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP))
+        }
+
     }
 
     public function onError(e:OperationEvent):void {
@@ -83,7 +89,7 @@ public class Subscribe extends EventDispatcher {
 
     public function onNetworkDisable():void {
 
-        if (Settings.SUB_NET_DOWN_ON_SILENCE == true && networkEnabled) {
+        if (Settings.PANIC_ON_SILENCE == true && networkEnabled) {
             dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
             dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to silence"]));
         }
@@ -91,7 +97,10 @@ public class Subscribe extends EventDispatcher {
         subscribeConnection.close();
         trace("Sub.onNetworkDisable");
 
-        retryCount++;
+        if (Settings.PANIC_ON_SILENCE == true) {
+            retryCount++;
+        }
+
         networkEnabled = false;
 
         tryToConnect();
@@ -106,15 +115,26 @@ public class Subscribe extends EventDispatcher {
         trace("tryToConnect CALLED");
         Log.log("Sub.tryToConnect: " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
-        if (retryCount < Settings.MAX_RECONNECT_RETRIES && channels && channels.length > 0) {
-            trace("Sub.tryToConnect not yet at max retries. retrying.");
+        if (channels && channels.length > 0) {
 
-            executeSubscribeOperation();
+            if (Settings.PANIC_ON_SILENCE == true) {
 
+                if (retryCount < Settings.MAX_RECONNECT_RETRIES && channels && channels.length > 0) {
+                    trace("Sub.tryToConnect not yet at max retries. retrying.");
+                    executeSubscribeOperation();
 
-        } else {
-            trace("Sub.tryToConnect reached MAX_RETRIES!");
+                } else {
+                    trace("Sub.tryToConnect reached MAX_RETRIES!");
+                    unsubscribeAll();
+                }
+
+            } else {
+                // if PANIC_ON_SILENCE is not true, then we will try to re-sub infinately
+                executeSubscribeOperation();
+
+            }
         }
+
     }
 
     public function subscribe(channelList:String, useThisTimeokenInstead:String = null):Boolean {
@@ -204,13 +224,17 @@ public class Subscribe extends EventDispatcher {
             trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
             trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
 
-            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+            if (Settings.PANIC_ON_SILENCE == true) {
+                dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+            }
+
             dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to no active subscriptions"]));
 
             networkEnabled = false;
             clearInterval(retryInterval);
             lastReceivedTimetoken = "0";
             savedTimetoken = "0";
+            subscribeConnection.close();
         }
     }
 
@@ -259,9 +283,10 @@ public class Subscribe extends EventDispatcher {
     protected function onMessageReceived(e:OperationEvent):void {
 
         if (!networkEnabled) {
-            // recoverying!
 
-            if (Settings.SUB_NET_DOWN_ON_SILENCE == true) {
+            // recoverying! yay!
+
+            if (Settings.PANIC_ON_SILENCE == true) {
                 dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [1, "silence has been broken" ]));
                 dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP))
             }
