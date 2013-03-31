@@ -34,7 +34,6 @@ public class Subscribe extends EventDispatcher {
     protected var _savedTimetoken:String = "0";
     protected var _destroyed:Boolean;
     protected var _channels:Array;
-    protected var savedChannels:Array;
     protected var subscribeConnection:SubscribeConnection;
     protected var timePingOperation:TimeOperation;
     protected var _networkEnabled:Boolean = false;
@@ -76,7 +75,7 @@ public class Subscribe extends EventDispatcher {
     private function onConnectError(e:OperationEvent):void {
         trace("Subscribe.onConnectError")
 
-        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_UNAVAILABLE]));
+        dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.NETWORK_ERROR]));
 
         delayedOnNetworkDisable(new NetMonEvent("foo"));
 
@@ -103,11 +102,10 @@ public class Subscribe extends EventDispatcher {
             return;
         }
 
-        dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
         trace("Subscribe.delayedOnNetworkDisable: " + Settings.RECONNECT_RETRY_DELAY);
 
-        dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, { channel: "", reason: ('') }));
         dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+        dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "connection down to server"]));
 
         retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
     }
@@ -175,19 +173,12 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function unsubscribe(channelList:String, reason:Object = null):Boolean {
-
         var channelsToModify:Array = validateNewChannelList("unsubscribe", channelList, reason);
         return channelsToModify.length > 0;
     }
 
     protected function validateNewChannelList(operationType:String, channelList:String, reason:Object = null):Array {
         trace("Sub.validateNewChannelList: " + operationType);
-
-        // TODO: Comment this out -- it should never run
-        if (!_networkEnabled && operationType == "unsubscribe") {
-            trace("validateNewChannelList: net not enabled, so returning a blank array");
-            return [];
-        }
 
         if (!isChannelListValid(channelList)) {
             trace("validateNewChannelList: not a valid channellist, so returning a blank array");
@@ -235,9 +226,11 @@ public class Subscribe extends EventDispatcher {
 
         if (operationType == "unsubscribe") {
             var removeChStr:String = newChannelList.join(',');
-            leave(removeChStr);
-            trace("Sub.activateNewChannelList: leaving " + removeChStr);
-
+            if (networkEnabled) {
+                trace("Sub.activateNewChannelList: leaving " + removeChStr);
+                leave(removeChStr);
+            }
+            trace("Sub.activateNewChannelList: not leaving (no network)" + removeChStr);
             ArrayUtil.removeItems(_channels, newChannelList);
         }
 
@@ -251,23 +244,14 @@ public class Subscribe extends EventDispatcher {
 
         } else {
             trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
-            if (savedChannels == null || savedChannels && savedChannels.length == 0) {
-                trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
-                lastReceivedTimetoken = "0"
-                delayedOnNetworkDisable(new NetMonEvent("foo"));
-            }
+            trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
+            lastReceivedTimetoken = "0"
+            delayedOnNetworkDisable(new NetMonEvent("foo"));
+
         }
     }
 
     public function unsubscribeAll(reason:Object = null):void {
-        if (!isNetworkEnabled()) {
-            return;
-        }
-
-        doUnsubscribeAll(reason);
-    }
-
-    private function doUnsubscribeAll(reason:Object = null):void {
         var allChannels:String = _channels.join(',');
         unsubscribe(allChannels, reason);
     }
@@ -422,12 +406,6 @@ public class Subscribe extends EventDispatcher {
         subscribeConnection.removeEventListener(OperationEvent.TIMEOUT, onTimeout);
         subscribeConnection.destroy();
         subscribeConnection = null;
-    }
-
-    public function unsubscribeAndLeave(reason:String = null):void {
-        doUnsubscribeAll(reason);
-        subscribeConnection.close();
-
     }
 
     protected function get channelsString():String {

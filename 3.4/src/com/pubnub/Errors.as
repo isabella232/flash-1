@@ -23,7 +23,9 @@ package com.pubnub {
 		static public const NETWORK_RECONNECT_MAX_TIMEOUT_EXCEEDED:String = "NETWORK_RECONNECT_MAX_TIMEOUT_EXCEEDED";
 		static public const NETWORK_UNAVAILABLE:String = "NETWORK_UNAVAILABLE";
 		static public const NETWORK_LOST:String = "NETWORK_LOST";
-		
-	}
+        static public const NETWORK_ERROR:String = "NETWORK_ERROR";
+
+
+    }
 
 }
