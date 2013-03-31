@@ -52,6 +52,10 @@ public class Pn extends EventDispatcher {
 		Pn.nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubNet);
         Pn.nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubNet);
 
+        Pn.nonSubConnection.addEventListener(OperationEvent.TIMEOUT, onNonSubOp);
+        Pn.nonSubConnection.addEventListener(OperationEvent.CONNECT, onNonSubOp);
+
+
         // For every Pn instance, there should be two singleton connections:
         // SubscribeConnection, and NonSubscribeConnection
 
@@ -63,21 +67,12 @@ public class Pn extends EventDispatcher {
 
     // these are handlers for nonSubscribeConnection network events
     private function onNonSubNet(e:NetMonEvent):void {
-        var status:String;
-
         trace("PN.onNonSubNet: " + e);
+        dispatchEvent(e);
+    }
 
-        switch (e.type) {
-
-            case NetMonEvent.NON_SUB_NET_UP:
-                status = NetMonEvent.NON_SUB_NET_UP;
-                break;
-
-            case NetMonEvent.NON_SUB_NET_DOWN:
-                status = NetMonEvent.NON_SUB_NET_DOWN;
-                break;
-
-        }
+    private function onNonSubOp(e:OperationEvent):void {
+        trace("PN.onNonSubOp: " + e);
         dispatchEvent(e);
     }
 
@@ -158,7 +153,7 @@ public class Pn extends EventDispatcher {
     private function onEnvironmentReconnect(e:EnvironmentEvent):void {
         if (subscribeObject) {
             dispatchEvent(new PnEvent(PnEvent.RESUME_FROM_SLEEP));
-            instance.subscribeObject.onTimeout(new OperationEvent(OperationEvent.TIMEOUT));
+            instance.subscribeObject.onError(new OperationEvent(OperationEvent.TIMEOUT));
 
         }
     }
@@ -262,23 +257,6 @@ public class Pn extends EventDispatcher {
 
     // these are handlers for subscribeConnection network events
     private function onNetStatus(e:NetMonEvent):void {
-        var status:String;
-
-        trace("PN.onNetStatus: " + e);
-
-        switch (e.type) {
-
-            case NetMonEvent.SUB_NET_UP:
-                status = NetMonEvent.SUB_NET_UP;
-                break;
-
-            case NetMonEvent.SUB_NET_DOWN:
-                status = NetMonEvent.SUB_NET_DOWN;
-                break;
-
-            default:
-                status = OperationStatus.ERROR;
-        }
         dispatchEvent(e);
     }
 
@@ -286,7 +264,7 @@ public class Pn extends EventDispatcher {
     /*---------------UNSUBSCRIBE---------------*/
 
     public static function forceTimeout():void {
-        instance.subscribeObject.delayedOnNetworkDisable(new NetMonEvent("foo"));
+        instance.subscribeObject.retryToConnect(new NetMonEvent("foo"));
     }
 
     public static function unsubscribe(channel:String):void {

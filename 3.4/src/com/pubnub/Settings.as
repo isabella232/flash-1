@@ -8,13 +8,15 @@ package com.pubnub {
          public static const MAX_RECONNECT_RETRIES:uint = 500; // when this limit is hit, unsubscribe all, and connection.close()
          public static const RECONNECT_RETRY_DELAY:uint = 2000; //100;
 
+         public static const SUB_NET_DOWN_ON_SILENCE:Boolean = true; //100;
+
          // should we send a "NetMon.SUB_NET_UP" when we connect to a PubNub server?
          // if not, only PnEvent.Subscribe will setting "NetMon.SUB_NET_UP"
 //         public static const SUB_NET_UP_ON_TCP_CONNECT:Boolean = false;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 
-         public static const RESUME_ON_RECONNECT:Boolean = true;
+         public static const RESUME_ON_RECONNECT:Boolean = false;
 
          // Given the above defaults
          // the client would check for 5 minutes (300s) after network loss

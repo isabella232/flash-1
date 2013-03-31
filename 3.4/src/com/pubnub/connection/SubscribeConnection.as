@@ -65,7 +65,6 @@ public class SubscribeConnection extends Connection {
         if (_networkEnabled == false) {
             _networkEnabled = true
             dispatchEvent(new OperationEvent(OperationEvent.CONNECT, [1, "connection up to server"]));
-            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
         }
         super.onComplete(e);
     }
