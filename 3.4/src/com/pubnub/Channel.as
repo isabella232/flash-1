@@ -6,13 +6,9 @@
  * To change this template use File | Settings | File Templates.
  */
 package com.pubnub {
-import com.pubnub.environment.NetMonEvent;
-import com.pubnub.operation.LeaveOperation;
 import com.pubnub.subscribe.SubscribeEvent;
 
 import flash.events.EventDispatcher;
-
-import flash.utils.clearInterval;
 
 import org.casalib.util.*;
 
@@ -23,7 +19,7 @@ public class Channel extends EventDispatcher {
     private var _channelList:Array;
 
     public function Channel() {
-    super(null);
+        super(null);
         _channelList = [];
     }
 
@@ -113,7 +109,5 @@ public class Channel extends EventDispatcher {
     public function set retryInterval(value:int):void {
         _retryInterval = value;
     }
-
-
 }
 }

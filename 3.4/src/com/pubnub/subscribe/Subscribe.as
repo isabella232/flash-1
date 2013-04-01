@@ -10,8 +10,6 @@ import flash.events.*;
 import flash.utils.clearInterval;
 import flash.utils.setInterval;
 
-import org.casalib.util.*;
-
 use namespace pn_internal;
 
 
@@ -359,21 +357,6 @@ public class Subscribe extends EventDispatcher {
 
     public function set origin(value:String):void {
         _origin = value;
-    }
-
-
-    protected function get channelsString():String {
-        var result:String = '';
-        var len:int = _channels.channelList.length;
-        var comma:String = ',';
-        for (var i:int = 0; i < len; i++) {
-            if (i == (len - 1)) {
-                result += _channels[i]
-            } else {
-                result += _channels[i] + comma;
-            }
-        }
-        return result;
     }
 
     public function set networkEnabled(value:Boolean):void {
