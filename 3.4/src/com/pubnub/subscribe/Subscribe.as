@@ -57,7 +57,6 @@ public class Subscribe extends EventDispatcher {
             dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [1, "silence has been broken" ]));
             dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP))
         }
-
     }
 
     public function onError(e:OperationEvent):void {
@@ -100,7 +99,6 @@ public class Subscribe extends EventDispatcher {
         }
 
         networkEnabled = false;
-
         tryToConnect();
     }
 
@@ -155,37 +153,22 @@ public class Subscribe extends EventDispatcher {
             lastReceivedTimetoken = useThisTimeokenInstead;
         }
         trace("Sub.subscribe " + channelList.toString());
-
-        //return validateNewChannelList("subscribe", channelList).length > 0;
-        subscribeConnection.close();
-
+        var reason:* = null;
         var opType:String = "subscribe";
 
-        var channelsToModify:Array = channels.validateNewChannelList(opType, channelList, null);
-
-
-        var removeChStr:String = channelsToModify.join(',');
-
-        if (networkEnabled) {
-            trace("Sub.activateNewChannelList: leaving " + removeChStr);
-            leave(removeChStr);
-        } else {
-            trace("Sub.activateNewChannelList: not leaving (no network)" + removeChStr);
-        }
-
-        var nextAction:String = channels.activateNewChannelList(channelsToModify, opType);
-
-        if (nextAction == "resubscribe") {
-            executeSubscribeOperation();
-        }
+        closeResubOrShutdown(opType, channelList, reason);
     }
 
     public function unsubscribe(channelList:String, reason:Object = null):void {
-        subscribeConnection.close();
         var opType:String = "unsubscribe";
 
-        var channelsToModify:Array = channels.validateNewChannelList(opType, channelList, reason);
+        closeResubOrShutdown(opType, channelList, reason);
+    }
 
+    private function closeResubOrShutdown(opType:String, channelList:String, reason:Object):void {
+        subscribeConnection.close();
+
+        var channelsToModify:Array = channels.validateNewChannelList(opType, channelList, reason);
         var removeChStr:String = channelsToModify.join(',');
 
         if (networkEnabled) {
