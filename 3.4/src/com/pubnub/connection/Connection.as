@@ -92,7 +92,7 @@ public class Connection extends EventDispatcher {
         loader.removeEventListener(Event.CONNECT, onConnect);
         loader.removeEventListener(Event.CLOSE, onClose);
         close();
-        loader.close();
+
         loader = null;
 
         _destroyed = true;

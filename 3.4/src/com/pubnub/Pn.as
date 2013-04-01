@@ -380,7 +380,7 @@ public class Pn extends EventDispatcher {
 
     public static function getSubscribeChannels():Array {
         if (instance.subscribeObject) {
-            return instance.subscribeObject.channels;
+            return instance.subscribeObject.channels.channelList;
         } else {
             return null;
         }
@@ -393,7 +393,6 @@ public class Pn extends EventDispatcher {
         Pn.nonSubConnection.destroy();
         Pn.nonSubConnection = null;
 
-        subscribeObject.destroy();
         subscribeObject = null;
 
         environment.destroy();

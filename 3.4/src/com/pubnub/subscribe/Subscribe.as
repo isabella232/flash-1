@@ -26,12 +26,12 @@ public class Subscribe extends EventDispatcher {
 
     protected var _origin:String = "";
     protected var _retryCount:int = 0;
-    protected var retryInterval:int = 0;
+    protected var _retryInterval:int = 0;
     protected var _UUID:String = null;
     protected var _lastReceivedTimetoken:String = "0";
     protected var _savedTimetoken:String = "0";
-    protected var _destroyed:Boolean;
-    protected var _channels:Array;
+
+    protected var _channels:Channel;
     protected var subscribeConnection:SubscribeConnection;
     protected var _networkEnabled:Boolean = false;
 
@@ -43,7 +43,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     protected function init():void {
-        _channels = [];
+        _channels = new Channel();
 
         subscribeConnection = new SubscribeConnection();
         addEventListener(OperationEvent.TIMEOUT, onError);
@@ -115,11 +115,11 @@ public class Subscribe extends EventDispatcher {
         trace("tryToConnect CALLED");
         Log.log("Sub.tryToConnect: " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
-        if (channels && channels.length > 0) {
+        if (channels && channels.channelList.length > 0) {
 
             if (Settings.PANIC_ON_SILENCE == true) {
 
-                if (retryCount < Settings.MAX_RECONNECT_RETRIES && channels && channels.length > 0) {
+                if (retryCount < Settings.MAX_RECONNECT_RETRIES && channels && channels.channelList.length > 0) {
                     trace("Sub.tryToConnect not yet at max retries. retrying.");
                     executeSubscribeOperation();
 
@@ -134,10 +134,22 @@ public class Subscribe extends EventDispatcher {
 
             }
         }
-
     }
 
-    public function subscribe(channelList:String, useThisTimeokenInstead:String = null):Boolean {
+    /*---------------------------LEAVE---------------------------------*/
+    protected function leave(channel:String):void {
+
+        var leaveOperation:LeaveOperation = new LeaveOperation(origin);
+        leaveOperation.setURL(null, {
+            channel: channel,
+            uid: UUID,
+            subscribeKey: subscribeKey
+        });
+
+        Pn.pn_internal::nonSubConnection.executeGet(leaveOperation);
+    }
+
+    public function subscribe(channelList:String, useThisTimeokenInstead:String = null):void {
         trace("Sub.subscribe");
 
         if (useThisTimeokenInstead) {
@@ -145,82 +157,52 @@ public class Subscribe extends EventDispatcher {
             lastReceivedTimetoken = useThisTimeokenInstead;
         }
         trace("Sub.subscribe " + channelList.toString());
-        return validateNewChannelList("subscribe", channelList).length > 0;
-    }
 
-    public function unsubscribe(channelList:String, reason:Object = null):Boolean {
-        var channelsToModify:Array = validateNewChannelList("unsubscribe", channelList, reason);
-        return channelsToModify.length > 0;
-    }
-
-    protected function validateNewChannelList(operationType:String, channelList:String, reason:Object = null):Array {
-        trace("Sub.validateNewChannelList: " + operationType);
-
-        if (!isChannelListValid(channelList)) {
-            trace("validateNewChannelList: not a valid channellist, so returning a blank array");
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CHANNEL_TOO_BIG_OR_NULL, channels]));
-            return [];
-        }
-
-        var channelsToModify:Array = [];
-        var channelListAsArray:Array = channelList.split(',');
-        var channelString:String;
-
-        for (var i:int = 0; i < channelListAsArray.length; i++) {
-            channelString = StringUtil.removeWhitespace(channelListAsArray[i]);
-
-            if (operationType == "subscribe") {
-                if (channelIsInChannelList(channelString)) {
-                    dispatchEvent(new SubscribeEvent(SubscribeEvent.WARNING, [ 0, Errors.SUBSCRIBE_ALREADY_SUBSCRIBED, channelString]));
-                } else {
-                    channelsToModify.push(channelString);
-                }
-            }
-            if (operationType == "unsubscribe") {
-                if (channelIsInChannelList(channelString)) {
-                    channelsToModify.push(channelString);
-                } else {
-                    dispatchEvent(new SubscribeEvent(SubscribeEvent.ERROR, [ 0, Errors.SUBSCRIBE_CANT_UNSUB_NON_SUB, channelString]));
-                }
-            }
-        }
-
-        trace("validateNewChannelList: activateNewChannelList with " +
-                channelsToModify.toString() + " " + operationType);
-
-        activateNewChannelList(channelsToModify, operationType);
-
-        return channelsToModify;
-    }
-
-
-    private function activateNewChannelList(newChannelList:Array, operationType:String):void {
-
-        trace("Sub.activateNewChannelList");
-
+        //return validateNewChannelList("subscribe", channelList).length > 0;
         subscribeConnection.close();
 
-        if (operationType == "unsubscribe") {
-            var removeChStr:String = newChannelList.join(',');
-            if (networkEnabled) {
-                trace("Sub.activateNewChannelList: leaving " + removeChStr);
-                leave(removeChStr);
-            } else {
-                trace("Sub.activateNewChannelList: not leaving (no network)" + removeChStr);
-            }
+        var opType:String = "subscribe";
 
-            ArrayUtil.removeItems(_channels, newChannelList);
-        }
+        var channelsToModify:Array = channels.validateNewChannelList(opType, channelList, null);
 
-        else if (operationType == "subscribe") {
-            _channels = _channels.concat(newChannelList);
-        }
 
-        if (_channels.length > 0) {
-            trace("Sub.activateNewChannelList: running executeSubscribeOperation " + _channels);
-            executeSubscribeOperation();
+        var removeChStr:String = channelsToModify.join(',');
 
+        if (networkEnabled) {
+            trace("Sub.activateNewChannelList: leaving " + removeChStr);
+            leave(removeChStr);
         } else {
+            trace("Sub.activateNewChannelList: not leaving (no network)" + removeChStr);
+        }
+
+        var nextAction:String = channels.activateNewChannelList(channelsToModify, opType);
+
+        if (nextAction == "resubscribe") {
+            executeSubscribeOperation();
+        }
+    }
+
+    public function unsubscribe(channelList:String, reason:Object = null):void {
+        subscribeConnection.close();
+        var opType:String = "unsubscribe";
+
+        var channelsToModify:Array = channels.validateNewChannelList(opType, channelList, reason);
+
+        var removeChStr:String = channelsToModify.join(',');
+
+        if (networkEnabled) {
+            trace("Sub.activateNewChannelList: leaving " + removeChStr);
+            leave(removeChStr);
+        } else {
+            trace("Sub.activateNewChannelList: not leaving (no network)" + removeChStr);
+        }
+
+        var nextAction:String = channels.activateNewChannelList(channelsToModify, opType);
+
+        if (nextAction == "resubscribe") {
+            executeSubscribeOperation();
+        }
+        else if (nextAction == "shutdown") {
             trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
             trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
 
@@ -232,14 +214,21 @@ public class Subscribe extends EventDispatcher {
 
             networkEnabled = false;
             clearInterval(retryInterval);
+
             lastReceivedTimetoken = "0";
             savedTimetoken = "0";
             subscribeConnection.close();
+
+            // add this back, along with complete removeEventListeners, to a destroy() method
+//            subscribeConnection.removeEventListener(OperationEvent.TIMEOUT, onError);
+//            subscribeConnection.destroy();
+//            subscribeConnection = null;
         }
     }
 
+
     public function unsubscribeAll(reason:Object = null):void {
-        var allChannels:String = _channels.join(',');
+        var allChannels:String = channels.channelsString();
         unsubscribe(allChannels, reason);
     }
 
@@ -269,7 +258,7 @@ public class Subscribe extends EventDispatcher {
         var subObject:Object = {
             timetoken: tt,
             subscribeKey: subscribeKey,
-            channel: this.channelsString,
+            channel: channels.channelsString(),
             uid: UUID};
         subscribeOperation.setURL(null, subObject);
 
@@ -330,7 +319,7 @@ public class Subscribe extends EventDispatcher {
                 var chArray:Array = chStr.split(',');
                 for (var i:int = 0; i < messages.length; i++) {
                     channel = chArray[i];
-                    if (channelIsInChannelList(channel)) {
+                    if (channels.channelIsInChannelList(channel)) {
                         dispatchEvent(new SubscribeEvent(SubscribeEvent.DATA, {
                             channel: channel,
                             message: messages[i],
@@ -338,7 +327,7 @@ public class Subscribe extends EventDispatcher {
                     }
                 }
             } else {
-                channel = chStr || _channels[0];
+                channel = chStr || channels.channelList[0];
                 for (var j:int = 0; j < messages.length; j++) {
                     dispatchEvent(new SubscribeEvent(SubscribeEvent.DATA, {
                         channel: channel,
@@ -360,20 +349,6 @@ public class Subscribe extends EventDispatcher {
         }
     }
 
-
-    /*---------------------------LEAVE---------------------------------*/
-    protected function leave(channel:String):void {
-
-        var leaveOperation:LeaveOperation = new LeaveOperation(origin);
-        leaveOperation.setURL(null, {
-            channel: channel,
-            uid: UUID,
-            subscribeKey: subscribeKey
-        });
-
-        Pn.pn_internal::nonSubConnection.executeGet(leaveOperation);
-    }
-
     protected function destroyOperation(op:Operation):void {
         op.destroy();
     }
@@ -386,21 +361,10 @@ public class Subscribe extends EventDispatcher {
         _origin = value;
     }
 
-    public function get destroyed():Boolean {
-        return _destroyed;
-    }
-
-    public function destroy():void {
-        if (_destroyed) return;
-        _destroyed = true;
-        subscribeConnection.removeEventListener(OperationEvent.TIMEOUT, onError);
-        subscribeConnection.destroy();
-        subscribeConnection = null;
-    }
 
     protected function get channelsString():String {
         var result:String = '';
-        var len:int = _channels.length;
+        var len:int = _channels.channelList.length;
         var comma:String = ',';
         for (var i:int = 0; i < len; i++) {
             if (i == (len - 1)) {
@@ -410,10 +374,6 @@ public class Subscribe extends EventDispatcher {
             }
         }
         return result;
-    }
-
-    public function get channels():Array {
-        return _channels;
     }
 
     public function set networkEnabled(value:Boolean):void {
@@ -446,6 +406,15 @@ public class Subscribe extends EventDispatcher {
 
     public function set retryCount(value:int):void {
         _retryCount = value;
+    }
+
+    public function get retryInterval():int {
+        return _retryInterval;
+    }
+
+    public function set retryInterval(value:int):void {
+        _retryInterval = value;
+        _channels._retryInterval = value;
     }
 
 
@@ -481,15 +450,8 @@ public class Subscribe extends EventDispatcher {
         _savedTimetoken = value;
     }
 
-    private function channelIsInChannelList(ch:String):Boolean {
-        return (ch != null && _channels.indexOf(ch) > -1);
-    }
-
-    private function isChannelListValid(channel:String):Boolean {
-        if (channel == null || channel.length > int.MAX_VALUE || _destroyed) {
-            return false;
-        }
-        return true;
+    public function get channels():Channel {
+        return _channels;
     }
 
     private function isNetworkEnabled():Boolean {
