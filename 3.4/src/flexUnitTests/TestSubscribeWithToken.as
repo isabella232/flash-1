@@ -64,15 +64,21 @@ package flexUnitTests
 		private function requestSubscribe():void
 		{
 			pn.unsubscribeAll();
-			Pn.subscribe(this.singleChannel, this.token);	//pn.subscribe(this.singleChannel, this.token);
+			Pn.subscribe(this.singleChannel, this.token);		//pn.subscribe(this.singleChannel, this.token);
 		}
 		
 		//todo need check the if last token has been used
 		public function handleIntendedResult(e:PnEvent,  passThroughData:Object):void
 		{
 			var channelArray:Array =  Pn.getSubscribeChannels();
-			Assert.assertEquals(channelArray.length, 1);
-			Assert.assertEquals(channelArray[0], this.singleChannel);
+			if (channelArray.length > 0) {
+				
+				var regString:String = ',' + this.singleChannel + ',';
+				var reg:RegExp = new RegExp(regString, "g");
+				Assert.assertMatch(reg, ',' + channelArray.join(',') + ',');
+			} else {
+				Assert.fail("Not the expected result");
+			}
 		}
 		
 		public function handleTimeout(passThroughData:Object):void

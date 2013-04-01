@@ -41,7 +41,7 @@ package flexUnitTests
 		[After(async)]
 		public function tearDown():void
 		{
-			this.pn.removeEventListener(PnEvent.SUBSCRIBE, asyncFun, false);
+			//this.pn.removeEventListener(PnEvent.SUBSCRIBE, asyncFun, false);
 		}
 		
 		[BeforeClass]
@@ -63,18 +63,35 @@ package flexUnitTests
 		private function requestSubscribe():void
 		{
 			pn.unsubscribeAll();
-			Pn.subscribe(this.singleChannel);	//pn.subscribe(this.singleChannel);
+			Pn.subscribe(this.singleChannel + ",aa,bb,cc");		//pn.subscribe(this.singleChannel);
 			Async.delayCall(this, requestUnSubscribe, 2000);
 		}
 		
 		private function requestUnSubscribe():void
 		{
-			this.asyncFun = Async.asyncHandler(this, handleIntendedResult,2000, null, handleTimeout);
+			var channelsArr:Array = Pn.getSubscribeChannels();
+			var regString:String = ',' + this.singleChannel + ',';
+			var reg:RegExp = new RegExp(regString, "g");
+			Assert.assertMatch(reg, ',' + channelsArr.join(',') + ',');
+			Async.delayCall(this, unSubscribeResult, 5000);
+			
+			/*this.asyncFun = Async.asyncHandler(this, handleIntendedResult,50000, null, handleTimeout);
 			pn.addEventListener(PnEvent.SUBSCRIBE, this.asyncFun, false, 0, true);
-			pn.unsubscribe(this.singleChannel);
+			pn.unsubscribe(this.singleChannel);*/
 		}
 		
-		public function handleIntendedResult(e:PnEvent,  passThroughData:Object):void
+		private function unSubscribeResult():void {
+			var channelsArr:Array = Pn.getSubscribeChannels();
+			if (channelsArr.length > 0) {
+				var regString:String = ',' + this.singleChannel + ',';
+				var reg:RegExp = new RegExp(regString, "g");
+				Assert.assertMatch(reg, ',' + channelsArr.join(',') + ',');
+			} else {
+				Assert.fail("Not the expected result");
+			}
+		}
+		
+		/*public function handleIntendedResult(e:PnEvent,  passThroughData:Object):void
 		{
 			switch (e.status) 
 			{
@@ -93,6 +110,6 @@ package flexUnitTests
 		public function handleTimeout(passThroughData:Object):void
 		{
 			Assert.fail("subscribe timeout");
-		}		
+		}	*/	
 	}
 }
