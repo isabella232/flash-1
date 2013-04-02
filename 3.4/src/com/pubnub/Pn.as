@@ -386,24 +386,6 @@ public class Pn extends EventDispatcher {
         }
     }
 
-
-    public function destroy():void {
-        //shutdown();	//
-
-        Pn.nonSubConnection.destroy();
-        Pn.nonSubConnection = null;
-
-        subscribeObject = null;
-
-        environment.destroy();
-        //environment.removeEventListener(EnvironmentEvent.SHUTDOWN, onEnvironmentShutdown);	//
-        environment = null;
-
-        subscribeObject = null;
-        /*_initialized = false;	// gut out unused code*/
-        __instance = null;
-    }
-
     public function get sessionUUID():String {
         return _sessionUUID;
     }

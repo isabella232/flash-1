@@ -9,6 +9,7 @@ import com.pubnub.operation.*;
 import flash.events.*;
 import flash.utils.clearInterval;
 import flash.utils.setInterval;
+import flash.utils.setTimeout;
 
 use namespace pn_internal;
 
@@ -160,12 +161,19 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function unsubscribe(channelList:String, reason:Object = null):void {
+        trace("unsubscribe");
         var opType:String = "unsubscribe";
 
         closeResubOrShutdown(opType, channelList, reason);
     }
 
+    private function delayedLeave(removeChStr:String):void {
+        setTimeout(leave, 2000, removeChStr);
+    }
+
     private function closeResubOrShutdown(opType:String, channelList:String, reason:Object):void {
+        trace("closeResubOrShutdown");
+
         subscribeConnection.close();
 
         var channelsToModify:Array = channels.validateNewChannelList(opType, channelList, reason);
@@ -173,7 +181,7 @@ public class Subscribe extends EventDispatcher {
 
         if (networkEnabled) {
             trace("Sub.activateNewChannelList: leaving " + removeChStr);
-            leave(removeChStr);
+            delayedLeave(removeChStr);
         } else {
             trace("Sub.activateNewChannelList: not leaving (no network)" + removeChStr);
         }
@@ -184,6 +192,7 @@ public class Subscribe extends EventDispatcher {
             executeSubscribeOperation();
         }
         else if (nextAction == "shutdown") {
+
             trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
             trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
 
@@ -198,7 +207,6 @@ public class Subscribe extends EventDispatcher {
 
             lastReceivedTimetoken = "0";
             savedTimetoken = "0";
-            subscribeConnection.close();
 
             // add this back, along with complete removeEventListeners, to a destroy() method
 //            subscribeConnection.removeEventListener(OperationEvent.TIMEOUT, onError);

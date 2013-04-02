@@ -15,6 +15,7 @@ public class NonSubConnection extends Connection {
     }
 
     override public function executeGet(operation:Operation):void {
+        super.executeGet(operation);
         doSendOperation(operation);
     }
 
@@ -37,7 +38,6 @@ public class NonSubConnection extends Connection {
 
         // TODO: Remove onError invokations
         //operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
-        this.close();
     }
 
     override public function close():void {

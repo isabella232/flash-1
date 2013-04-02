@@ -17,6 +17,7 @@ public class SubscribeConnection extends Connection {
     }
 
     override public function executeGet(operation:Operation):void {
+        super.executeGet(operation);
         doSendOperation(operation);
     }
 

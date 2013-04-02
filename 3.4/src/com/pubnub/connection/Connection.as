@@ -28,6 +28,7 @@ public class Connection extends EventDispatcher {
 
     protected function init():void {
         _networkEnabled = false;
+        _destroyed = false;
         loader = new URLLoader();
         loader.addEventListener(Event.COMPLETE, onComplete)
         loader.addEventListener(IOErrorEvent.IO_ERROR, onError);
@@ -46,6 +47,11 @@ public class Connection extends EventDispatcher {
 
         this.operation = operation;
         this.operation.startTime = getTimer();
+
+        if (_destroyed) {
+            init();
+        }
+
         loader.load(operation.request);
     }
 
@@ -91,7 +97,6 @@ public class Connection extends EventDispatcher {
         loader.removeEventListener(IOErrorEvent.IO_ERROR, onError);
         loader.removeEventListener(Event.CONNECT, onConnect);
         loader.removeEventListener(Event.CLOSE, onClose);
-        close();
 
         loader = null;
 
@@ -106,6 +111,8 @@ public class Connection extends EventDispatcher {
         operation = null;
         try {
             loader.close();
+            destroy();
+
         } catch (e) {
             if (e.errorID == 2029) {
                 trace("Will not close because the connection is not open.")
