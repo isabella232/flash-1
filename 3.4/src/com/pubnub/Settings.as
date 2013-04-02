@@ -6,7 +6,7 @@ package com.pubnub {
      public class Settings {
 
 
-         public static const PANIC_ON_SILENCE:Boolean = false; //100;
+         public static const PANIC_ON_SILENCE:Boolean = true; //100;
 
          // retry to connect a maximum of this many times at this interval
          // only will retry when panic_on_silence is enabled
