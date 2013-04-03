@@ -76,7 +76,7 @@ import flash.net.URLRequest;
                     error = true;
 				}
 			}
-			
+
 			if (error) {
                     Log.log("**** Bad JSON Received! ****", Log.DEBUG, this);
                 dispatchEvent(new OperationEvent(OperationEvent.RESULT, result));

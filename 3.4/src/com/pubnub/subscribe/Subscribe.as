@@ -53,11 +53,6 @@ public class Subscribe extends EventDispatcher {
 
     protected function onConnect(e:OperationEvent):void {
         Log.log("Subscribe: onConnect", Log.DEBUG);
-
-        if (Settings.PANIC_ON_SILENCE == false) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [1, "silence has been broken" ]));
-            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP))
-        }
     }
 
     public function onError(e:OperationEvent):void {
@@ -87,12 +82,8 @@ public class Subscribe extends EventDispatcher {
 
     public function onNetworkDisable():void {
 
-        if (Settings.PANIC_ON_SILENCE == true && networkEnabled) {
-            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to silence"]));
-        }
-
         subscribeConnection.close();
+
         trace("Sub.onNetworkDisable");
 
         if (Settings.PANIC_ON_SILENCE == true) {
@@ -208,10 +199,6 @@ public class Subscribe extends EventDispatcher {
             lastReceivedTimetoken = "0";
             savedTimetoken = "0";
 
-            // add this back, along with complete removeEventListeners, to a destroy() method
-//            subscribeConnection.removeEventListener(OperationEvent.TIMEOUT, onError);
-//            subscribeConnection.destroy();
-//            subscribeConnection = null;
         }
     }
 
@@ -263,11 +250,6 @@ public class Subscribe extends EventDispatcher {
         if (!networkEnabled) {
 
             // recoverying! yay!
-
-            if (Settings.PANIC_ON_SILENCE == true) {
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [1, "silence has been broken" ]));
-                dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP))
-            }
 
             onNetworkEnable();
         }

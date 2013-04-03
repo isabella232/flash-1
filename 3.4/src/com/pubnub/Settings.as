@@ -5,10 +5,15 @@ package com.pubnub {
       */
      public class Settings {
 
+
+         public static const PANIC_ON_SILENCE:Boolean = false;
+
+         // DEPRECATED, use false to be safe on upcoming versions.
+
+         // if true
          // if no traffic is heard for SUBSCRIBE_OPERATION_TIMEOUT seconds, assume line is down,
          // and set SUB_NET status accordingly
 
-         public static const PANIC_ON_SILENCE:Boolean = false; //100;
 
          // retry to connect a maximum of this many times at this interval
          // only will retry when panic_on_silence is enabled
