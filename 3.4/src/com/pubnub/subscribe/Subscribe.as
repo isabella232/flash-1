@@ -35,6 +35,7 @@ public class Subscribe extends EventDispatcher {
     protected var _networkEnabled:Boolean = false;
 	
 	private var _net_status_up:Boolean = false;
+    private var _retry_mode:Boolean = false;
 
 
     public function Subscribe(origin) {
@@ -56,7 +57,7 @@ public class Subscribe extends EventDispatcher {
     protected function onConnect(e:OperationEvent):void {
         Log.log("Subscribe: onConnect", Log.DEBUG);
 
-        if (e.type == OperationEvent.CONNECT && _net_status_up == false) {
+        if (e.type == OperationEvent.CONNECT && _net_status_up == false && _retry_mode == false) {
 
             dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
             dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [0, "connected"]));
@@ -68,12 +69,16 @@ public class Subscribe extends EventDispatcher {
 
     public function onError(e:OperationEvent):void {
         trace("Subscribe.onError");
-		
-		if (e.type == OperationEvent.TIMEOUT && _net_status_up == true) {
-			dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
-			_net_status_up = false;
-		}
-		
+
+        if (Settings.NET_DOWN_ON_SILENCE == true) {
+            if (e.type == OperationEvent.TIMEOUT && _net_status_up == true) {
+                dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+                _net_status_up = false;
+                _retry_mode = true;
+            }
+        }
+
+
         retryToConnect(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
     }
 
@@ -288,6 +293,16 @@ public class Subscribe extends EventDispatcher {
             lastReceivedTimetoken = e.data[1];
 
             var chStr:String = e.data[2];
+
+            if (Settings.NET_DOWN_ON_SILENCE == true) {
+                if (messages.length > 0 && _net_status_up == false) {
+                    dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
+                    _net_status_up = true;
+                    _retry_mode = false;
+                    retryCount = 0;
+                }
+            }
+
         } catch (e:*) {
             Log.log("onMessageReceived: broken response array: " + e + " , TT: " + lastReceivedTimetoken, Log.DEBUG);
             executeSubscribeOperation();
