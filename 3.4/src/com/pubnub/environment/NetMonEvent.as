@@ -13,8 +13,6 @@ package com.pubnub.environment {
         public static const NON_SUB_NET_DOWN:String = 'non_sub_net_down';
         public static const NON_SUB_NET_UP:String = 'non_sub_net_up'
 
-		public static const MAX_RETRIES:String = 'max_retries';
-		
 		public function NetMonEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false) { 
 			super(type, bubbles, cancelable);
 		} 

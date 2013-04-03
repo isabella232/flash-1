@@ -5,19 +5,19 @@ package com.pubnub.environment {
 	 * ...
 	 * @author firsoff maxim, support@pubnub.com
 	 */
-	public class SysMonEvent extends Event {
+	public class SleepMonitorEvent extends Event {
 		
 		public static const RESTORE_FROM_SLEEP:String = 'restore_from_sleep';
 		
 		private var _timeout:int = 0;
 		
-		public function SysMonEvent(type:String, timeout:int = 0) { 
+		public function SleepMonitorEvent(type:String, timeout:int = 0) {
 			super(type);
 			_timeout = timeout;
 		} 
 		
 		public override function clone():Event { 
-			return new SysMonEvent(type, timeout);
+			return new SleepMonitorEvent(type, timeout);
 		} 
 		
 		public override function toString():String { 

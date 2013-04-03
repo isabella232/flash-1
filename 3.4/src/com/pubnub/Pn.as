@@ -34,7 +34,7 @@ public class Pn extends EventDispatcher {
     private var cipherKey:String = "";
 
     private var _sessionUUID:String = "";
-    private var environment:Environment;
+    private var sleepMonitor:SleepMonitor;
 
     static pn_internal var nonSubConnection:NonSubConnection;
 
@@ -45,8 +45,6 @@ public class Pn extends EventDispatcher {
 
     private function setup():void {
 
-        // This should be a singleton class
-		
         Pn.nonSubConnection = new NonSubConnection(Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT);
 
 		Pn.nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubNet);
@@ -55,12 +53,12 @@ public class Pn extends EventDispatcher {
         Pn.nonSubConnection.addEventListener(OperationEvent.TIMEOUT, onNonSubOp);
         Pn.nonSubConnection.addEventListener(OperationEvent.CONNECT, onNonSubOp);
 
-
         // For every Pn instance, there should be two singleton connections:
         // SubscribeConnection, and NonSubscribeConnection
 
-        environment = new Environment(origin);
-        environment.addEventListener(EnvironmentEvent.SLEEP_RESUME, onEnvironmentReconnect);
+        sleepMonitor = new SleepMonitor;
+        sleepMonitor.start();
+        sleepMonitor.addEventListener(SleepMonitorEvent.RESTORE_FROM_SLEEP, onSleepResume);
     }
 
     // these are handlers for nonSubscribeConnection network events
@@ -91,7 +89,7 @@ public class Pn extends EventDispatcher {
 
         _sessionUUID ||= PnUtils.getUID();
 
-        environment.start();
+        sleepMonitor.start();
 		if (subscribeObject) {
 			subscribeObject.unsubscribeAll();
 		}
@@ -139,66 +137,13 @@ public class Pn extends EventDispatcher {
 
     // this is what runs when we resume from sleep
 
-    private function onEnvironmentReconnect(e:EnvironmentEvent):void {
+    private function onSleepResume(e:SleepMonitorEvent):void {
         if (subscribeObject) {
             dispatchEvent(new PnEvent(PnEvent.RESUME_FROM_SLEEP));
             instance.subscribeObject.onError(new OperationEvent(OperationEvent.TIMEOUT));
 
         }
     }
-    /**
-	 * 
-	 * 
-	private function onEnvironmentShutdown(e:EnvironmentEvent):void {
-        shutdown(Errors.NETWORK_LOST);
-    }*/
-
-    // currently, there is the notion of "shutdown". Remove this state. There only needs to be:
-
-    // Connected
-    //      -   Subscribed
-    //      -   Unsubscribed
-    // Not Connected
-
-
-    // remove "shutdown" we dont need this.
-
-	/**
-	 * 
-	 * 
-    private function shutdown(reason:String = ''):void {
-        var channels:String = 'no channels';
-        var lastToken:String = null;
-        if (subscribeObject) {
-            if (subscribeObject.channels) {
-                channels = subscribeObject.channels.join(',');
-            }
-            lastToken = subscribeObject.lastReceivedTimetoken;
-        }
-
-        nonSubConnection.close();
-        environment.stop();
-        //_initialized = false;	// gut out unused code
-
-        Log.log('Shutdown', Log.WARNING);
-        dispatchEvent(new EnvironmentEvent(EnvironmentEvent.SHUTDOWN, null, [0, reason, channels, lastToken]));
-    }
-*/
-
-    // this can probably be refactored up.
-
-	/**
-	 *  gut out unused code
-	 * 
-    private function startEnvironment():void {
-        _initialized = true;
-        environment.start();
-        dispatchEvent(new PnEvent(PnEvent.INIT, "Init Completed"));
-    }
-
-    private function onInitError(event:OperationEvent):void {
-        dispatchEvent(new PnEvent(PnEvent.INIT_ERROR, Errors.INIT_OPERATION_ERROR));
-    }*/
 
     /*---------------SUBSCRIBE---------------*/
     public static function subscribe(channel:String, token:String = null):void {
@@ -223,16 +168,6 @@ public class Pn extends EventDispatcher {
             case SubscribeEvent.DISCONNECT:
                 status = OperationStatus.DISCONNECT;
                 break;
-
-            // we do not need a presence event
-			/**
-			 * 
-			 * 
-            case SubscribeEvent.PRESENCE:
-                status = OperationStatus.DISCONNECT;
-                dispatchEvent(new PnEvent(PnEvent.PRESENCE, e.data, e.data.channel));
-                return;
-                break;*/
 
             case SubscribeEvent.WARNING:
                 status = OperationStatus.WARNING;
@@ -418,7 +353,6 @@ public class Pn extends EventDispatcher {
         if (subscribeObject) {
             subscribeObject.origin = _origin;
         }
-        environment.origin = _origin;
     }
 
     public function get ssl():Boolean {

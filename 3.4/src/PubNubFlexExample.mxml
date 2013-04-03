@@ -11,7 +11,6 @@
     <fx:Script>
 		<![CDATA[
         import com.pubnub.*;
-        import com.pubnub.environment.EnvironmentEvent;
         import com.pubnub.environment.NetMonEvent;
         import com.pubnub.json.*;
         import com.pubnub.log.Log;
