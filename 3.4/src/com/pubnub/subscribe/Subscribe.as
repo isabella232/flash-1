@@ -187,10 +187,6 @@ public class Subscribe extends EventDispatcher {
             trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
             trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
 
-            if (Settings.PANIC_ON_SILENCE == true) {
-                dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
-            }
-
             dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to no active subscriptions"]));
 
             networkEnabled = false;
