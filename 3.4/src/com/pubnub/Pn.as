@@ -59,10 +59,8 @@ public class Pn extends EventDispatcher {
         // For every Pn instance, there should be two singleton connections:
         // SubscribeConnection, and NonSubscribeConnection
 
-        // environment stuff -- this can probably be rolled into another class
-
         environment = new Environment(origin);
-        environment.addEventListener(EnvironmentEvent.RECONNECT, onEnvironmentReconnect);
+        environment.addEventListener(EnvironmentEvent.SLEEP_RESUME, onEnvironmentReconnect);
     }
 
     // these are handlers for nonSubscribeConnection network events

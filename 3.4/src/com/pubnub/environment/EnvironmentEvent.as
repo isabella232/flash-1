@@ -7,8 +7,7 @@ package com.pubnub.environment {
 	 */
 	public class EnvironmentEvent extends Event {
 		
-		public static const SHUTDOWN:String = 'shutdown';
-		public static const RECONNECT:String = 'reconnect';
+		public static const SLEEP_RESUME:String = 'reconnect';
 		private var _reason:String;
 		private var _data:Object;
 		

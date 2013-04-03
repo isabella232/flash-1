@@ -7,9 +7,6 @@ package com.pubnub.environment {
 	 */
 	public class NetMonEvent extends Event {
 		
-		public static const HTTP_ENABLE:String = 'enable';
-		public static const HTTP_DISABLE:String = 'disable';
-
         public static const SUB_NET_DOWN:String = 'sub_net_down';
         public static const SUB_NET_UP:String = 'sub_net_up';
 

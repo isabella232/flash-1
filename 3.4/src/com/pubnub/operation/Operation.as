@@ -6,7 +6,6 @@ import com.pubnub.log.Log;
 import flash.net.URLRequest;
 
 //import com.pubnub.net.URLRequest;
-	import com.pubnub.net.URLRequestHeader;
 	import com.pubnub.Settings;
 	import flash.events.IEventDispatcher;
 	import flash.net.URLRequestMethod;
