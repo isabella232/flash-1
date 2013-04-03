@@ -33,6 +33,8 @@ public class Subscribe extends EventDispatcher {
     protected var _channels:Channel;
     protected var subscribeConnection:SubscribeConnection;
     protected var _networkEnabled:Boolean = false;
+	
+	private var _net_status_up:Boolean = false;
 
 
     public function Subscribe(origin) {
@@ -56,7 +58,13 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function onError(e:OperationEvent):void {
-        trace("Subscribe.onError")
+        trace("Subscribe.onError");
+		
+		if (e.type == OperationEvent.TIMEOUT && _net_status_up == true) {
+			dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+			_net_status_up = false;
+		}
+		
         retryToConnect(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
     }
 
