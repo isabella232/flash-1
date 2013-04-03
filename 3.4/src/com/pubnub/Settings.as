@@ -6,7 +6,7 @@ package com.pubnub {
      public class Settings {
 
 
-         public static const PANIC_ON_SILENCE:Boolean = false;
+         public static const NET_DOWN_ON_SILENCE:Boolean = false;
 
          // DEPRECATED, use false to be safe on upcoming versions.
 

@@ -55,6 +55,15 @@ public class Subscribe extends EventDispatcher {
 
     protected function onConnect(e:OperationEvent):void {
         Log.log("Subscribe: onConnect", Log.DEBUG);
+
+        if (e.type == OperationEvent.CONNECT && _net_status_up == false) {
+
+            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [0, "connected"]));
+
+            _net_status_up = true;
+        }
+
     }
 
     public function onError(e:OperationEvent):void {
@@ -94,7 +103,7 @@ public class Subscribe extends EventDispatcher {
 
         trace("Sub.onNetworkDisable");
 
-        if (Settings.PANIC_ON_SILENCE == true) {
+        if (Settings.NET_DOWN_ON_SILENCE == true) {
             retryCount++;
         }
 
@@ -113,7 +122,7 @@ public class Subscribe extends EventDispatcher {
 
         if (channels && channels.channelList.length > 0) {
 
-            if (Settings.PANIC_ON_SILENCE == true) {
+            if (Settings.NET_DOWN_ON_SILENCE == true) {
 
                 if (retryCount < Settings.MAX_RECONNECT_RETRIES && channels && channels.channelList.length > 0) {
                     trace("Sub.tryToConnect not yet at max retries. retrying.");
@@ -195,8 +204,16 @@ public class Subscribe extends EventDispatcher {
             trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
             trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
 
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to no active subscriptions"]));
+            if (_net_status_up == true) {
+                dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to no active subscriptions"]));
+            }
 
+
+            if (_net_status_up == true) {
+                dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+            }
+
+            _net_status_up = false;
             networkEnabled = false;
             clearInterval(retryInterval);
 
