@@ -51,9 +51,11 @@ package utils {
 			clearInterval(updateInterval);
 			median = [0];
 			updateMedians();
-			Pn.instance.addEventListener(PnEvent.INIT, onPnInit);
+
+            Pn.instance.addEventListener(PnEvent.INIT, onPnInit);
 			Pn.instance.addEventListener(PnEvent.SUBSCRIBE, onPnSubscribe);
-			Pn.init( { 
+
+            Pn.init( {
 				origin:			this.origin,
                 publish_key:	this.pub_key,
                 sub_key:		this.sub_key,

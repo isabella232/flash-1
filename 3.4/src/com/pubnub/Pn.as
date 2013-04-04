@@ -1,5 +1,6 @@
 package com.pubnub {
 
+import com.pubnub.PnEvent;
 import com.pubnub.connection.*;
 import com.pubnub.environment.*;
 import com.pubnub.log.*;
@@ -114,6 +115,8 @@ public class Pn extends EventDispatcher {
         subscribeObject.cipherKey = cipherKey;
 
         time(); // warm the non-sub connection
+        dispatchEvent(new PnEvent(PnEvent.INIT));
+
     }
 
     // adding listeners for the subscribe object
