@@ -32,7 +32,6 @@ public class SystemMonitor extends EventDispatcher {
     private function ping():void {
         var currentTime:Number = getTimer();
         var elapsedTime:int = currentTime - lastTime;
-        trace("sleep: " + elapsedTime);
         if (elapsedTime > sleepThreshold) {
             if (_restoreFromSleep == false) {
                 _restoreFromSleep = true;
