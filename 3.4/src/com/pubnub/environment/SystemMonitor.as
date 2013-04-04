@@ -1,4 +1,6 @@
 package com.pubnub.environment {
+import com.pubnub.log.Log;
+
 import flash.events.*;
 import flash.utils.*;
 
@@ -36,6 +38,7 @@ public class SystemMonitor extends EventDispatcher {
             if (_restoreFromSleep == false) {
                 _restoreFromSleep = true;
                 dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.RESTORE_FROM_SLEEP, elapsedTime));
+                Log.log("restore from sleep event has occurred.")
             }
         } else {
             _restoreFromSleep = false

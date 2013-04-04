@@ -251,7 +251,7 @@
                 ExternalInterface.call(functionName, rest);
             }
 
-            if (consoleCounter == 10) {
+            if (consoleCounter == 8) {
                 consoleArea.text = "";
                 consoleCounter = 0;
             }

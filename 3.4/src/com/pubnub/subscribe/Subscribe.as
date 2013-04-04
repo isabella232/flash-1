@@ -205,10 +205,9 @@ public class Subscribe extends EventDispatcher {
             trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
             trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
 
-            if (_net_status_up == true) {
-                dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, "disconnect due to no active subscriptions"]));
-            }
+            var shutdownReason:String = _net_status_up ? "unsubscribed from all channels" : "maximum reconnect retries exceeded";
 
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.DISCONNECT, [0, shutdownReason]));
 
             if (_net_status_up == true) {
                 dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));

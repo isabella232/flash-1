@@ -44,7 +44,7 @@ public class Pn extends EventDispatcher {
 
         Pn.nonSubConnection = new NonSubConnection(Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT);
 
-		Pn.nonSubConnection.addEventListener(SystemMonitorEvent.NON_SUB_NET_UP, onNonSubNet);
+        Pn.nonSubConnection.addEventListener(SystemMonitorEvent.NON_SUB_NET_UP, onNonSubNet);
         Pn.nonSubConnection.addEventListener(SystemMonitorEvent.NON_SUB_NET_DOWN, onNonSubNet);
 
         Pn.nonSubConnection.addEventListener(OperationEvent.TIMEOUT, onNonSubOp);
@@ -87,9 +87,9 @@ public class Pn extends EventDispatcher {
         _sessionUUID ||= PnUtils.getUID();
 
         sleepMonitor.start();
-		if (subscribeObject) {
-			subscribeObject.unsubscribeAll();
-		}
+        if (subscribeObject) {
+            subscribeObject.unsubscribeAll();
+        }
 
         subscribeObject ||= new Subscribe(origin);
 
@@ -144,7 +144,14 @@ public class Pn extends EventDispatcher {
 
     /*---------------SUBSCRIBE---------------*/
     public static function subscribe(channel:String, token:String = null):void {
-        Pn.__instance.subscribeObject.subscribe(channel, token);
+        try {
+            Pn.__instance.subscribeObject.subscribe(channel, token);
+        } catch (e) {
+            if (e.errorID == 1009) {
+                throw("You must Init before subscribing.");
+            } else
+                throw(e);
+        }
     }
 
     private function onSubscribe(e:SubscribeEvent):void {
@@ -291,12 +298,12 @@ public class Pn extends EventDispatcher {
     }
 
     private function onTimeFault(e:OperationEvent):void {
-		if (e.data.hasOwnProperty("reTry")) {
-			flash.utils.setTimeout(time, 1000);
-		} else {
-	        var pnEvent:PnEvent = new PnEvent(PnEvent.TIME, e.data, null, OperationStatus.ERROR);
-	        dispatchEvent(pnEvent);
-		}
+        if (e.data.hasOwnProperty("reTry")) {
+            flash.utils.setTimeout(time, 1000);
+        } else {
+            var pnEvent:PnEvent = new PnEvent(PnEvent.TIME, e.data, null, OperationStatus.ERROR);
+            dispatchEvent(pnEvent);
+        }
     }
 
     private function onTimeResult(e:OperationEvent):void {
