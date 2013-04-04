@@ -4,7 +4,7 @@ package flexUnitTests
 	import com.pubnub.PnCrypto;
 	import com.pubnub.PnEvent;
 	import com.pubnub.connection.*;
-	import com.pubnub.environment.NetMonEvent;
+
 	import com.pubnub.json.PnJSON;
 	import com.pubnub.operation.OperationStatus;
 	import com.pubnub.subscribe.Subscribe;

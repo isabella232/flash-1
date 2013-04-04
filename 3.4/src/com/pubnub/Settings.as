@@ -32,8 +32,5 @@ package com.pubnub {
          public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 5000;
          public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 5000;
 
-
-
-
      }
 }

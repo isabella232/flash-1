@@ -13,7 +13,6 @@ import flash.utils.setTimeout;
 
 use namespace pn_internal;
 
-
 public class Subscribe extends EventDispatcher {
 
     static public const PNPRES_PREFIX:String = '-pnpres';
@@ -59,7 +58,7 @@ public class Subscribe extends EventDispatcher {
 
         if (e.type == OperationEvent.CONNECT && _net_status_up == false && _retry_mode == false) {
 
-            dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
+            dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_UP));
             dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [0, "connected"]));
 
             _net_status_up = true;
@@ -72,14 +71,13 @@ public class Subscribe extends EventDispatcher {
 
         if (Settings.NET_DOWN_ON_SILENCE == true) {
             if (e.type == OperationEvent.TIMEOUT && _net_status_up == true) {
-                dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+                dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));
                 _net_status_up = false;
                 _retry_mode = true;
             }
         }
 
-
-        retryToConnect(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+        retryToConnect();
     }
 
     private function onNetworkEnable():void {
@@ -91,7 +89,7 @@ public class Subscribe extends EventDispatcher {
         networkEnabled = true;
     }
 
-    public function retryToConnect(e:NetMonEvent):void {
+    public function retryToConnect():void {
 
         // if there is already a timer running, return.
         if (retryInterval > 0) {
@@ -139,9 +137,7 @@ public class Subscribe extends EventDispatcher {
                 }
 
             } else {
-                // if PANIC_ON_SILENCE is not true, then we will try to re-sub infinately
                 executeSubscribeOperation();
-
             }
         }
     }
@@ -215,7 +211,7 @@ public class Subscribe extends EventDispatcher {
 
 
             if (_net_status_up == true) {
-                dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_DOWN));
+                dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));
             }
 
             _net_status_up = false;
@@ -224,10 +220,8 @@ public class Subscribe extends EventDispatcher {
 
             lastReceivedTimetoken = "0";
             savedTimetoken = "0";
-
         }
     }
-
 
     public function unsubscribeAll(reason:Object = null):void {
         var allChannels:String = channels.channelsString();
@@ -296,7 +290,7 @@ public class Subscribe extends EventDispatcher {
 
             if (Settings.NET_DOWN_ON_SILENCE == true) {
                 if (messages.length > 0 && _net_status_up == false) {
-                    dispatchEvent(new NetMonEvent(NetMonEvent.SUB_NET_UP));
+                    dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_UP));
                     _net_status_up = true;
                     _retry_mode = false;
                     retryCount = 0;
@@ -446,9 +440,6 @@ public class Subscribe extends EventDispatcher {
         return _channels;
     }
 
-    private function isNetworkEnabled():Boolean {
-        return _networkEnabled;
-    }
 
 }
 }

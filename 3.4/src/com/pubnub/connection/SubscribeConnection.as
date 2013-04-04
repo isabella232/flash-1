@@ -1,6 +1,6 @@
 package com.pubnub.connection {
 import com.pubnub.*;
-import com.pubnub.environment.NetMonEvent;
+
 import com.pubnub.log.*;
 import com.pubnub.operation.*;
 

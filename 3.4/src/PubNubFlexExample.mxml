@@ -11,7 +11,8 @@
     <fx:Script>
 		<![CDATA[
         import com.pubnub.*;
-        import com.pubnub.environment.NetMonEvent;
+
+        import com.pubnub.environment.SystemMonitorEvent;
         import com.pubnub.json.*;
         import com.pubnub.log.Log;
         import com.pubnub.operation.*;
@@ -89,30 +90,30 @@
             Pn.instance.addEventListener(PnEvent.TIME, onPnTime);
             Pn.instance.addEventListener(PnEvent.RESUME_FROM_SLEEP, onPnResumeFromSleep);
 
-            Pn.instance.addEventListener(NetMonEvent.SUB_NET_UP, onPnConnected);
-            Pn.instance.addEventListener(NetMonEvent.SUB_NET_DOWN, onPnDisconnected);
+            Pn.instance.addEventListener(SystemMonitorEvent.SUB_NET_UP, onPnConnected);
+            Pn.instance.addEventListener(SystemMonitorEvent.SUB_NET_DOWN, onPnDisconnected);
 
-            Pn.instance.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubUp);
-            Pn.instance.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubDown);
+            Pn.instance.addEventListener(SystemMonitorEvent.NON_SUB_NET_UP, onNonSubUp);
+            Pn.instance.addEventListener(SystemMonitorEvent.NON_SUB_NET_DOWN, onNonSubDown);
 
             Pn.init(config);
         }
 
-        private function onPnDisconnected(e:NetMonEvent):void {
+        private function onPnDisconnected(e:SystemMonitorEvent):void {
 
             this.subConnectionStatus.setStyle('backgroundColor', "#FC0000");
         }
 
-        private function onPnConnected(e:NetMonEvent):void {
+        private function onPnConnected(e:SystemMonitorEvent):void {
             this.subConnectionStatus.setStyle('backgroundColor', "#00FC00");
         }
 
-        private function onNonSubDown(e:NetMonEvent):void {
+        private function onNonSubDown(e:SystemMonitorEvent):void {
 
             this.nonSubConnectionStatus.setStyle('backgroundColor', "#FC0000");
         }
 
-        private function onNonSubUp(e:NetMonEvent):void {
+        private function onNonSubUp(e:SystemMonitorEvent):void {
             this.nonSubConnectionStatus.setStyle('backgroundColor', "#00FC00");
         }
 

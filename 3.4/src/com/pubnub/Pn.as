@@ -11,10 +11,6 @@ import flash.errors.*;
 import flash.events.*;
 import flash.utils.setTimeout;
 
-
-// refactoring of this file will include consolidation of
-// Environment.as, NetMon.as SysMon.as
-
 use namespace pn_internal;
 
 [Event(name="initError", type="com.pubnub.PnEvent")]
@@ -34,7 +30,7 @@ public class Pn extends EventDispatcher {
     private var cipherKey:String = "";
 
     private var _sessionUUID:String = "";
-    private var sleepMonitor:SleepMonitor;
+    private var sleepMonitor:SystemMonitor;
 
     static pn_internal var nonSubConnection:NonSubConnection;
 
@@ -47,8 +43,8 @@ public class Pn extends EventDispatcher {
 
         Pn.nonSubConnection = new NonSubConnection(Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT);
 
-		Pn.nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_UP, onNonSubNet);
-        Pn.nonSubConnection.addEventListener(NetMonEvent.NON_SUB_NET_DOWN, onNonSubNet);
+		Pn.nonSubConnection.addEventListener(SystemMonitorEvent.NON_SUB_NET_UP, onNonSubNet);
+        Pn.nonSubConnection.addEventListener(SystemMonitorEvent.NON_SUB_NET_DOWN, onNonSubNet);
 
         Pn.nonSubConnection.addEventListener(OperationEvent.TIMEOUT, onNonSubOp);
         Pn.nonSubConnection.addEventListener(OperationEvent.CONNECT, onNonSubOp);
@@ -56,13 +52,13 @@ public class Pn extends EventDispatcher {
         // For every Pn instance, there should be two singleton connections:
         // SubscribeConnection, and NonSubscribeConnection
 
-        sleepMonitor = new SleepMonitor;
+        sleepMonitor = new SystemMonitor;
         sleepMonitor.start();
-        sleepMonitor.addEventListener(SleepMonitorEvent.RESTORE_FROM_SLEEP, onSleepResume);
+        sleepMonitor.addEventListener(SystemMonitorEvent.RESTORE_FROM_SLEEP, onSleepResume);
     }
 
     // these are handlers for nonSubscribeConnection network events
-    private function onNonSubNet(e:NetMonEvent):void {
+    private function onNonSubNet(e:SystemMonitorEvent):void {
         trace("PN.onNonSubNet: " + e);
         dispatchEvent(e);
     }
@@ -130,18 +126,16 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(SubscribeEvent.WARNING, onSubscribe);
         /*subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);*/
 
-        subscribeObject.addEventListener(NetMonEvent.SUB_NET_UP, onNetStatus);
-        subscribeObject.addEventListener(NetMonEvent.SUB_NET_DOWN, onNetStatus);
+        subscribeObject.addEventListener(SystemMonitorEvent.SUB_NET_UP, onNetStatus);
+        subscribeObject.addEventListener(SystemMonitorEvent.SUB_NET_DOWN, onNetStatus);
     }
-
 
     // this is what runs when we resume from sleep
 
-    private function onSleepResume(e:SleepMonitorEvent):void {
+    private function onSleepResume(e:SystemMonitorEvent):void {
         if (subscribeObject) {
             dispatchEvent(new PnEvent(PnEvent.RESUME_FROM_SLEEP));
             instance.subscribeObject.onError(new OperationEvent(OperationEvent.TIMEOUT));
-
         }
     }
 
@@ -180,7 +174,7 @@ public class Pn extends EventDispatcher {
     }
 
     // these are handlers for subscribeConnection network events
-    private function onNetStatus(e:NetMonEvent):void {
+    private function onNetStatus(e:SystemMonitorEvent):void {
         dispatchEvent(e);
     }
 
@@ -188,7 +182,7 @@ public class Pn extends EventDispatcher {
     /*---------------UNSUBSCRIBE---------------*/
 
     public static function forceTimeout():void {
-        instance.subscribeObject.retryToConnect(new NetMonEvent("foo"));
+        instance.subscribeObject.retryToConnect();
     }
 
     public static function unsubscribe(channel:String):void {
@@ -240,10 +234,7 @@ public class Pn extends EventDispatcher {
         dispatchEvent(pnEvent);
     }
 
-
     /*---------------PUBLISH---------------*/
-
-    // TODO: Install URLLoader connectError handler for auto-reconnect
 
     public static function publish(args:Object):void {
         instance.publish(args);
@@ -330,12 +321,7 @@ public class Pn extends EventDispatcher {
     public function get subscribeKey():String {
         return _subscribeKey;
     }
-	/**
-	 *  gut out unused code
-	 * 
-    public function get initialized():Boolean {
-        return _initialized;
-    }*/
+
 
     public function get origin():String {
         return _origin;

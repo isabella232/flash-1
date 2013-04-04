@@ -6,8 +6,8 @@ import flash.utils.*;
  * ...
  * @author firsoff maxim, support@pubnub.com
  */
-[Event(name="restore_from_sleep", type="com.pubnub.environment.SleepMonitorEvent")]
-public class SleepMonitor extends EventDispatcher {
+[Event(name="restore_from_sleep", type="com.pubnub.environment.SystemMonitorEvent")]
+public class SystemMonitor extends EventDispatcher {
 
     private var interval:int;
     private var sleepMonitorInterval:int = 1000; // check for elapsed time every n seconds
@@ -15,7 +15,7 @@ public class SleepMonitor extends EventDispatcher {
     private var lastTime:Number;
     private var _restoreFromSleep:Boolean;
 
-    public function SleepMonitor() {
+    public function SystemMonitor() {
         super(null);
     }
 
@@ -36,7 +36,7 @@ public class SleepMonitor extends EventDispatcher {
         if (elapsedTime > sleepThreshold) {
             if (_restoreFromSleep == false) {
                 _restoreFromSleep = true;
-                dispatchEvent(new SleepMonitorEvent(SleepMonitorEvent.RESTORE_FROM_SLEEP, elapsedTime));
+                dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.RESTORE_FROM_SLEEP, elapsedTime));
             }
         } else {
             _restoreFromSleep = false

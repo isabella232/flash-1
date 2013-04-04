@@ -1,6 +1,6 @@
 package com.pubnub.connection {
 import com.pubnub.*;
-import com.pubnub.environment.NetMonEvent;
+import com.pubnub.environment.SystemMonitorEvent;
 import com.pubnub.log.*;
 import com.pubnub.operation.*;
 
@@ -21,7 +21,7 @@ public class NonSubConnection extends Connection {
 
     override protected function onConnect(e:Event):void {
         trace("NonSubConnection: onConnect");
-        dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
+        dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.NON_SUB_NET_UP));
         super.onConnect(e);
     }
 
@@ -62,7 +62,7 @@ public class NonSubConnection extends Connection {
         if (_networkEnabled == false) {
             _networkEnabled = true
             dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
-            dispatchEvent(new NetMonEvent(NetMonEvent.NON_SUB_NET_UP));
+            dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.NON_SUB_NET_UP));
         }
         super.onComplete(e);
     }
