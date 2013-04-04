@@ -22,7 +22,7 @@ package utils {
 		public var ssl:Boolean = false;
 		
 		private const MAX_LATENCY:int = 2000;
-		private const PUBLISH_INTERVAL:int= 300;
+		private const PUBLISH_INTERVAL:int= 750;
 		
 		private var channel:String;
 		private var _isRun:Boolean;
