@@ -292,8 +292,10 @@ public class Subscribe extends EventDispatcher {
                     dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_UP));
                     _net_status_up = true;
                     _retry_mode = false;
-                    retryCount = 0;
                 }
+
+                retryCount = 0;
+
             }
 
         } catch (e:*) {
