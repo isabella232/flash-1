@@ -1,11 +1,11 @@
-package com.pubnub.operation {
+﻿package com.pubnub.operation {
 
 	import com.pubnub.json.PnJSON;
 import com.pubnub.log.Log;
 
 import flash.net.URLRequest;
 
-//import com.pubnub.net.URLRequest;
+
 	import com.pubnub.Settings;
 	import flash.events.IEventDispatcher;
 	import flash.net.URLRequestMethod;
@@ -96,7 +96,6 @@ import flash.net.URLRequest;
 			if (destroyed) return;
 			super.destroy();
 			args = null;
-			//_request.close();
 			_request = null;
 			
 		}

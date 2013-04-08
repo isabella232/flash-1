@@ -1,11 +1,9 @@
-package com.pubnub {
+﻿package com.pubnub {
 
 import com.pubnub.PnEvent;
 import com.pubnub.connection.*;
 import com.pubnub.environment.*;
-import com.pubnub.log.*;
 import com.pubnub.operation.*;
-import com.pubnub.operation.OperationEvent;
 import com.pubnub.subscribe.*;
 
 import flash.errors.*;
@@ -299,7 +297,7 @@ public class Pn extends EventDispatcher {
 
     private function onTimeFault(e:OperationEvent):void {
         if (e.data.hasOwnProperty("reTry")) {
-            flash.utils.setTimeout(time, 1000);
+            setTimeout(time, 1000);
         } else {
             var pnEvent:PnEvent = new PnEvent(PnEvent.TIME, e.data, null, OperationStatus.ERROR);
             dispatchEvent(pnEvent);

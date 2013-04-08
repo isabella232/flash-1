@@ -1,4 +1,4 @@
-package com.pubnub.connection {
+﻿package com.pubnub.connection {
 //import com.pubnub.net.*;
 //import com.pubnub.net.URLLoaderEvent;
 import com.pubnub.operation.*;
@@ -56,7 +56,6 @@ public class Connection extends EventDispatcher {
     }
 
     protected function onConnect(e:Event):void {
-        // abstract
         _networkEnabled = true;
         dispatchEvent(new OperationEvent(OperationEvent.CONNECT, operation));
     }
@@ -64,11 +63,14 @@ public class Connection extends EventDispatcher {
     protected function onError(e:Event):void {
         clearTimeout(operationTimer);
         _networkEnabled = false;
+		dispatchEvent(new OperationEvent(OperationEvent.CONNECTION_ERROR, operation));
     }
 
     protected function onTimeout(operation:Operation):void {
         clearTimeout(operationTimer);
         _networkEnabled = false;
+		
+		dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, operation));
     }
 
     protected function onComplete(e:Event):void {
@@ -82,7 +84,7 @@ public class Connection extends EventDispatcher {
     }
 
     public function executeGet(operation:Operation):void {
-        //this.operation = operation;
+        doSendOperation(operation);
     }
 
     public function getLastOperation():Operation {

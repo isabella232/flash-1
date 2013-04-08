@@ -1,4 +1,4 @@
-package com.pubnub.subscribe {
+﻿package com.pubnub.subscribe {
 import com.pubnub.*;
 import com.pubnub.connection.*;
 import com.pubnub.environment.*;
@@ -155,12 +155,12 @@ public class Subscribe extends EventDispatcher {
         Pn.pn_internal::nonSubConnection.executeGet(leaveOperation);
     }
 
-    public function subscribe(channelList:String, useThisTimeokenInstead:String = null):void {
+    public function subscribe(channelList:String, useThisTimeTokenInstead:String = null):void {
         trace("Sub.subscribe");
 
-        if (useThisTimeokenInstead) {
-            savedTimetoken = useThisTimeokenInstead;
-            lastReceivedTimetoken = useThisTimeokenInstead;
+        if (useThisTimeTokenInstead) {
+            savedTimetoken = useThisTimeTokenInstead;
+            lastReceivedTimetoken = useThisTimeTokenInstead;
         }
         trace("Sub.subscribe " + channelList.toString());
         var reason:* = null;

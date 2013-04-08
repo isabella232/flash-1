@@ -1,4 +1,4 @@
-package com.pubnub.connection {
+﻿package com.pubnub.connection {
 import com.pubnub.*;
 import com.pubnub.environment.SystemMonitorEvent;
 import com.pubnub.log.*;
@@ -15,8 +15,8 @@ public class NonSubConnection extends Connection {
     }
 
     override public function executeGet(operation:Operation):void {
-        super.executeGet(operation);
-        doSendOperation(operation);
+        trace("NonSubConnection.doSendOperation");
+		super.executeGet(operation);
     }
 
     override protected function onConnect(e:Event):void {
@@ -25,34 +25,24 @@ public class NonSubConnection extends Connection {
         super.onConnect(e);
     }
 
-    override protected function doSendOperation(operation:Operation):void {
-        trace("NonSubConnection.doSendOperation");
-        super.doSendOperation(operation);
-    }
 
     override protected function onTimeout(operation:Operation):void {
-        super.onTimeout(operation);
-        dispatchEvent(new OperationEvent(OperationEvent.TIMEOUT, operation));
-
         Log.log("NonSubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
-
-        // TODO: Remove onError invokations
-        //operation.onError({ message: Errors.OPERATION_TIMEOUT, operation: operation });
+		super.onTimeout(operation);
     }
 
     override public function close():void {
-
-        Log.log("SubConnection.close");
-
+        Log.log("NonSubConnection.close");
         super.close();
     }
 
     override protected function onError(e:Event):void {
+		trace('NonSubscribeConnection onError');
         super.onError(e);
     }
 
     override protected function onClose(e:Event):void {
-        trace('subscribeConnection onClose');
+        trace('NonSubscribeConnection onClose');
         super.onClose(e);
     }
 
