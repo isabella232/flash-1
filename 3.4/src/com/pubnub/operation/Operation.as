@@ -48,7 +48,7 @@ import flash.net.URLRequest;
 		public function setURL(url:String = null, args:Object = null):URLRequest {
 			this.args = args;
 			_url = url;
-            trace(">>>>>>>>>>>>>>>>>>>> Request: " + url);
+            Log.log("REQUEST: " + url);
 			return createRequest();
 		}
 		
@@ -62,7 +62,7 @@ import flash.net.URLRequest;
 		
 		public function onData(data:Object = null):void {
 			var result:Object = data;
-			trace(">>>>>>>>>>>>>>>>>>>> Response: " + result);
+            Log.log("RESPONSE: " + result);
             _completed = true;
 			endTime = getTimer();
 			var error:Boolean;

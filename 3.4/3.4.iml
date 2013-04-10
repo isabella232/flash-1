@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="Flex" version="4">
-  <component name="FlexBuildConfigurationManager" active="3.4 SWF">
+  <component name="FlexBuildConfigurationManager" active="3.4">
     <configurations>
-      <configuration name="3.4 SWF" main-class="PubNubFlexExample" output-file="3_4.swf" output-folder="$MODULE_DIR$/out/production/3.4">
+      <configuration name="3.4" output-file="3_4.swf" output-folder="$MODULE_DIR$/out/production/3.4">
         <dependencies target-player="11.1">
           <entries>
             <entry library-name="greensock" library-level="project">
+              <dependency linkage="Merged" />
+            </entry>
+            <entry library-name="hamcrest-as3-flex-1.1.3" library-level="project">
               <dependency linkage="Merged" />
             </entry>
             <entry library-name="lib" library-level="project">
@@ -22,26 +25,6 @@
         <packaging-android />
         <packaging-ios />
       </configuration>
-      <configuration name="3.4 AIR" target-platform="Desktop" main-class="PubNubFlexExample" output-file="3_4_AIR.swf" output-folder="$MODULE_DIR$/out/production/3.4">
-        <dependencies>
-          <entries>
-            <entry library-name="greensock" library-level="project">
-              <dependency linkage="Merged" />
-            </entry>
-            <entry library-name="lib" library-level="project">
-              <dependency linkage="Merged" />
-            </entry>
-            <entry library-name="PerfomanceTestView1" library-level="project">
-              <dependency linkage="Merged" />
-            </entry>
-          </entries>
-          <sdk name="flex_sdk_4.6" />
-        </dependencies>
-        <compiler-options />
-        <packaging-air-desktop package-file-name="3_4_AIR" />
-        <packaging-android />
-        <packaging-ios />
-      </configuration>
     </configurations>
     <compiler-options />
   </component>
@@ -53,8 +36,11 @@
     <orderEntry type="jdk" jdkName="flex_sdk_4.6" jdkType="Flex SDK Type (new)" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="greensock" level="project" />
-    <orderEntry type="library" exported="" name="lib" level="project" />
+    <orderEntry type="library" exported="" name="lib (2)" level="project" />
     <orderEntry type="library" exported="" name="PerfomanceTestView1" level="project" />
+    <orderEntry type="library" exported="" name="hamcrest-as3-flex-1.1.3" level="project" />
+    <orderEntry type="library" exported="" name="fluint-extensions-4.1.0-8-4.1.0.16076" level="project" />
+    <orderEntry type="library" exported="" name="lib" level="project" />
   </component>
 </module>
 

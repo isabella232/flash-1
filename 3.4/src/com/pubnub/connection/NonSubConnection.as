@@ -15,12 +15,12 @@ public class NonSubConnection extends Connection {
     }
 
     override public function executeGet(operation:Operation):void {
-        trace("NonSubConnection.doSendOperation");
+        //trace("NonSubConnection.doSendOperation");
 		super.executeGet(operation);
     }
 
     override protected function onConnect(e:Event):void {
-        trace("NonSubConnection: onConnect");
+        //trace("NonSubConnection: onConnect");
         dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.NON_SUB_NET_UP));
         super.onConnect(e);
     }
@@ -37,17 +37,17 @@ public class NonSubConnection extends Connection {
     }
 
     override protected function onError(e:Event):void {
-		trace('NonSubscribeConnection onError');
+		//trace('NonSubscribeConnection onError');
         super.onError(e);
     }
 
     override protected function onClose(e:Event):void {
-        trace('NonSubscribeConnection onClose');
+        //trace('NonSubscribeConnection onClose');
         super.onClose(e);
     }
 
     override protected function onComplete(e:Event):void {
-        trace('nonsubscribeConnection onComplete');
+        //trace('nonsubscribeConnection onComplete');
 
         if (_networkEnabled == false) {
             _networkEnabled = true

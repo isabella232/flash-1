@@ -67,7 +67,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function onError(e:OperationEvent):void {
-        trace("Subscribe.onError");
+        //trace("Subscribe.onError");
 
         if (Settings.NET_DOWN_ON_SILENCE == true) {
             if (e.type == OperationEvent.TIMEOUT && _net_status_up == true) {
@@ -81,7 +81,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     private function onNetworkEnable():void {
-        trace("Sub.onNetworkEnable: Re-enabling network now!");
+        Log.log("Sub.onNetworkEnable: Re-enabling network now!");
 
         clearInterval(retryInterval);
         retryInterval = 0;
@@ -96,7 +96,7 @@ public class Subscribe extends EventDispatcher {
             return;
         }
 
-        trace("Subscribe.delayedOnNetworkDisable: " + Settings.RECONNECT_RETRY_DELAY);
+        //trace("Subscribe.delayedOnNetworkDisable: " + Settings.RECONNECT_RETRY_DELAY);
         retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
     }
 
@@ -104,7 +104,7 @@ public class Subscribe extends EventDispatcher {
 
         subscribeConnection.close();
 
-        trace("Sub.onNetworkDisable");
+        Log.log("Sub.onNetworkDisable");
 
         if (Settings.NET_DOWN_ON_SILENCE == true) {
             retryCount++;
@@ -120,7 +120,7 @@ public class Subscribe extends EventDispatcher {
             return;
         }
 
-        trace("tryToConnect CALLED");
+        //trace("tryToConnect CALLED");
         Log.log("Sub.tryToConnect: " + retryCount + " / " + Settings.MAX_RECONNECT_RETRIES, Log.DEBUG, new SubscribeOperation("1"))
 
         if (channels && channels.channelList.length > 0) {
@@ -128,11 +128,11 @@ public class Subscribe extends EventDispatcher {
             if (Settings.NET_DOWN_ON_SILENCE == true) {
 
                 if (retryCount < Settings.MAX_RECONNECT_RETRIES && channels && channels.channelList.length > 0) {
-                    trace("Sub.tryToConnect not yet at max retries. retrying.");
+                    Log.log("Sub.tryToConnect not yet at max retries. retrying.");
                     executeSubscribeOperation();
 
                 } else {
-                    trace("Sub.tryToConnect reached MAX_RETRIES!");
+                    Log.log("Sub.tryToConnect reached MAX_RETRIES!");
                     unsubscribeAll();
                 }
 
@@ -156,13 +156,13 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function subscribe(channelList:String, useThisTimeTokenInstead:String = null):void {
-        trace("Sub.subscribe");
+        //trace("Sub.subscribe");
 
         if (useThisTimeTokenInstead) {
             savedTimetoken = useThisTimeTokenInstead;
             lastReceivedTimetoken = useThisTimeTokenInstead;
         }
-        trace("Sub.subscribe " + channelList.toString());
+        //trace("Sub.subscribe " + channelList.toString());
         var reason:* = null;
         var opType:String = "subscribe";
 
@@ -170,7 +170,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function unsubscribe(channelList:String, reason:Object = null):void {
-        trace("unsubscribe");
+        //trace("unsubscribe");
         var opType:String = "unsubscribe";
 
         closeResubOrShutdown(opType, channelList, reason);
@@ -181,7 +181,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     private function closeResubOrShutdown(opType:String, channelList:String, reason:Object):void {
-        trace("closeResubOrShutdown");
+        //trace("closeResubOrShutdown");
 
         subscribeConnection.close();
 
@@ -189,10 +189,10 @@ public class Subscribe extends EventDispatcher {
         var removeChStr:String = channelsToModify.join(',');
 
         if (networkEnabled) {
-            trace("Sub.activateNewChannelList: leaving " + removeChStr);
+            //trace("Sub.activateNewChannelList: leaving " + removeChStr);
             delayedLeave(removeChStr);
         } else {
-            trace("Sub.activateNewChannelList: not leaving (no network)" + removeChStr);
+            //trace("Sub.activateNewChannelList: not leaving (no network)" + removeChStr);
         }
 
         var nextAction:String = channels.activateNewChannelList(channelsToModify, opType);
@@ -202,8 +202,8 @@ public class Subscribe extends EventDispatcher {
         }
         else if (nextAction == "shutdown") {
 
-            trace("Sub.activateNewChannelList: no channels, will not continue with subscribe.");
-            trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
+            Log.log("Sub.activateNewChannelList: no channels, Shutting down.");
+            //trace("Sub.activateNewChannelList: resetting lastTimetoken to 0");
 
             var shutdownReason:String = _net_status_up ? "unsubscribed from all channels" : "maximum reconnect retries exceeded";
 
@@ -233,7 +233,7 @@ public class Subscribe extends EventDispatcher {
 
         UUID ||= PnUtils.getUID();
 
-        trace("Sub.executeSubscribeOperation");
+        //trace("Sub.executeSubscribeOperation");
 
         var subscribeOperation:SubscribeOperation = new SubscribeOperation(origin);
 
@@ -242,12 +242,12 @@ public class Subscribe extends EventDispatcher {
         if (!networkEnabled) { // we are in retryMode
 
             tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
-            trace("Sub.executeSubscribeOperation retry mode is set, choosing timetoken: " + tt);
+            //trace("Sub.executeSubscribeOperation retry mode is set, choosing timetoken: " + tt);
 
         } else {
 
             tt = lastReceivedTimetoken;
-            trace("Sub.executeSubscribeOperation resuming subscribe loop, choosing timetoken: " + tt);
+            //trace("Sub.executeSubscribeOperation resuming subscribe loop, choosing timetoken: " + tt);
         }
 
         var subObject:Object = {
@@ -260,7 +260,7 @@ public class Subscribe extends EventDispatcher {
         subscribeOperation.addEventListener(OperationEvent.RESULT, onMessageReceived);
         subscribeOperation.addEventListener(OperationEvent.FAULT, onError);
 
-        trace("Sub.executeSubscribeOperation executing subscribe request on wire.");
+        //trace("Sub.executeSubscribeOperation executing subscribe request on wire.");
         subscribeConnection.executeGet(subscribeOperation);
     }
 
@@ -364,25 +364,25 @@ public class Subscribe extends EventDispatcher {
     public function set networkEnabled(value:Boolean):void {
         _networkEnabled = value;
 
-        trace("networkEnabled.setter called with NW_ENABLED = " + value)
+        //trace("networkEnabled.setter called with NW_ENABLED = " + value)
 
         if (value == true) {
-            trace("*** ENABLING NETWORK ***");
+            //trace("*** ENABLING NETWORK ***");
             //saveChannelsAndSubscribe();
         } else if (value == false) {
-            trace("*** DISABLING NETWORK ***");
+            //trace("*** DISABLING NETWORK ***");
             //saveChannelsAndUnsubscribe();
         }
     }
 
     private function currentNW():void {
-        trace("** Current NW **");
-
-        trace("networkEnabled: " + networkEnabled);
-        trace("retryCount: " + retryCount);
-        trace("lastReceivedTimetoken: " + lastReceivedTimetoken);
-        trace("savedTimetoken: " + savedTimetoken);
-        trace("_channels: ") + _channels;
+//        trace("** Current NW **");
+//
+//        trace("networkEnabled: " + networkEnabled);
+//        trace("retryCount: " + retryCount);
+//        trace("lastReceivedTimetoken: " + lastReceivedTimetoken);
+//        trace("savedTimetoken: " + savedTimetoken);
+//        trace("_channels: ") + _channels;
     }
 
     public function get retryCount():int {
@@ -405,7 +405,7 @@ public class Subscribe extends EventDispatcher {
 
     public function set UUID(value:String):void {
         _UUID = value;
-        trace("UUID SET in Subscribe: " + _UUID);
+        //trace("UUID SET in Subscribe: " + _UUID);
 
     }
 
@@ -423,7 +423,7 @@ public class Subscribe extends EventDispatcher {
 
     public function set lastReceivedTimetoken(value:String):void {
         _lastReceivedTimetoken = value;
-        trace("last received timetoken set to: " + value);
+        //trace("last received timetoken set to: " + value);
     }
 
     public function get savedTimetoken():String {
@@ -431,7 +431,7 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function set savedTimetoken(value:String):void {
-        trace("last saved timetoken set to: " + value);
+        //trace("last saved timetoken set to: " + value);
         _savedTimetoken = value;
     }
 

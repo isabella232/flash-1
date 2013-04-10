@@ -17,12 +17,12 @@ public class SubscribeConnection extends Connection {
     }
 
     override public function executeGet(operation:Operation):void {
-        trace("SubConnection.doSendOperation");
+        //trace("SubConnection.doSendOperation");
 		super.executeGet(operation);
     }
 
     override protected function onConnect(e:Event):void {
-        trace("SubscribeConnection: onConnect");
+        //trace("SubscribeConnection: onConnect");
         super.onConnect(e);
     }
 
@@ -38,17 +38,17 @@ public class SubscribeConnection extends Connection {
     }
 
     override protected function onError(e:Event):void {
-        trace('subscribeConnection onError');
+        //trace('subscribeConnection onError');
         super.onError(e);
     }
 
     override protected function onClose(e:Event):void {
-        trace('subscribeConnection onClose');
+        //trace('subscribeConnection onClose');
         super.onClose(e);
     }
 
     override protected function onComplete(e:Event):void {
-        trace('subscribeConnection onComplete');
+        //trace('subscribeConnection onComplete');
 
         if (_networkEnabled == false) {
             _networkEnabled = true

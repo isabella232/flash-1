@@ -58,12 +58,12 @@ public class Pn extends EventDispatcher {
 
     // these are handlers for nonSubscribeConnection network events
     private function onNonSubNet(e:SystemMonitorEvent):void {
-        trace("PN.onNonSubNet: " + e);
+        //trace("PN.onNonSubNet: " + e);
         dispatchEvent(e);
     }
 
     private function onNonSubOp(e:OperationEvent):void {
-        trace("PN.onNonSubOp: " + e);
+        //trace("PN.onNonSubOp: " + e);
         dispatchEvent(e);
     }
 
@@ -156,7 +156,7 @@ public class Pn extends EventDispatcher {
         var subscribe:Subscribe = e.target as Subscribe;
         var status:String;
 
-        trace("PN.onSubscribe: " + e);
+        //trace("PN.onSubscribe: " + e);
 
         switch (e.type) {
             case SubscribeEvent.CONNECT:

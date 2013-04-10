@@ -1,6 +1,7 @@
 ﻿package com.pubnub.connection {
 //import com.pubnub.net.*;
 //import com.pubnub.net.URLLoaderEvent;
+import com.pubnub.log.Log;
 import com.pubnub.operation.*;
 
 import flash.events.*;
@@ -116,10 +117,10 @@ public class Connection extends EventDispatcher {
             destroy();
 
         } catch (e) {
-            if (e.errorID == 2029) {
-                trace("Will not close because the connection is not open.")
+            if (e.errorID == 2029 || e.errorID == 1009) {
+                Log.log("Will not close socket because it is already closed.")
             } else {
-                trace("Unknown connection close error: " + e.message)
+                Log.log("Unknown connection close error: " + e.message)
             }
         }
     }

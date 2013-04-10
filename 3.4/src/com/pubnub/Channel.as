@@ -6,6 +6,7 @@
  * To change this template use File | Settings | File Templates.
  */
 package com.pubnub {
+import com.pubnub.log.Log;
 import com.pubnub.subscribe.SubscribeEvent;
 
 import flash.events.EventDispatcher;
@@ -24,10 +25,10 @@ public class Channel extends EventDispatcher {
     }
 
     public function validateNewChannelList(operationType:String, channelList:String, reason:Object = null):Array {
-        trace("Sub.validateNewChannelList: " + operationType);
+        //trace("Sub.validateNewChannelList: " + operationType);
 
         if (!isChannelListValid(channelList)) {
-            trace("validateNewChannelList: not a valid channellist, so returning a blank array");
+            //trace("validateNewChannelList: not a valid channellist, so returning a blank array");
             return [];
         }
 
@@ -54,7 +55,7 @@ public class Channel extends EventDispatcher {
             }
         }
 
-        trace("validateNewChannelList: activateNewChannelList with " +
+        Log.log("validateNewChannelList: activateNewChannelList with " +
                 channelsToModify.toString() + " " + operationType);
 
         return channelsToModify;
@@ -62,7 +63,7 @@ public class Channel extends EventDispatcher {
 
     public function activateNewChannelList(newChannelList:Array, operationType:String):String {
 
-        trace("Sub.activateNewChannelList");
+        //trace("Sub.activateNewChannelList");
 
         if (operationType == "unsubscribe") {
 
@@ -74,7 +75,7 @@ public class Channel extends EventDispatcher {
         }
 
         if (channelList.length > 0) {
-            trace("Sub.activateNewChannelList: running executeSubscribeOperation " + this);
+            //trace("Sub.activateNewChannelList: running executeSubscribeOperation " + this);
             return "resubscribe";
 
         } else {
