@@ -296,6 +296,8 @@ public class Subscribe extends EventDispatcher {
                 }
             }
 
+            retryCount = 0;
+
         } catch (e:*) {
             Log.log("onMessageReceived: broken response array: " + e + " , TT: " + lastReceivedTimetoken, Log.DEBUG);
             executeSubscribeOperation();
