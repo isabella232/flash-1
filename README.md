@@ -13,11 +13,12 @@ business collaborative solutions, and more.
 ### In a nutshell
 
 * Import PubNub
-
+```
     import com.pubnub.*;
+```
 
 * Bind some event listeners to the singleton
-
+```
     Pn.instance.addEventListener(PnEvent.INIT, onInit);
     Pn.instance.addEventListener(PnEvent.SUBSCRIBE, onSubscribe);
     Pn.instance.addEventListener(PnEvent.PRESENCE, onPresence);
@@ -28,9 +29,10 @@ business collaborative solutions, and more.
 
     Pn.instance.addEventListener(SystemMonitorEvent.SUB_NET_UP, onPnConnected);
     Pn.instance.addEventListener(SystemMonitorEvent.SUB_NET_DOWN, onPnDisconnected);
+```
 
 * Create an init object
-
+```
     var config:Object = {
         origin: "pubsub.pubnub.com",
         publish_key: "demo",
@@ -39,13 +41,15 @@ business collaborative solutions, and more.
         cipher_key: "",
         ssl: true
     }
+```
 
 * Initialize the singleton
-
+```
     Pn.init(config);
-    
-* Pub, Sub, and More Fun!
+```
 
+* Pub, Sub, and More Fun!
+```
     // Time
     Pn.time();
     
@@ -64,7 +68,7 @@ business collaborative solutions, and more.
     args.channel = "my_channel";
     args['sub-key'] = "demo";
     Pn.instance.detailedHistory(args);
-    
+```
 
 ## Full Blown Example!
 [3.4.1/src/PubNubFlexExample.mxml](3.4.1/src/PubNubFlexExample.mxml) a simple Flex demo application which 
