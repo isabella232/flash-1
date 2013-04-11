@@ -92,9 +92,6 @@
             Pn.instance.addEventListener(SystemMonitorEvent.SUB_NET_UP, onPnConnected);
             Pn.instance.addEventListener(SystemMonitorEvent.SUB_NET_DOWN, onPnDisconnected);
 
-            Pn.instance.addEventListener(SystemMonitorEvent.NON_SUB_NET_UP, onNonSubUp);
-            Pn.instance.addEventListener(SystemMonitorEvent.NON_SUB_NET_DOWN, onNonSubDown);
-
             Pn.init(config);
         }
 
@@ -105,15 +102,6 @@
 
         private function onPnConnected(e:SystemMonitorEvent):void {
             this.subConnectionStatus.setStyle('backgroundColor', "#00FC00");
-        }
-
-        private function onNonSubDown(e:SystemMonitorEvent):void {
-
-            this.nonSubConnectionStatus.setStyle('backgroundColor', "#FC0000");
-        }
-
-        private function onNonSubUp(e:SystemMonitorEvent):void {
-            this.nonSubConnectionStatus.setStyle('backgroundColor', "#00FC00");
         }
 
         private function onPnResumeFromSleep(e:PnEvent):void {
@@ -465,10 +453,5 @@
 					   backgroundColor="#FC0000">
 	</s:BorderContainer>
 
-    <s:BorderContainer id="nonSubConnectionStatus" x="304" y="90" width="53" height="13"
-                       backgroundColor="#FC0000">
-    </s:BorderContainer>
-
 	<s:Label x="9" y="92" color="#626262" fontStyle="italic" text="SUB Net status:"/>
-    <s:Label x="180" y="92" color="#626262" fontStyle="italic" text="NON-SUB Net status:"/>
 </s:Application>
