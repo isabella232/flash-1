@@ -82,7 +82,6 @@
                 ssl: this.ssl}
 
             Pn.instance.addEventListener(PnEvent.INIT, onInit);
-            Pn.instance.addEventListener(PnEvent.INIT_ERROR, onInitError);
             Pn.instance.addEventListener(PnEvent.SUBSCRIBE, onSubscribe);
             Pn.instance.addEventListener(PnEvent.PRESENCE, onPresence);
             Pn.instance.addEventListener(PnEvent.DETAILED_HISTORY, onDetailedHistory);

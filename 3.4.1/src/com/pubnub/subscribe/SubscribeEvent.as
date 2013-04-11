@@ -6,8 +6,8 @@ package com.pubnub.subscribe {
 	 * @author firsoff maxim, support@pubnub.com
 	 */
 	public class SubscribeEvent extends Event {
-		
-		public static const DATA:String = 'ChannelEvent.data';
+
+        public static const DATA:String = 'ChannelEvent.data';
 		public static const CONNECT:String = 'ChannelEvent.connect';
 		public static const DISCONNECT:String = 'ChannelEvent.disconnect';
 		public static const ERROR:String = 'ChannelEvent.error';

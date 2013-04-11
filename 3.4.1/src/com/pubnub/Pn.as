@@ -125,7 +125,7 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.ERROR, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.WARNING, onSubscribe);
-        /*subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);*/
+        subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);
 
         subscribeObject.addEventListener(SystemMonitorEvent.SUB_NET_UP, onNetStatus);
         subscribeObject.addEventListener(SystemMonitorEvent.SUB_NET_DOWN, onNetStatus);
@@ -166,6 +166,11 @@ public class Pn extends EventDispatcher {
             case SubscribeEvent.DATA:
                 status = OperationStatus.DATA;
                 break;
+
+            case SubscribeEvent.PRESENCE:
+                status = OperationStatus.DATA;
+                dispatchEvent(new PnEvent(PnEvent.PRESENCE, e.data, e.data.channel));
+                return;
 
             case SubscribeEvent.DISCONNECT:
                 status = OperationStatus.DISCONNECT;

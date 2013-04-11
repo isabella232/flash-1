@@ -309,7 +309,7 @@ public class Subscribe extends EventDispatcher {
         var channel:String;
 
         if (presenceRESPONSE) {
-            /*dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: chStr, message: messages, timetoken: lastReceivedTimetoken}));*/
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: chStr, message: messages, timetoken: lastReceivedTimetoken}));
         } else {
             if (!messages) {
                 return;

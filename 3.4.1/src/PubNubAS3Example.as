@@ -35,7 +35,6 @@ package {
                 ssl:		this.ssl}
 			
 			Pn.instance.addEventListener(PnEvent.INIT, onInit);
-            Pn.instance.addEventListener(PnEvent.INIT_ERROR, onInitError);
             Pn.instance.addEventListener(PnEvent.SUBSCRIBE, onSubscribe);
             Pn.instance.addEventListener(PnEvent.PRESENCE, onPresence);
             Pn.init(config);
