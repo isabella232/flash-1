@@ -18,5 +18,10 @@ package flexUnitTests
 		public var test8:TestPublish; 
 		public var test9:TestHistory; 
 		public var test10:TestUnSubscribe;
+		
+		public var test11:TestHistoryHTTPS;
+		public var test12:TestPublishHTTPS;
+		public var test13:TestSubscribeWithTokenHTTPS;
+		public var test14:TestTimeHTTPS;
 	}
 }

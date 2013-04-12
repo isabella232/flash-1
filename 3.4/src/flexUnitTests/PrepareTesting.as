@@ -4,7 +4,7 @@ package flexUnitTests
 
 	public class PrepareTesting
 	{
-		public static function PnConfig(pn:Pn):void
+		public static function PnConfig(pn:Pn, sslFlag:Boolean = false, entryFlag:Boolean = false):void
 		{
 			pn = Pn.instance;
 			var config:Object = {
@@ -13,7 +13,7 @@ package flexUnitTests
 				sub_key:	'demo',
 				secret_key:	'',
 				cipher_key:	'',
-				ssl:		false};
+				ssl:		sslFlag};
 			
 			Pn.init(config);
 		}
