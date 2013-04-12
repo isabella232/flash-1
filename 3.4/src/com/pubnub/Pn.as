@@ -3,6 +3,7 @@
 import com.pubnub.PnEvent;
 import com.pubnub.connection.*;
 import com.pubnub.environment.*;
+import com.pubnub.log.Log;
 import com.pubnub.operation.*;
 import com.pubnub.subscribe.*;
 
@@ -145,6 +146,7 @@ public class Pn extends EventDispatcher {
         try {
             Pn.__instance.subscribeObject.subscribe(channel, token);
         } catch (e) {
+			Log.log("Pn subscribe: broken response array: " + e);
             if (e.errorID == 1009) {
                 throw("You must Init before subscribing.");
             } else

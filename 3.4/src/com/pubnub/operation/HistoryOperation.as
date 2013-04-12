@@ -3,6 +3,7 @@ package com.pubnub.operation {
 import com.pubnub.PnCrypto;
 import com.pubnub.PnUtils;
 import com.pubnub.json.*;
+import com.pubnub.log.Log;
 
 import flash.net.URLRequest;
 
@@ -83,6 +84,7 @@ import flash.net.URLRequest;
 				}
 			}
 			catch (e:*){
+				Log.log("History Operation onData: broken response array: " + e);
 				dispatchEvent(new OperationEvent(OperationEvent.FAULT, [-1, "[Pn.detailedHistory()] Bad Data Content Ignored"] ));
 			}
 		}

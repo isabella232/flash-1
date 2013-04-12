@@ -2,7 +2,9 @@ package utils {
 	import com.greensock.*;
 	import com.greensock.easing.*;
 	import com.pubnub.*;
+	import com.pubnub.log.Log;
 	import com.pubnub.operation.*;
+	
 	import flash.display.*;
 	import flash.events.*;
 	import flash.text.*;
@@ -146,6 +148,7 @@ package utils {
 					var arrow:DisplayObject = view['arrow'];
 					//arrow.rotation = angle;
 				}catch (err:Error){
+					Log.log("Perfomance update: broken response array: view arrow: " + err);
 					// no arrow in the view
 				}
 				if (arrow) {
@@ -159,13 +162,17 @@ package utils {
 				try {
 					var averageLatencyTxt:TextField = view['averageLatencyTxt'];
 					averageLatencyTxt.text = latencyAvg + '\nms';
-				}catch (err:Error) { }
+				}catch (err:Error) {
+					Log.log("Perfomance update: broken response array: view averageLatencyTxt: " + err);
+				}
 				
 				// stats
 				try {
 					var totalSamplesTxt:TextField = view['totalSamplesTxt'];
 					totalSamplesTxt.text = sent + ' Performance Samples Recorded';
-				}catch (err:Error) { }
+				}catch (err:Error) {
+					Log.log("Perfomance update: broken response array: view totalSamplesTxt: " + err);
+				}
 				
 				try {
 					view['txt_fastest'].text =  getMedianLow(0.02);
@@ -202,7 +209,9 @@ package utils {
 					view['txt2_98'].text = view['txt_98'].text;
 					view['txt2_slowest'].text = view['txt_slowest'].text;
 					
-				}catch (err:Error) { };
+				}catch (err:Error) { 
+					Log.log("Perfomance update: broken response array: view array: " + err);
+				};
 			}
 		}		
 	}

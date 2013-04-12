@@ -2,8 +2,9 @@ package com.pubnub.operation {
 	import com.adobe.crypto.*;
 	import com.pubnub.*;
 	import com.pubnub.json.*;
-
-import flash.net.URLRequest;
+	import com.pubnub.log.Log;
+	
+	import flash.net.URLRequest;
 
 //import com.pubnub.net.*;
 
@@ -63,6 +64,7 @@ import flash.net.URLRequest;
 				dispatchEvent(new OperationEvent(OperationEvent.RESULT, PnJSON.parse(String(data))));
 			}
 			catch (e:*){
+				Log.log("PublicOperation onData: broken response array: " + e);
 				dispatchEvent(new OperationEvent(OperationEvent.FAULT, [-1, "[Pn.publish()] JSON.parse error"] ));
 			}
 		}
