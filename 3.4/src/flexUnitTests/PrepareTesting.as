@@ -12,7 +12,7 @@ package flexUnitTests
 				publish_key:'demo',
 				sub_key:	'demo',
 				secret_key:	'',
-				cipher_key:	'',
+				cipher_key:	entryFlag ? 'test' : '',
 				ssl:		sslFlag};
 			
 			Pn.init(config);
