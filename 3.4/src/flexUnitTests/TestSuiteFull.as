@@ -8,6 +8,8 @@ package flexUnitTests
 	[RunWith("org.flexunit.runners.Suite")]
 	public class TestSuiteFull
 	{
+		public var test100:TestIntegration;		
+		
 		public var test1:TestLibraryExistanceValidation;
 		public var test2:TestPnCrypto;
 		
@@ -17,6 +19,7 @@ package flexUnitTests
 		public var test20:TestTimeEncryHTTPS;
 		
 //		public var test4:TestUUID;
+		public var test101:TestIntegrationEncry;
 		
 		public var test5:TestSubscribePresence;
 		public var test26:TestSubscribePresenceEncry;
@@ -43,11 +46,14 @@ package flexUnitTests
 		public var test15:TestHistoryEncry;
 		public var test16:TestHistoryEncryHTTPS;
 		
+		public var test102:TestIntegrationHTTPS;
+		
 		public var test10:TestUnSubscribe;
 		public var test23:TestUnSubscribeEncry;
 		public var test24:TestUnSubscribeEncryHTTPS;
 		public var test25:TestUnSubscribeHTTPS;
 		
-		public var test100:TestIntegration;		
+		
+		public var test103:TestIntegrationEncryHTTPS;
 	}
 }

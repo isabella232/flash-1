@@ -19,10 +19,10 @@ package flexUnitTests
 	import org.flexunit.async.Async;
 	import org.flexunit.async.TestResponder;
 	import org.flexunit.token.AsyncTestToken;
-
-	public class TestIntegration
+	
+	public class TestIntegrationEncry
 	{
-		public var singleChannel:String = "single_test";
+		public var singleChannel:String = "single_test1";
 		public var pn:Pn;
 		
 		public var asyncFun1:Function;
@@ -40,7 +40,7 @@ package flexUnitTests
 		{
 			//make sure the channel label is unque so other listener wont be there
 			pn = Pn.instance;
-			PrepareTesting.PnConfig(pn);
+			PrepareTesting.PnConfig(pn, false, true);
 			
 			Async.delayCall(this, RequestTest, 500);
 		}
@@ -76,20 +76,20 @@ package flexUnitTests
 			pn.addEventListener(PnEvent.SUBSCRIBE, asyncFun2, false, 0, true);
 		}
 		
-		[Test(async, timeout=5000)]
+		[Test(async, timeout=1000)]
 		public function TestPublishMessage():void
 		{
 			this.asyncFun3 = Async.asyncHandler(this, handleIntendedResult3,2000, null, handleTimeout3);
 			pn.addEventListener(PnEvent.PUBLISH, asyncFun3, false, 0, true);
 		}
 		
-	   [Test(async, timeout=10000)]
+		[Test(async, timeout=10000)]
 		public function TestHistoryInOrder():void
 		{
 			var args:Object = { };
 			args.start = null;
 			args.end = null;
-			args.count = 10;
+			args.count = 1;
 			args.reverse = false;
 			args.channel = this.singleChannel;
 			args['sub-key'] = pn.subscribeKey;
@@ -113,17 +113,17 @@ package flexUnitTests
 		{
 			Assert.assertTrue(e.data[0] != '');
 			/*switch (e.status) {
-				case OperationStatus.DATA:
-					var resultToken:String = e.data[0];
-					var curentDateTime:Date = new Date();
-					var currentTimestamp:Number = curentDateTime.time*10000;
-					var timeOffSet:Number = Math.abs(currentTimestamp-Number(resultToken));
-					Assert.assertTrue(timeOffSet<24*3600*10000);
-					break;
-				
-				case OperationStatus.ERROR:
-					Assert.fail("Time() did not return correct value but error out");
-					break;
+			case OperationStatus.DATA:
+			var resultToken:String = e.data[0];
+			var curentDateTime:Date = new Date();
+			var currentTimestamp:Number = curentDateTime.time*10000;
+			var timeOffSet:Number = Math.abs(currentTimestamp-Number(resultToken));
+			Assert.assertTrue(timeOffSet<24*3600*10000);
+			break;
+			
+			case OperationStatus.ERROR:
+			Assert.fail("Time() did not return correct value but error out");
+			break;
 			}*/
 		}
 		
@@ -162,7 +162,7 @@ package flexUnitTests
 		
 		public function handleTimeout4(passThroughData:Object):void
 		{
-			Assert.fail("subscribe timeout");
+			Assert.fail("History subscribe timeout");
 		}
 	}
 }
