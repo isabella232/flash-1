@@ -11,7 +11,6 @@
     <fx:Script>
 		<![CDATA[
         import com.pubnub.*;
-
         import com.pubnub.environment.SystemMonitorEvent;
         import com.pubnub.json.*;
         import com.pubnub.log.Log;
@@ -89,7 +88,8 @@
             Pn.instance.addEventListener(PnEvent.PUBLISH, onPublish);
             Pn.instance.addEventListener(PnEvent.TIME, onPnTime);
             Pn.instance.addEventListener(PnEvent.RESUME_FROM_SLEEP, onPnResumeFromSleep);
-
+			Pn.instance.addEventListener(PnEvent.HERENOW, onHereNow);
+			
             Pn.instance.addEventListener(SystemMonitorEvent.SUB_NET_UP, onPnConnected);
             Pn.instance.addEventListener(SystemMonitorEvent.SUB_NET_DOWN, onPnDisconnected);
 
@@ -217,6 +217,13 @@
             args['sub-key'] = this.sub_key;
             Pn.instance.detailedHistory(args);
         }
+			
+        private function onDetHereNowClick(e:MouseEvent):void {
+            var args:Object = { };
+            args.channel = hereNowList.selectedItem.toString();
+            args['sub-key'] = this.sub_key;
+            Pn.instance.onHereNow(args);
+        }
 
         private function onDetailedHistory(e:PnEvent):void {
             //if (perfomance.isRun) return;
@@ -228,6 +235,20 @@
 
                 case OperationStatus.ERROR:
                     callExternalInterface("console.log", ("DetailedHistory [ERROR] : " + e.data));
+                    break;
+            }
+        }
+			
+        private function onHereNow(e:PnEvent):void {
+            switch (e.status) {
+                case OperationStatus.DATA:
+                    var occupancy:uint = e.data.occupancy as uint;
+                    var uuids:Array = e.data.uuids as Array;
+                    callExternalInterface("console.log", ("HereNow [DATA], channel : " + e.channel +'\n occupancy: '+occupancy +'\n uuids : ' + uuids.join('\n')));
+                    break;
+
+                case OperationStatus.ERROR:
+                    callExternalInterface("console.log", ("HereNow [ERROR] : " + e.data));
                     break;
             }
         }
@@ -406,6 +427,7 @@
 					dataProvider="{channelsDataProvider}"></s:List>
 
         </s:NavigatorContent>
+		
         <s:NavigatorContent width="100%" height="100%" label="Publish (4)">
             <s:Button id="publishBtn" x="74" y="39" label="Publish"
                       click="publishBtn_clickHandler(event)" enabled="{publishChannelList.selectedItem}"/>
@@ -436,6 +458,14 @@
 				</s:VGroup>
 			</s:Scroller>
         </s:NavigatorContent>
+        <s:NavigatorContent width="100%" height="100%" label="HereNow (7)">
+            <s:Button id="HereNowBtn" x="5" y="10" label="Here Now" enabled="{this.hereNowList.selectedItem}"
+                      click="onDetHereNowClick(event)"/>
+            
+            <s:List id="hereNowList" x="507" top="0" bottom="0" width="185" 
+                    dataProvider="{channelsDataProvider}"></s:List>
+        </s:NavigatorContent>
+
 		<s:NavigatorContent width="100%" height="100%" label="Logging">
 			<s:TextArea id="loggingTA" left="10" right="263" top="5" bottom="5" fontSize="12"
 						fontWeight="bold"/>
