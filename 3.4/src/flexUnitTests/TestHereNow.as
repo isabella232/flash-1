@@ -77,7 +77,7 @@ package flexUnitTests
 			var messageDataArray:Array = e.data.uuids as Array;
 			var occupancy:uint = e.data.occupancy as uint;
 			Assert.assertTrue(occupancy  == 1);
-			Assert.assertTrue(messageDataArray.length > 0);
+			Assert.assertTrue(messageDataArray.length == 1);
 		}
 		
 		public function handleTimeout(passThroughData:Object):void
