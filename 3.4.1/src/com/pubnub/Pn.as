@@ -125,7 +125,7 @@ public class Pn extends EventDispatcher {
         subscribeObject.addEventListener(SubscribeEvent.DISCONNECT, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.ERROR, onSubscribe);
         subscribeObject.addEventListener(SubscribeEvent.WARNING, onSubscribe);
-        subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);
+        /*subscribeObject.addEventListener(SubscribeEvent.PRESENCE, onSubscribe);*/
 
         subscribeObject.addEventListener(SystemMonitorEvent.SUB_NET_UP, onNetStatus);
         subscribeObject.addEventListener(SystemMonitorEvent.SUB_NET_DOWN, onNetStatus);
@@ -166,11 +166,6 @@ public class Pn extends EventDispatcher {
             case SubscribeEvent.DATA:
                 status = OperationStatus.DATA;
                 break;
-
-            case SubscribeEvent.PRESENCE:
-                status = OperationStatus.DATA;
-                dispatchEvent(new PnEvent(PnEvent.PRESENCE, e.data, e.data.channel));
-                return;
 
             case SubscribeEvent.DISCONNECT:
                 status = OperationStatus.DISCONNECT;
@@ -234,7 +229,7 @@ public class Pn extends EventDispatcher {
 
         Pn.nonSubConnection.executeGet(history);
     }
-
+	
     private function onHistoryResult(e:OperationEvent):void {
         var pnEvent:PnEvent = new PnEvent(PnEvent.DETAILED_HISTORY, e.data, e.target.channel, OperationStatus.DATA);
         pnEvent.operation = e.target as Operation;
@@ -243,6 +238,39 @@ public class Pn extends EventDispatcher {
 
     private function onHistoryFault(e:OperationEvent):void {
         var pnEvent:PnEvent = new PnEvent(PnEvent.DETAILED_HISTORY, e.data, e.target.channel, OperationStatus.ERROR);
+        pnEvent.operation = e.target as Operation;
+        dispatchEvent(pnEvent);
+    }
+	
+    public function onHereNow(args:Object):void {
+        var channel:String = args.channel;
+        var sub_key:String = args['sub-key'];
+        if (channel == null ||
+                channel.length == 0 ||
+                sub_key == null ||
+                sub_key.length == 0) {
+                dispatchEvent(new PnEvent(PnEvent.HERENOW, [ -1, 'Channel and subKey are missing'], channel, OperationStatus.ERROR));
+            return;
+        }
+
+        var hereNow:HereNowOperation = new HereNowOperation(origin);
+        hereNow.cipherKey = cipherKey;
+        hereNow.setURL(null, args);
+
+        hereNow.addEventListener(OperationEvent.RESULT, onHereNowResult);
+        hereNow.addEventListener(OperationEvent.FAULT, onHereNowFault);
+
+        Pn.nonSubConnection.executeGet(hereNow);
+    }
+
+    private function onHereNowResult(e:OperationEvent):void {
+        var pnEvent:PnEvent = new PnEvent(PnEvent.HERENOW, e.data, e.target._channel, OperationStatus.DATA);
+        pnEvent.operation = e.target as Operation;
+        dispatchEvent(pnEvent);
+    }
+
+    private function onHereNowFault(e:OperationEvent):void {
+        var pnEvent:PnEvent = new PnEvent(PnEvent.HERENOW, e.data, e.target._channel, OperationStatus.ERROR);
         pnEvent.operation = e.target as Operation;
         dispatchEvent(pnEvent);
     }

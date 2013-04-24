@@ -64,7 +64,7 @@ package flexUnitTests
 		private function requestSubscribe():void
 		{
 			pn.unsubscribeAll();
-			Pn.subscribe(this.singleChannel, this.token);		//pn.subscribe(this.singleChannel, this.token);
+			Pn.subscribe(this.singleChannel);		//pn.subscribe(this.singleChannel, this.token);
 		}
 		
 		//todo need check the if last token has been used

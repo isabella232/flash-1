@@ -1,5 +1,6 @@
 package com.pubnub {
 	import com.pubnub.operation.*;
+	
 	import flash.events.*;
 	
 	/**
@@ -16,6 +17,7 @@ package com.pubnub {
 		static public const TIME:String = "time";
 		static public const PRESENCE:String = "presence";
         static public const RESUME_FROM_SLEEP:String = "resume_from_sleep";
+		public static const HERENOW:String = "here_now";
 		
 		public var operation:Operation;
 		

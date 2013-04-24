@@ -39,8 +39,8 @@ package flexUnitTests
 			var pn:Pn = Pn.instance;
 			Assert.assertNotNull(pn);	
 			
-			var subscripber:Subscribe = new Subscribe();
-			Assert.assertNotNull(subscripber);	
+			/*var subscripber:Subscribe = new Subscribe();
+			Assert.assertNotNull(subscripber);	*/
 			
 			var pncrypto:PnCrypto = new PnCrypto();
 			Assert.assertNotNull(pncrypto);	
@@ -51,8 +51,8 @@ package flexUnitTests
 			var connection_Sync:NonSubConnection = new NonSubConnection();
 			Assert.assertNotNull(connection_Sync);	
 			
-			var connection_heartbeat:HeartBeatConnection = new HeartBeatConnection();
-			Assert.assertNotNull(connection_heartbeat);	
+			/*var connection_heartbeat:HeartBeatConnection = new HeartBeatConnection();
+			Assert.assertNotNull(connection_heartbeat);	*/
 		}
 		
 		

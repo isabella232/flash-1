@@ -30,13 +30,14 @@ package flexUnitTests
 		public function setUp():void
 		{
 			pn = Pn.instance;
-			PrepareTesting.PnConfig(pn);
+			Async.delayCall(this, requestInit, 500);
+			
 		}
 		
 		[After(async)]
 		public function tearDown():void
 		{
-			pn.removeEventListener(PnEvent.INIT, asyncFun, false);
+			//pn.removeEventListener(PnEvent.INIT, asyncFun, false);
 		}
 		
 		[BeforeClass]
@@ -47,6 +48,11 @@ package flexUnitTests
 		[AfterClass]
 		public static function tearDownAfterClass():void
 		{
+		}
+		
+		private function requestInit():void
+		{
+			PrepareTesting.PnConfig(pn);
 		}
 		
 		[Test(async, timeout=5000)]
@@ -64,7 +70,7 @@ package flexUnitTests
 		
 		public function handleTimeout(passThroughData:Object):void
 		{
-			Assert.fail("PN init timeout");
+			Assert.fail("PN init timeout"+pn.sessionUUID);
 		}		
 	}
 }
