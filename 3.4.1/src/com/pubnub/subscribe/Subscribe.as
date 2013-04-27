@@ -32,6 +32,7 @@ public class Subscribe extends EventDispatcher {
     protected var _channels:Channel;
     protected var subscribeConnection:SubscribeConnection;
     protected var _networkEnabled:Boolean = false;
+    private var _resumedData:Boolean = false;
 	
 	private var _net_status_up:Boolean = false;
     private var _retry_mode:Boolean = false;
@@ -271,6 +272,8 @@ public class Subscribe extends EventDispatcher {
             // recoverying! yay!
 
             onNetworkEnable();
+            resumedData = true;
+
         }
 
         if (e.data == null) {
@@ -300,6 +303,8 @@ public class Subscribe extends EventDispatcher {
 
         } catch (e:*) {
             Log.log("onMessageReceived: broken response array: " + e + " , TT: " + lastReceivedTimetoken, Log.DEBUG);
+
+            lastReceivedTimetoken = savedTimetoken;
             executeSubscribeOperation();
             return
         }
@@ -312,6 +317,7 @@ public class Subscribe extends EventDispatcher {
             dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: chStr, message: messages, timetoken: lastReceivedTimetoken}));
         } else {
             if (!messages) {
+                resumedData = false;
                 return;
             }
 
@@ -325,7 +331,9 @@ public class Subscribe extends EventDispatcher {
                         dispatchEvent(new SubscribeEvent(SubscribeEvent.DATA, {
                             channel: channel,
                             message: messages[i],
-                            timetoken: lastReceivedTimetoken }));
+                            timetoken: lastReceivedTimetoken,
+                            resumedData: resumedData
+                        }));
                     }
                 }
             } else {
@@ -334,11 +342,14 @@ public class Subscribe extends EventDispatcher {
                     dispatchEvent(new SubscribeEvent(SubscribeEvent.DATA, {
                         channel: channel,
                         message: messages[j],
-                        timetoken: lastReceivedTimetoken }));
+                        timetoken: lastReceivedTimetoken,
+                        resumedData: resumedData
+                    }));
                 }
             }
         }
 
+        resumedData = false;
         executeSubscribeOperation();
     }
 
@@ -442,5 +453,12 @@ public class Subscribe extends EventDispatcher {
     }
 
 
+    public function get resumedData():Boolean {
+        return _resumedData;
+    }
+
+    public function set resumedData(value:Boolean):void {
+        _resumedData = value;
+    }
 }
 }
