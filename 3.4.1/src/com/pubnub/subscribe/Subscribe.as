@@ -458,7 +458,9 @@ public class Subscribe extends EventDispatcher {
     }
 
     public function set resumedData(value:Boolean):void {
-        _resumedData = value;
+        if (Settings.RESUME_ON_RECONNECT == true) {
+            _resumedData = value;
+        }
     }
 }
 }
