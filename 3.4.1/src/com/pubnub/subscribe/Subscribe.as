@@ -71,7 +71,7 @@ public class Subscribe extends EventDispatcher {
         //trace("Subscribe.onError");
 
         if (Settings.NET_DOWN_ON_SILENCE == true) {
-            if (e.type == OperationEvent.TIMEOUT && _net_status_up == true) {
+            if (e.type == OperationEvent.TIMEOUT || e.type == "Connection.error" && _net_status_up == true) {
                 dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));
                 _net_status_up = false;
                 _retry_mode = true;
