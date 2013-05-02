@@ -1,4 +1,5 @@
 package com.pubnub.environment {
+import com.pubnub.Settings;
 import com.pubnub.log.Log;
 
 import flash.events.*;
@@ -13,7 +14,7 @@ public class SystemMonitor extends EventDispatcher {
 
     private var interval:int;
     private var sleepMonitorInterval:int = 1000; // check for elapsed time every n seconds
-    private var sleepThreshold:int = 5000; // if this amount of time has elapsed since last ping, assume sleep resume
+    private var sleepThreshold:int = Settings.SLEEP_THRESHOLD; // if this amount of time has elapsed since last ping, assume sleep resume
     private var lastTime:Number;
     private var _restoreFromSleep:Boolean;
 
@@ -35,7 +36,7 @@ public class SystemMonitor extends EventDispatcher {
         var currentTime:Number = getTimer();
         var elapsedTime:int = currentTime - lastTime;
         if (elapsedTime > sleepThreshold) {
-            if (_restoreFromSleep == false) {
+            if (_restoreFromSleep == false && Settings.DETECT_SLEEP == true) {
                 _restoreFromSleep = true;
                 dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.RESTORE_FROM_SLEEP, elapsedTime));
                 Log.log("restore from sleep event has occurred.")

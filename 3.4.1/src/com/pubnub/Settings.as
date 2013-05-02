@@ -11,7 +11,12 @@ package com.pubnub {
          // if true, and if no traffic is heard for SUBSCRIBE_OPERATION_TIMEOUT seconds, assume line is down,
          // and fire SUB_NET_DOWN. Fire SUB_NET_UP when traffic returns.
 
+
          public static const NET_DOWN_ON_SILENCE:Boolean = true;
+
+         // Sleep Settings
+         public static const DETECT_SLEEP:Boolean = false;
+         public static const SLEEP_THRESHOLD:int = 5000;
 
          // if panic_on_silence is true, will retry MAX_RECONNECT_RETRIES after SUB_NET_DOWN event,
          // waiting RECONNECT_RETRY_DELAY retries between reconnect attempts
