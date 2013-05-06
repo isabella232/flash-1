@@ -12,10 +12,10 @@ package com.pubnub {
          // and fire SUB_NET_DOWN. Fire SUB_NET_UP when traffic returns.
 
 
-         public static const NET_DOWN_ON_SILENCE:Boolean = true;
+         public static const NET_DOWN_ON_SILENCE:Boolean = false;
 
          // Sleep Settings
-         public static const DETECT_SLEEP:Boolean = false;
+         public static const DETECT_SLEEP:Boolean = true;
          public static const SLEEP_THRESHOLD:int = 5000;
 
          // if panic_on_silence is true, will retry MAX_RECONNECT_RETRIES after SUB_NET_DOWN event,
@@ -34,7 +34,7 @@ package com.pubnub {
          // ie, 100 times, every 3 seconds for a network connection
 
          // time in millseconds to wait for web server to return a response. DO NOT CHANGE unless requested by support
-         public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 10000;
+         public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 310000;
          public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 15000;
 
      }
