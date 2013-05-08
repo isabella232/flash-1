@@ -1,4 +1,5 @@
 ﻿package com.pubnub.subscribe {
+import com.adobe.net.URI;
 import com.pubnub.*;
 import com.pubnub.connection.*;
 import com.pubnub.environment.*;
@@ -22,7 +23,9 @@ public class Subscribe extends EventDispatcher {
     public var cipherKey:String;
     public var secretKey:String;
 
+    protected var _host:String = "";
     protected var _origin:String = "";
+    protected var _originalOrigin = "";
     protected var _retryCount:int = 0;
     protected var _retryInterval:int = 0;
     protected var _UUID:String = null;
@@ -41,6 +44,7 @@ public class Subscribe extends EventDispatcher {
     public function Subscribe(origin) {
         super(null);
         _origin = origin;
+        _originalOrigin = origin;
         init();
     }
 
@@ -98,7 +102,27 @@ public class Subscribe extends EventDispatcher {
         }
 
         //trace("Subscribe.delayedOnNetworkDisable: " + Settings.RECONNECT_RETRY_DELAY);
-        retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
+
+        if (retryCount == 0) {
+            var randUint:uint = uint(Math.random() * 10000);
+
+            var hostName:RegExp = /(.+?)(?=\.)/;
+
+            var url : URI = new URI(_originalOrigin);
+
+            var oldHostname = hostName.exec(host)[0];
+            var newHostname = oldHostname + "-" + this.UUID.split("-")[0] + "-" + randUint.toString();
+
+            var newURL = _originalOrigin.replace(oldHostname, newHostname);
+
+            // origin.replace(/(.+?)(?=\.)/
+
+            origin = newURL;
+            trace(origin);
+
+            //onNetworkDisable();
+        }
+            retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
     }
 
     public function onNetworkDisable():void {
@@ -461,6 +485,14 @@ public class Subscribe extends EventDispatcher {
         if (Settings.RESUME_ON_RECONNECT == true) {
             _resumedData = value;
         }
+    }
+
+    public function get host():String {
+        return _host;
+    }
+
+    public function set host(value:String):void {
+        _host = value;
     }
 }
 }

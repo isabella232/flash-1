@@ -21,6 +21,7 @@ public class Pn extends EventDispatcher {
 
     private var subscribeObject:Subscribe;
 
+    private var _host:String = "";
     private var _origin:String;
     private var _ssl:Boolean;
     private var _publishKey:String = "demo";
@@ -94,6 +95,7 @@ public class Pn extends EventDispatcher {
         addSubscribeEventListeners();
 
         subscribeObject.origin = _origin;
+        subscribeObject.host = _host;
         subscribeObject.UUID = _sessionUUID;
 
         if (config.publish_key)
@@ -341,7 +343,10 @@ public class Pn extends EventDispatcher {
     }
 
     public function set origin(value:String):void {
+
         _origin = value;
+        _host = value;
+
         if (value == null || value.length == 0) throw('Origin value must be defined');
         if (_ssl) {
             _origin = "https://" + value;
@@ -351,6 +356,7 @@ public class Pn extends EventDispatcher {
         }
         if (subscribeObject) {
             subscribeObject.origin = _origin;
+            subscribeObject.host = value;
         }
     }
 
@@ -359,5 +365,12 @@ public class Pn extends EventDispatcher {
     }
 
 
+    public function get host():String {
+        return _host;
+    }
+
+    public function set host(value:String):void {
+        _host = value;
+    }
 }
 }
