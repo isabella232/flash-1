@@ -22,7 +22,7 @@ package com.pubnub {
          // waiting RECONNECT_RETRY_DELAY retries between reconnect attempts
          // if panic_on_silence is false, will retry indefinitely
 
-         public static const MAX_RECONNECT_RETRIES:uint = 100000; // when this limit is hit, unsubscribe all, and connection.close()
+         public static const MAX_RECONNECT_RETRIES:uint = 60; // when this limit is hit, unsubscribe all, and connection.close()
          public static const RECONNECT_RETRY_DELAY:uint = 1000;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
