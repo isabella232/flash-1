@@ -75,10 +75,14 @@ public class Subscribe extends EventDispatcher {
         //trace("Subscribe.onError");
 
         if (Settings.NET_DOWN_ON_SILENCE == true) {
-            if (e.type == OperationEvent.TIMEOUT || e.type == "Connection.error" && _net_status_up == true) {
-                dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));
-                _net_status_up = false;
-                _retry_mode = true;
+            if (e.type == OperationEvent.TIMEOUT || e.type == "Connection.error") {
+                if (_net_status_up == true) {
+                    _net_status_up = false;
+                    _retry_mode = true;
+                }
+                if (retryCount == 1) {
+                    dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));
+                }
             }
         }
 
@@ -102,13 +106,17 @@ public class Subscribe extends EventDispatcher {
         }
 
         //trace("Subscribe.delayedOnNetworkDisable: " + Settings.RECONNECT_RETRY_DELAY);
+        cacheBust();
+        retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
+    }
 
+    private function cacheBust():void {
         if (retryCount == 0) {
             var randUint:uint = uint(Math.random() * 10000);
 
             var hostName:RegExp = /(.+?)(?=\.)/;
 
-            var url : URI = new URI(_originalOrigin);
+            var url:URI = new URI(_originalOrigin);
 
             var oldHostname = hostName.exec(host)[0];
             var newHostname = oldHostname + "-" + this.UUID.split("-")[0] + "-" + randUint.toString();
@@ -119,10 +127,7 @@ public class Subscribe extends EventDispatcher {
 
             origin = newURL;
             trace(origin);
-
-            //onNetworkDisable();
         }
-            retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
     }
 
     public function onNetworkDisable():void {
