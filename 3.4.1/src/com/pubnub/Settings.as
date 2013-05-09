@@ -12,7 +12,7 @@ package com.pubnub {
          // and fire SUB_NET_DOWN. Fire SUB_NET_UP when traffic returns.
 
 
-         public static const NET_DOWN_ON_SILENCE:Boolean = true;
+         public static const NET_DOWN_ON_SILENCE:Boolean = false;
 
          // Sleep Settings
          public static const DETECT_SLEEP:Boolean = true;
@@ -22,8 +22,11 @@ package com.pubnub {
          // waiting RECONNECT_RETRY_DELAY retries between reconnect attempts
          // if panic_on_silence is false, will retry indefinitely
 
+         public static const ENABLE_MAX_RETRIES:Boolean = false;  // false = try forever. true = unsubscribe and disconnect after maximum retries
          public static const MAX_RECONNECT_RETRIES:uint = 60; // when this limit is hit, unsubscribe all, and connection.close()
-         public static const RECONNECT_RETRY_DELAY:uint = 1000;
+
+         // If this is > 0, then retry to connect at this rate in ms. Otherwise, it will just retry at SUB_OP_TIMEOUT rate.
+         public static const RECONNECT_RETRY_DELAY:uint = 2000;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 

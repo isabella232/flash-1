@@ -93,6 +93,7 @@ public class Subscribe extends EventDispatcher {
         Log.log("Sub.onNetworkEnable: Re-enabling network now!");
 
         clearInterval(retryInterval);
+        retryCount = 0;
         retryInterval = 0;
 
         networkEnabled = true;
@@ -107,7 +108,12 @@ public class Subscribe extends EventDispatcher {
 
         //trace("Subscribe.delayedOnNetworkDisable: " + Settings.RECONNECT_RETRY_DELAY);
         cacheBust();
-        retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
+
+        if (Settings.RECONNECT_RETRY_DELAY > 0) {
+            retryInterval = setInterval(onNetworkDisable, Settings.RECONNECT_RETRY_DELAY);
+        } else {
+            onNetworkDisable();
+        }
     }
 
     private function cacheBust():void {
@@ -136,8 +142,8 @@ public class Subscribe extends EventDispatcher {
 
         Log.log("Sub.onNetworkDisable");
 
-        if (Settings.NET_DOWN_ON_SILENCE == true) {
-            retryCount++;
+        if (Settings.ENABLE_MAX_RETRIES == true) {
+              retryCount++;
         }
 
         networkEnabled = false;
@@ -155,7 +161,7 @@ public class Subscribe extends EventDispatcher {
 
         if (channels && channels.channelList.length > 0) {
 
-            if (Settings.NET_DOWN_ON_SILENCE == true) {
+            if (Settings.ENABLE_MAX_RETRIES == true) {
 
                 if (retryCount < Settings.MAX_RECONNECT_RETRIES && channels && channels.channelList.length > 0) {
                     Log.log("Sub.tryToConnect not yet at max retries. retrying.");
@@ -327,8 +333,6 @@ public class Subscribe extends EventDispatcher {
                     retryCount = 0;
                 }
             }
-
-            retryCount = 0;
 
         } catch (e:*) {
             Log.log("onMessageReceived: broken response array: " + e + " , TT: " + lastReceivedTimetoken, Log.DEBUG);
