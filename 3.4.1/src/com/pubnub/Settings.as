@@ -26,7 +26,7 @@ package com.pubnub {
          public static const MAX_RECONNECT_RETRIES:uint = 60; // when this limit is hit, unsubscribe all, and connection.close()
 
          // If this is > 0, then retry to connect at this rate in ms. Otherwise, it will just retry at SUB_OP_TIMEOUT rate.
-         public static const RECONNECT_RETRY_DELAY:uint = 2000;
+         public static const RECONNECT_RETRY_DELAY:uint = 10000;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 
