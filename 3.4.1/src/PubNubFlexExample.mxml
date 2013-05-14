@@ -29,7 +29,7 @@
 
         [Bindable]
 
-        public var channel:String = 'hello_world'; //ping_3';
+        public var channel:String = 'a'; //'hello_world'; //ping_3';
         //public var channel:String = 'rand_seq';
 
 
@@ -238,7 +238,7 @@
                 ExternalInterface.call(functionName, rest);
             }
 
-            if (consoleCounter == 8) {
+            if (consoleCounter == 23) {
                 consoleArea.text = "";
                 consoleCounter = 0;
             }
@@ -338,7 +338,7 @@
     <s:TextInput id="channelTxt" x="68" y="34" width="246" text="@{channel}"/>
     <s:Label x="28" y="67" color="#4D4C4C" fontStyle="italic" text="Origin"/>
     <s:TextInput id="originTxt" x="68" y="63" width="246" text="@{origin}"/>
-    <mx:TabNavigator left="10" right="10" top="108" bottom="140" selectedIndex="0">
+    <mx:TabNavigator left="10" right="10" top="108" bottom="400" selectedIndex="0">
         <s:NavigatorContent width="100%" height="100%" label="Init (1)">
             <s:Label x="16" y="30" color="#4D4C4C" fontStyle="italic" text="secret_key" textAlign="right"/>
             <s:TextInput id="secretKeyTxt" x="81" y="25" width="246" text="@{secret_key}"/>
@@ -355,7 +355,7 @@
 			<s:Button id="unsubscribeChannelBtn" x="355" y="39" label="Unsubscribe channel"
 					  click="unsubscribeChannel_clickHandler(event)"/>
 			<s:TextInput id="unsubChannelName" x="502" y="39" width="214" text="{subsChannelList.selectedItems}"/>
-			<s:List id="subsChannelList" x="158" top="0" allowMultipleSelection="true" bottom="0" width="185"
+			<s:List id="subsChannelList" x="158" top="0" allowMultipleSelection="true" y="10" width="185"
 					dataProvider="{channelsDataProvider}"></s:List>
 			<s:Button id="subscribeWithTokenBtn" x="10" y="36" label="Subscribe with token"
 					  click="onSubscribeWithTokenBtn(event)"/>
@@ -439,7 +439,7 @@
 					  click="getLogBtn_clickHandler(event)"/>
 		</s:NavigatorContent>
     </mx:TabNavigator>
-    <s:TextArea id="consoleArea" left="10" right="100" bottom="10" height="120" maxChars="10"/>
+    <s:TextArea id="consoleArea" left="10" right="100" bottom="10" height="375" maxChars="10"/>
     <s:Button id="clearConsoleBtn" right="10" bottom="110" width="80" height="21" label="Clear"
 			  click="OnClearConsoleBtnClick(event)"/>
     <s:Label x="343" y="67" color="#4D4C4C" fontStyle="italic" text="sub_key" textAlign="right"/>

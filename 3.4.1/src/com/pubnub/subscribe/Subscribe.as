@@ -36,9 +36,8 @@ public class Subscribe extends EventDispatcher {
     protected var subscribeConnection:SubscribeConnection;
     protected var _networkEnabled:Boolean = false;
     private var _resumedData:Boolean = false;
-	
-	private var _net_status_up:Boolean = false;
-    private var _retry_mode:Boolean = false;
+
+    private var _net_status_up:Boolean = false;
 
 
     public function Subscribe(origin) {
@@ -61,29 +60,24 @@ public class Subscribe extends EventDispatcher {
     protected function onConnect(e:OperationEvent):void {
         Log.log("Subscribe: onConnect", Log.DEBUG);
 
-        if (e.type == OperationEvent.CONNECT && _net_status_up == false && _retry_mode == false) {
+        if (e.type == OperationEvent.CONNECT && _net_status_up == false) {
 
             dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_UP));
             dispatchEvent(new SubscribeEvent(SubscribeEvent.CONNECT, [0, "connected"]));
 
-            _net_status_up = true;
         }
 
     }
 
     public function onError(e:OperationEvent):void {
-        //trace("Subscribe.onError");
+        trace("Subscribe.onError");
 
-        if (Settings.NET_DOWN_ON_SILENCE == true) {
-            if (e.type == OperationEvent.TIMEOUT || e.type == "Connection.error") {
-                if (_net_status_up == true) {
-                    _net_status_up = false;
-                    _retry_mode = true;
-                }
-                if (retryCount == 1) {
-                    dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));
-                }
-            }
+        if (_net_status_up == true) {
+            _net_status_up = false;
+        }
+
+        if (retryCount == 1) {
+            dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));
         }
 
         retryToConnect();
@@ -96,7 +90,7 @@ public class Subscribe extends EventDispatcher {
         retryCount = 0;
         retryInterval = 0;
 
-        networkEnabled = true;
+        _networkEnabled = true;
     }
 
     public function retryToConnect():void {
@@ -128,11 +122,8 @@ public class Subscribe extends EventDispatcher {
             var newHostname = oldHostname + "-" + this.UUID.split("-")[0] + "-" + randUint.toString();
 
             var newURL = _originalOrigin.replace(oldHostname, newHostname);
-
-            // origin.replace(/(.+?)(?=\.)/
-
             origin = newURL;
-            trace(origin);
+            //trace(origin);
         }
     }
 
@@ -142,8 +133,8 @@ public class Subscribe extends EventDispatcher {
 
         Log.log("Sub.onNetworkDisable");
 
-        if (Settings.ENABLE_MAX_RETRIES == true) {
-              retryCount++;
+        if (Settings.ENABLE_MAX_RETRIES == true || retryCount == 0) {
+            retryCount++;
         }
 
         networkEnabled = false;
@@ -275,15 +266,14 @@ public class Subscribe extends EventDispatcher {
 
         var tt:String = "";
 
-        if (!networkEnabled) { // we are in retryMode
-
-            tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
-            //trace("Sub.executeSubscribeOperation retry mode is set, choosing timetoken: " + tt);
-
+        if (!_networkEnabled) { // we are in retryMode
         } else {
 
-            tt = lastReceivedTimetoken;
-            //trace("Sub.executeSubscribeOperation resuming subscribe loop, choosing timetoken: " + tt);
+            if (_resumedData) {
+                tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
+            } else {
+                tt = _lastReceivedTimetoken;
+            }
         }
 
         var subObject:Object = {
@@ -302,13 +292,14 @@ public class Subscribe extends EventDispatcher {
 
     protected function onMessageReceived(e:OperationEvent):void {
 
-        if (!networkEnabled) {
+        if (!_networkEnabled) {
 
             // recoverying! yay!
 
             onNetworkEnable();
-            resumedData = true;
-
+            _resumedData = true;
+            executeSubscribeOperation();
+            return;
         }
 
         if (e.data == null) {
@@ -323,15 +314,13 @@ public class Subscribe extends EventDispatcher {
             savedTimetoken = lastReceivedTimetoken;
             lastReceivedTimetoken = e.data[1];
 
-            var chStr:String = e.data[2];
+            var channel:String = e.data[2];
 
-            if (Settings.NET_DOWN_ON_SILENCE == true) {
-                if (messages.length > 0 && _net_status_up == false) {
-                    dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_UP));
-                    _net_status_up = true;
-                    _retry_mode = false;
-                    retryCount = 0;
-                }
+            // no messages, with timetoken response (ping handshake)
+            if (_net_status_up == false) {
+                dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_UP));
+                _net_status_up = true;
+                retryCount = 0;
             }
 
         } catch (e:*) {
@@ -342,22 +331,22 @@ public class Subscribe extends EventDispatcher {
             return
         }
 
-        var multiplexRESPONSE:Boolean = chStr && chStr.length > 0 && chStr.indexOf(',') > -1;
-        var presenceRESPONSE:Boolean = chStr && chStr.indexOf(PNPRES_PREFIX) > -1;
+        var multiplexRESPONSE:Boolean = channel && channel.length > 0 && channel.indexOf(',') > -1;
+        var presenceRESPONSE:Boolean = channel && channel.indexOf(PNPRES_PREFIX) > -1;
         var channel:String;
 
         if (presenceRESPONSE) {
-            dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: chStr, message: messages, timetoken: lastReceivedTimetoken}));
+            dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: channel, message: messages, timetoken: lastReceivedTimetoken}));
         } else {
             if (!messages) {
-                resumedData = false;
+                //resumedData = false;
                 return;
             }
 
             decryptMessages(messages);
 
             if (multiplexRESPONSE) {
-                var chArray:Array = chStr.split(',');
+                var chArray:Array = channel.split(',');
                 for (var i:int = 0; i < messages.length; i++) {
                     channel = chArray[i];
                     if (channels.channelIsInChannelList(channel)) {
@@ -365,24 +354,24 @@ public class Subscribe extends EventDispatcher {
                             channel: channel,
                             message: messages[i],
                             timetoken: lastReceivedTimetoken,
-                            resumedData: resumedData
+                            resumedData: _resumedData
                         }));
                     }
                 }
             } else {
-                channel = chStr || channels.channelList[0];
+                channel = channel || channels.channelList[0];
                 for (var j:int = 0; j < messages.length; j++) {
                     dispatchEvent(new SubscribeEvent(SubscribeEvent.DATA, {
                         channel: channel,
                         message: messages[j],
                         timetoken: lastReceivedTimetoken,
-                        resumedData: resumedData
+                        resumedData: _resumedData
                     }));
                 }
             }
         }
 
-        resumedData = false;
+        _resumedData = false;
         executeSubscribeOperation();
     }
 
@@ -483,17 +472,6 @@ public class Subscribe extends EventDispatcher {
 
     public function get channels():Channel {
         return _channels;
-    }
-
-
-    public function get resumedData():Boolean {
-        return _resumedData;
-    }
-
-    public function set resumedData(value:Boolean):void {
-        if (Settings.RESUME_ON_RECONNECT == true) {
-            _resumedData = value;
-        }
     }
 
     public function get host():String {
