@@ -76,7 +76,7 @@ public class Subscribe extends EventDispatcher {
             _net_status_up = false;
         }
 
-        if (retryCount == 1) {
+        if (retryCount == Settings.MAX_ERROR_DEBOUNCES) {
             dispatchEvent(new SystemMonitorEvent(SystemMonitorEvent.SUB_NET_DOWN));
         }
 
@@ -133,7 +133,7 @@ public class Subscribe extends EventDispatcher {
 
         Log.log("Sub.onNetworkDisable");
 
-        if (Settings.ENABLE_MAX_RETRIES == true || retryCount == 0) {
+        if (Settings.ENABLE_MAX_RETRIES == true || retryCount <= Settings.MAX_ERROR_DEBOUNCES) {
             retryCount++;
         }
 
@@ -267,6 +267,7 @@ public class Subscribe extends EventDispatcher {
         var tt:String = "";
 
         if (!_networkEnabled) { // we are in retryMode
+            tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
         } else {
 
             if (_resumedData) {

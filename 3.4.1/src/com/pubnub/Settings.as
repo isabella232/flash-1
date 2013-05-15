@@ -19,6 +19,9 @@ package com.pubnub {
          // If this is > 0, then retry to connect at this rate in ms. Otherwise, it will just retry at SUB_OP_TIMEOUT rate.
          public static const RECONNECT_RETRY_DELAY:uint = 1000;
 
+         //
+         public static const MAX_ERROR_DEBOUNCES:uint = 3;
+
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 
          public static const RESUME_ON_RECONNECT:Boolean = true;
@@ -28,7 +31,7 @@ package com.pubnub {
          // ie, 100 times, every 3 seconds for a network connection
 
          // time in millseconds to wait for web server to return a response. DO NOT CHANGE unless requested by support
-         public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 310000;
+         public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 10000;
          public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 15000;
 
      }
