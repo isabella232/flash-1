@@ -20,7 +20,7 @@ package com.pubnub {
          public static const RECONNECT_RETRY_DELAY:uint = 1000;
 
          //
-         public static const MAX_ERROR_DEBOUNCES:uint = 3;
+         public static const MAX_ERROR_DEBOUNCES:uint = 1;
 
          // if true, after reconnecting (after detecting disconnect), 'catches up' on missed messages upon reconnect
 
