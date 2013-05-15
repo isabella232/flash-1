@@ -28,7 +28,7 @@ package com.pubnub {
          // ie, 100 times, every 3 seconds for a network connection
 
          // time in millseconds to wait for web server to return a response. DO NOT CHANGE unless requested by support
-         public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 15000;
+         public static const SUBSCRIBE_OPERATION_TIMEOUT:uint = 310000;
          public static const NON_SUBSCRIBE_OPERATION_TIMEOUT:uint = 15000;
 
      }
