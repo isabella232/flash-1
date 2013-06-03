@@ -267,9 +267,8 @@ public class Subscribe extends EventDispatcher {
         var tt:String = "";
 
         if (!_networkEnabled) { // we are in retryMode
-            tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
+            tt = "0";
         } else {
-
             if (_resumedData) {
                 tt = (Settings.RESUME_ON_RECONNECT == true) ? lastReceivedTimetoken : "0";
             } else {
