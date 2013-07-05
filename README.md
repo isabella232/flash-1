@@ -1,7 +1,7 @@
-# YOU MUST HAVE A PUBNUB ACCOUNT TO USE THE API.
+## YOU MUST HAVE A PUBNUB ACCOUNT TO USE THE API.
 http://www.pubnub.com/account
 
-## PubNub 3.4.1 Real-time Cloud Push API - AS3, Flex, and Air
+### PubNub 3.4.1 Real-time Cloud Push API - AS3, Flex, and Air
 
 PubNub is a blazingly fast cloud-hosted messaging service for building
 real-time web and mobile apps. Hundreds of apps and thousands of developers
@@ -10,6 +10,17 @@ experiences that scale to millions of users worldwide. PubNub delivers
 the infrastructure needed to build amazing MMO games, social apps,
 business collaborative solutions, and more.
 
+### Before you compile you must..
+Define whether or not you are using Air via compiler options:
+
+```
+-define=CONFIG::AIR,false // if you are not running Air
+```
+
+```
+-define=CONFIG::AIR,true // if you are running Air
+```
+        
 ### In a nutshell
 
 * Import PubNub
