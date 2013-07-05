@@ -5,20 +5,28 @@ import com.pubnub.operation.Operation;
 import com.pubnub.operation.OperationEvent;
 
 import flash.events.Event;
-import flash.net.URLRequestDefaults;
+import flash.net.*;
 
 
 public class SubscribeConnection extends Connection {
 
     public function SubscribeConnection(timeout:int = Settings.SUBSCRIBE_OPERATION_TIMEOUT) {
         _timeout = timeout;
-		URLRequestDefaults.idleTimeout = _timeout;
+
+        // You must set the compiler option
+        // -define=CONFIG::AIR,false if you are not running Air
+        // -define=CONFIG::AIR,true if you are running Air
+
+        CONFIG::AIR {
+            URLRequestDefaults.idleTimeout = _timeout;
+        }
+
         super();
     }
 
     override public function executeGet(operation:Operation):void {
         //trace("SubConnection.doSendOperation");
-		super.executeGet(operation);
+        super.executeGet(operation);
     }
 
     override protected function onConnect(e:Event):void {
@@ -29,7 +37,7 @@ public class SubscribeConnection extends Connection {
 
     override protected function onTimeout(operation:Operation):void {
         Log.log("SubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
-		super.onTimeout(operation);
+        super.onTimeout(operation);
     }
 
     override public function close():void {

@@ -11,13 +11,21 @@ public class NonSubConnection extends Connection {
 
     public function NonSubConnection(timeout:int = Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT) {
         _timeout = timeout;
-		URLRequestDefaults.idleTimeout = _timeout;
+
+        // You must set the compiler option
+        // -define=CONFIG::AIR,false if you are not running Air
+        // -define=CONFIG::AIR,true if you are running Air
+
+        CONFIG::AIR {
+            URLRequestDefaults.idleTimeout = _timeout;
+        }
+
         super();
     }
 
     override public function executeGet(operation:Operation):void {
         //trace("NonSubConnection.doSendOperation");
-		super.executeGet(operation);
+        super.executeGet(operation);
     }
 
     override protected function onConnect(e:Event):void {
@@ -29,7 +37,7 @@ public class NonSubConnection extends Connection {
 
     override protected function onTimeout(operation:Operation):void {
         Log.log("NonSubConnection.onTimeout: " + operation.toString(), Log.DEBUG, operation);
-		super.onTimeout(operation);
+        super.onTimeout(operation);
     }
 
     override public function close():void {
@@ -38,7 +46,7 @@ public class NonSubConnection extends Connection {
     }
 
     override protected function onError(e:Event):void {
-		//trace('NonSubscribeConnection onError');
+        //trace('NonSubscribeConnection onError');
         super.onError(e);
     }
 
