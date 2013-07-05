@@ -1,10 +1,12 @@
 ﻿package com.pubnub.connection {
-//import com.pubnub.net.*;
-//import com.pubnub.net.URLLoaderEvent;
-import com.pubnub.log.Log;
-import com.pubnub.operation.*;
 
-import flash.events.*;
+import com.pubnub.log.Log;
+import com.pubnub.operation.Operation;
+import com.pubnub.operation.OperationEvent;
+
+import flash.events.Event;
+import flash.events.EventDispatcher;
+import flash.events.IOErrorEvent;
 import flash.net.URLLoader;
 import flash.utils.clearTimeout;
 import flash.utils.getTimer;
@@ -36,7 +38,7 @@ public class Connection extends EventDispatcher {
         loader.addEventListener(Event.CONNECT, onConnect);
         loader.addEventListener(Event.CLOSE, onClose);
     }
-
+	
     protected function onClose(e:Event):void {
         clearTimeout(operationTimer);
         _networkEnabled = false;

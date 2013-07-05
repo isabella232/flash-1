@@ -1,18 +1,18 @@
 ﻿package com.pubnub.connection {
-import com.pubnub.*;
-
-import com.pubnub.log.*;
-import com.pubnub.operation.*;
+import com.pubnub.Settings;
+import com.pubnub.log.Log;
+import com.pubnub.operation.Operation;
+import com.pubnub.operation.OperationEvent;
 
 import flash.events.Event;
-import flash.utils.clearTimeout;
-import flash.utils.getTimer;
-import flash.utils.setTimeout;
+import flash.net.URLRequestDefaults;
+
 
 public class SubscribeConnection extends Connection {
 
     public function SubscribeConnection(timeout:int = Settings.SUBSCRIBE_OPERATION_TIMEOUT) {
         _timeout = timeout;
+		URLRequestDefaults.idleTimeout = _timeout;
         super();
     }
 

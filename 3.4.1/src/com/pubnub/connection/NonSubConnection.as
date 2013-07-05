@@ -5,12 +5,13 @@ import com.pubnub.log.*;
 import com.pubnub.operation.*;
 
 import flash.events.*;
-import flash.utils.*;
+import flash.net.*;
 
 public class NonSubConnection extends Connection {
 
     public function NonSubConnection(timeout:int = Settings.NON_SUBSCRIBE_OPERATION_TIMEOUT) {
         _timeout = timeout;
+		URLRequestDefaults.idleTimeout = _timeout;
         super();
     }
 
