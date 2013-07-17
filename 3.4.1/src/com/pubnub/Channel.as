@@ -103,8 +103,10 @@ public class Channel extends EventDispatcher {
         return _channelList;
     }
 
-    public function channelsString() {
-        return _channelList.join(",");
+    public function channelsString():String {
+        var cString:String = _channelList.join(",");
+		return cString;
+		
     }
 
     public function set retryInterval(value:int):void {

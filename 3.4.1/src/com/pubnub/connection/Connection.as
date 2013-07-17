@@ -118,7 +118,7 @@ public class Connection extends EventDispatcher {
             loader.close();
             destroy();
 
-        } catch (e) {
+        } catch (e:Error) {
             if (e.errorID == 2029 || e.errorID == 1009) {
                 Log.log("Will not close socket because it is already closed.")
             } else {

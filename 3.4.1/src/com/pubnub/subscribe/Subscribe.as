@@ -25,7 +25,7 @@ public class Subscribe extends EventDispatcher {
 
     protected var _host:String = "";
     protected var _origin:String = "";
-    protected var _originalOrigin = "";
+    protected var _originalOrigin:String = "";
     protected var _retryCount:int = 0;
     protected var _retryInterval:int = 0;
     protected var _UUID:String = null;
@@ -40,7 +40,7 @@ public class Subscribe extends EventDispatcher {
     private var _net_status_up:Boolean = false;
 
 
-    public function Subscribe(origin) {
+    public function Subscribe(origin:String) {
         super(null);
         _origin = origin;
         _originalOrigin = origin;
@@ -118,10 +118,10 @@ public class Subscribe extends EventDispatcher {
 
             var url:URI = new URI(_originalOrigin);
 
-            var oldHostname = hostName.exec(host)[0];
-            var newHostname = oldHostname + "-" + this.UUID.split("-")[0] + "-" + randUint.toString();
+            var oldHostname:String = hostName.exec(host)[0];
+            var newHostname:String = oldHostname + "-" + this.UUID.split("-")[0] + "-" + randUint.toString();
 
-            var newURL = _originalOrigin.replace(oldHostname, newHostname);
+            var newURL:String = _originalOrigin.replace(oldHostname, newHostname);
             origin = newURL;
             //trace(origin);
         }
@@ -292,6 +292,8 @@ public class Subscribe extends EventDispatcher {
 
     protected function onMessageReceived(e:OperationEvent):void {
 
+		var channel:String = "";
+		
         if (!_networkEnabled) {
 
             // recoverying! yay!
@@ -314,7 +316,7 @@ public class Subscribe extends EventDispatcher {
             savedTimetoken = lastReceivedTimetoken;
             lastReceivedTimetoken = e.data[1];
 
-            var channel:String = e.data[2];
+            channel = e.data[2];
 
             // no messages, with timetoken response (ping handshake)
             if (_net_status_up == false) {
@@ -333,7 +335,6 @@ public class Subscribe extends EventDispatcher {
 
         var multiplexRESPONSE:Boolean = channel && channel.length > 0 && channel.indexOf(',') > -1;
         var presenceRESPONSE:Boolean = channel && channel.indexOf(PNPRES_PREFIX) > -1;
-        var channel:String;
 
         if (presenceRESPONSE) {
             dispatchEvent(new SubscribeEvent(SubscribeEvent.PRESENCE, {channel: channel, message: messages, timetoken: lastReceivedTimetoken}));

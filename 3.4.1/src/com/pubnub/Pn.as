@@ -146,7 +146,7 @@ public class Pn extends EventDispatcher {
     public static function subscribe(channel:String, token:String = null):void {
         try {
             Pn.__instance.subscribeObject.subscribe(channel, token);
-        } catch (e) {
+        } catch (e:Error) {
             if (e.errorID == 1009) {
                 throw("You must Init before subscribing.");
             } else
