@@ -83,8 +83,13 @@ public class Pn extends EventDispatcher {
         _ssl = config.ssl;
         origin = config.origin;
 
-        _sessionUUID ||= PnUtils.getUID();
-
+		if (config.hasOwnProperty("uuid") == true) {
+			_sessionUUID = config.uuid;
+		}
+		else {
+			_sessionUUID ||= PnUtils.getUID();
+		}
+		
         sleepMonitor.start();
         if (subscribeObject) {
             subscribeObject.unsubscribeAll();
