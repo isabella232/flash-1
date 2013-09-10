@@ -351,8 +351,9 @@
         ]]>
 	</fx:Script>
 
-    <s:Label x="125" y="13" height="10" fontWeight="bold" color="#E01F1F" text="Verify below settings, and then be sure to initialize from Init tab before proceeding."
-             textAlign="center" verticalAlign="middle"/>
+    <s:Label x="125" y="13" height="10" color="#E01F1F" fontWeight="bold"
+			 text="Verify below settings, and then be sure to initialize from Init tab before proceeding."
+			 textAlign="center" verticalAlign="middle"/>
 
     <s:Label x="10" y="10" fontSize="14" fontWeight="bold" text="Device Console"/>
     <s:Label x="13" y="39" color="#4D4C4C" fontStyle="italic" text="Channel"/>
@@ -361,27 +362,31 @@
     <s:TextInput id="originTxt" x="68" y="63" width="246" text="@{origin}"/>
     <mx:TabNavigator left="10" right="10" top="108" bottom="400" selectedIndex="0">
         <s:NavigatorContent width="100%" height="100%" label="Init (1)">
-            <s:Label x="16" y="30" color="#4D4C4C" fontStyle="italic" text="secret_key" textAlign="right"/>
+            <s:Label x="16" y="30" color="#4D4C4C" fontStyle="italic" text="secret_key"
+					 textAlign="right"/>
             <s:TextInput id="secretKeyTxt" x="81" y="25" width="246" text="@{secret_key}"/>
-            <s:Label x="16" y="60" color="#4D4C4C" fontStyle="italic" text="cipher_key" textAlign="right"/>
+            <s:Label x="16" y="60" color="#4D4C4C" fontStyle="italic" text="cipher_key"
+					 textAlign="right"/>
             <s:TextInput id="cipherKeyTxt" x="81" y="55" width="246" text="@{cipher_key}"/>
             <s:Button id="initBtn" x="350" y="25" label="Init" click="onInitBtnClick(event)"/>
         </s:NavigatorContent>
         <s:NavigatorContent width="100%" height="100%" label="Subscribe (2)">
-            <s:Button id="subscribeBtn" x="10" y="5" label="Subscribe" click="onSubscribeClick(event)" />
-            <s:Button id="unsubscribeBtn" x="356" y="5" label="Unsubscribe all" 
-                      click="unsubscribeBtn_clickHandler(event)"/>
+            <s:Button id="subscribeBtn" x="10" y="5" label="Subscribe"
+					  click="onSubscribeClick(event)"/>
+            <s:Button id="unsubscribeBtn" x="356" y="5" label="Unsubscribe all"
+					  click="unsubscribeBtn_clickHandler(event)"/>
             <s:Button id="forceTimeoutBtn" x="500" y="5" label="Force Timeout"
-                      click="forceTimeoutBtn_clickHandler(event)"/>
+					  click="forceTimeoutBtn_clickHandler(event)"/>
 
 			<s:Button id="hereNowButton" x="600" y="5" label="Here Now"
 					  click="hereNowButton_clickHandler(event)"/>
 			
 			<s:Button id="unsubscribeChannelBtn" x="355" y="39" label="Unsubscribe channel"
 					  click="unsubscribeChannel_clickHandler(event)"/>
-			<s:TextInput id="unsubChannelName" x="502" y="39" width="214" text="{subsChannelList.selectedItems}"/>
-			<s:List id="subsChannelList" x="158" top="0" allowMultipleSelection="true" y="10" width="185"
-					dataProvider="{channelsDataProvider}"></s:List>
+			<s:TextInput id="unsubChannelName" x="502" y="39" width="214"
+						 text="{subsChannelList.selectedItems}"/>
+			<s:List id="subsChannelList" x="158" y="10" top="0" width="185"
+					allowMultipleSelection="true" dataProvider="{channelsDataProvider}"></s:List>
 			<s:Button id="subscribeWithTokenBtn" x="10" y="36" label="Subscribe with token"
 					  click="onSubscribeWithTokenBtn(event)"/>
 			<s:TextInput id="tokenInputTxt" x="10" y="63" width="135" prompt="put here a token"/>
@@ -389,61 +394,64 @@
 		
         <s:NavigatorContent width="100%" height="100%" label="DetailedHistory (3)">
 
-            <s:Label x="2" y="30" width="175" color="#4D4C4C" fontStyle="italic" text="start (optional)"
-                     textAlign="right"/>
-            <s:TextInput id="startTimeTxt" x="185" y="25" width="246" text="0" enabled="{startCb.selected}"/>
+            <s:Label x="2" y="30" width="175" color="#4D4C4C" fontStyle="italic"
+					 text="start (optional)" textAlign="right"/>
+            <s:TextInput id="startTimeTxt" x="185" y="25" width="246" enabled="{startCb.selected}"
+						 text="0"/>
 
-            <s:Label x="2" y="60" width="175" color="#4D4C4C" fontStyle="italic" text="end (optional)"
-                     textAlign="right"/>
-            <s:TextInput id="endTimeTxt" x="185" y="55" width="246" text="13505030564366949"  enabled="{endCb.selected}"/>
-
-
-            <s:Label x="2" y="90" width="175" color="#4D4C4C" fontStyle="italic" text="count (optional, default 100)"
-                     textAlign="right"/>
-            <s:TextInput id="countTxt" x="185" y="85" width="246" text="5"  enabled="{countCb.selected}"/>
-
-            <s:Label x="2" y="120" width="175" color="#4D4C4C" fontStyle="italic" text="reverse (optional, default false)"
-                     textAlign="right"/>
-            <s:TextInput id="reverseTxt" x="185" y="115" width="246" text="false"  enabled="{reverseCb.selected}"/>
+            <s:Label x="2" y="60" width="175" color="#4D4C4C" fontStyle="italic"
+					 text="end (optional)" textAlign="right"/>
+            <s:TextInput id="endTimeTxt" x="185" y="55" width="246" enabled="{endCb.selected}"
+						 text="13505030564366949"/>
 
 
-            <s:Button id="DetailedHistoryBtn" x="66" y="145" label="Detailed History" enabled="{this.detChannelList.selectedItem}"
-                      click="onDetHistoryClick(event)"/>
+            <s:Label x="2" y="90" width="175" color="#4D4C4C" fontStyle="italic"
+					 text="count (optional, default 100)" textAlign="right"/>
+            <s:TextInput id="countTxt" x="185" y="85" width="246" enabled="{countCb.selected}"
+						 text="5"/>
+
+            <s:Label x="2" y="120" width="175" color="#4D4C4C" fontStyle="italic"
+					 text="reverse (optional, default false)" textAlign="right"/>
+            <s:TextInput id="reverseTxt" x="185" y="115" width="246" enabled="{reverseCb.selected}"
+						 text="false"/>
+
+
+            <s:Button id="DetailedHistoryBtn" x="66" y="145" label="Detailed History"
+					  click="onDetHistoryClick(event)" enabled="{this.detChannelList.selectedItem}"/>
 
             <s:CheckBox id="startCb" x="440" y="29" enabled="true" selected="false"/>
             <s:CheckBox id="endCb" x="440" y="59" enabled="true" selected="false"/>
             <s:CheckBox id="countCb" x="440" y="88" enabled="true" selected="true"/>
             <s:CheckBox id="reverseCb" x="440" y="116" enabled="true" selected="false"/>
-			<s:List id="detChannelList" x="507" top="0" bottom="0" width="185" 
+			<s:List id="detChannelList" x="507" top="0" bottom="0" width="185"
 					dataProvider="{channelsDataProvider}"></s:List>
 
         </s:NavigatorContent>
         <s:NavigatorContent width="100%" height="100%" label="Publish (4)">
             <s:Button id="publishBtn" x="74" y="39" label="Publish"
-                      click="publishBtn_clickHandler(event)" enabled="{publishChannelList.selectedItem}"/>
+					  click="publishBtn_clickHandler(event)"
+					  enabled="{publishChannelList.selectedItem}"/>
             <s:Label x="10" y="14" width="57" color="#4D4C4C" fontStyle="italic" text="message"
-                     textAlign="right"/>
-            <s:TextInput id="publishMessageTxt" x="75" y="9" width="246" text="@{publishMessageText}"  enabled="true"/>
-			<s:List id="publishChannelList" x="507" top="0" bottom="0" width="185" 
+					 textAlign="right"/>
+            <s:TextInput id="publishMessageTxt" x="75" y="9" width="246" enabled="true"
+						 text="@{publishMessageText}"/>
+			<s:List id="publishChannelList" x="507" top="0" bottom="0" width="185"
 					dataProvider="{channelsDataProvider}"></s:List>
         </s:NavigatorContent>
 		
 		<s:NavigatorContent width="100%" height="100%" label="Time (5)">
-            <s:Button id="timeBtn" x="5" y="10" label="Time"
-                      click="onTime(event)"/>
+            <s:Button id="timeBtn" x="5" y="10" label="Time" click="onTime(event)"/>
         </s:NavigatorContent>
 		
 		<s:NavigatorContent width="100%" height="100%" label="Perfomance Test (6)">
-            <s:Button x="10" y="0" label="Start"
-                      click="onStartPerfomanceTest(event)"/>
+            <s:Button x="10" y="0" label="Start" click="onStartPerfomanceTest(event)"/>
 			
-			<s:Button x="90" y="0" label="Stop"
-					  click="onStopPerfomanceTest(event)"/>
+			<s:Button x="90" y="0" label="Stop" click="onStopPerfomanceTest(event)"/>
 			
 			
 			<s:Scroller x="10" y="30" width="100%" height="100%">
 				<s:VGroup width="100%" height="100%">
-					<ns1:PerfomanceTestView x="10" y="29" id="perfomanceTestView">
+					<ns1:PerfomanceTestView id="perfomanceTestView" x="10" y="29">
 					</ns1:PerfomanceTestView>
 				</s:VGroup>
 			</s:Scroller>
@@ -472,8 +480,8 @@
     <s:Label x="324" y="38" color="#4D4C4C" fontStyle="italic" text="publish_key" textAlign="right"/>
     <s:TextInput id="publishKeyTxt" x="397" y="34" width="246" text="@{pub_key}"/>
 	<s:CheckBox id="sslCheckBox" x="656" y="35" label="SSL" selected="@{ssl}"/>
-    <s:CheckBox id="customChannel" x="656" y="67" label="Noisy Test Config" selected="false"
-            click="OnCustomClick(event)"/>
+    <s:CheckBox id="customChannel" x="656" y="67" label="Noisy Test Config"
+				click="OnCustomClick(event)" selected="false"/>
 	<s:BorderContainer id="subConnectionStatus" x="114" y="90" width="53" height="13"
 					   backgroundColor="#FC0000">
 	</s:BorderContainer>
