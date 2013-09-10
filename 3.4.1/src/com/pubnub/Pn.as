@@ -1,13 +1,21 @@
 ﻿package com.pubnub {
 
 import com.pubnub.PnEvent;
-import com.pubnub.connection.*;
-import com.pubnub.environment.*;
-import com.pubnub.operation.*;
-import com.pubnub.subscribe.*;
+import com.pubnub.connection.NonSubConnection;
+import com.pubnub.environment.SystemMonitor;
+import com.pubnub.environment.SystemMonitorEvent;
+import com.pubnub.operation.HereNowOperation;
+import com.pubnub.operation.HistoryOperation;
+import com.pubnub.operation.Operation;
+import com.pubnub.operation.OperationEvent;
+import com.pubnub.operation.OperationStatus;
+import com.pubnub.operation.PublishOperation;
+import com.pubnub.operation.TimeOperation;
+import com.pubnub.subscribe.Subscribe;
+import com.pubnub.subscribe.SubscribeEvent;
 
-import flash.errors.*;
-import flash.events.*;
+import flash.errors.IllegalOperationError;
+import flash.events.EventDispatcher;
 import flash.utils.setTimeout;
 
 use namespace pn_internal;
@@ -291,6 +299,36 @@ public class Pn extends EventDispatcher {
     }
 
 
+	/*---------------Here Now---------------*/
+	public static function hereNow(args:Object):void {
+		instance.hereNow(args);
+	}
+	
+	public function hereNow(args:Object):void {
+		//throwInit();
+		
+		var hereNow:HereNowOperation = new HereNowOperation(origin);
+		hereNow.channel = args.channel;
+		hereNow.subscribeKey = args.subscribeKey;
+		hereNow.uuid = _sessionUUID;
+		
+		hereNow.addEventListener(OperationEvent.RESULT, onHereNowResult);
+		hereNow.addEventListener(OperationEvent.FAULT, onHereNowFault);
+		hereNow.setURL();
+		
+		Pn.nonSubConnection.executeGet(hereNow);
+	}
+	
+	private function onHereNowFault(e:OperationEvent):void {
+		var pnEvent:PnEvent = new PnEvent(PnEvent.HERE_NOW, e.data, null, OperationStatus.ERROR);
+		dispatchEvent(pnEvent);
+	}
+	
+	private function onHereNowResult(e:OperationEvent):void {
+		var pnEvent:PnEvent = new PnEvent(PnEvent.HERE_NOW, e.data, null, OperationStatus.DATA);
+		dispatchEvent(pnEvent);
+	}
+	
     /*---------------TIME---------------*/
     public static function time():void {
         instance.time();
