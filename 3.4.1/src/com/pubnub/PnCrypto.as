@@ -30,7 +30,12 @@ package com.pubnub {
 			var cbc:CBCMode = new CBCMode(new AESKey(key), new PKCS5());
 			cbc.IV =  Hex.toArray(Hex.fromString("0123456789012345"));
 
-			cbc.decrypt(decodedCipherText);
+			try{
+				cbc.decrypt(decodedCipherText);
+			}
+			catch(e:Error) {
+				return("\"DECRYPTION_ERROR\"");
+			}
 			return Hex.toString(Hex.fromArray(decodedCipherText));
 		}
 
