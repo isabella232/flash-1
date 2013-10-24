@@ -66,7 +66,7 @@ Define whether or not you are using Air via compiler options:
     
     // Subscribe
     Pn.subscribe("my_channel");
-    Pn.subscribe("another_channel,and_another_channel,another_channel-pnpres");
+    Pn.subscribe("another_channel,and_another_channel,another_channel-pnpres"); // To Subscribe to a presence channel, append '-pnpres' to the channel name.
     
     // Unsubscribe
     Pn.unsubscribe("my_channel");
