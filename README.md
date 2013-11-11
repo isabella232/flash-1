@@ -59,7 +59,7 @@ Define whether or not you are using Air via compiler options:
     Pn.init(config);
 ```
 
-* Pub, Sub, and More Fun!
+* Pub, Sub, Presence, and More Fun!
 ```
     // Time
     Pn.time();
