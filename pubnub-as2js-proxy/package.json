@@ -1,0 +1,16 @@
+{
+  "name": "pubnub-as2js-proxy",
+  "devDependencies": {
+    "karma": "0.10.8",
+    "karma-mocha": "~0.1.1",
+    "grunt": "~0.4.2",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.2.7",
+    "karma-firefox-launcher": "~0.1.2",
+    "karma-chrome-launcher": "~0.1.1",
+    "chai": "~1.8.1",
+    "karma-opera-launcher": "~0.1.0",
+    "qunitjs": "~1.12.0",
+    "karma-qunit": "~0.1.1"
+  }
+}
