@@ -56,7 +56,6 @@ package com.pubnub
 		
 		// Handlers
 		public static function createdHandler(instanceId:String):void {
-			ExternalInterface.call('console.log', 'Instance #' + instanceId + ' created');
 			getInstanceById(instanceId).setReady();
 		}
 		
