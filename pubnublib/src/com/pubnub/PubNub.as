@@ -12,7 +12,7 @@ package com.pubnub
 		private var callbacks:Object;
 		private var heap:Object = {};
 		private var readyState:Boolean;
-		private var instanceId:String;
+		protected var instanceId:String;
 		private static var jsProxyObjectName:String = 'PUBNUB_AS2JS_PROXY';
 		
 		private static var LEAVE_FIELDS:Array = ['callback', 'error'];
@@ -36,7 +36,22 @@ package com.pubnub
 			setupCallbacks();
 			PubNub.allInstances[instanceId] = this;
 			
+			createInstance(config);
+		}
+
+		protected function createInstance(config:Object):void
+		{
 			ExternalInterface.call('PUBNUB_AS2JS_PROXY.createInstance', instanceId, config);
+		}
+
+		public static function init(config:Object):PubNub
+		{
+			return new PubNub(config);
+		}
+
+		public static function secure(config:Object):PubNub
+		{
+			return new PubNubSecure(config);
 		}
 		
 		public static function getInstanceById(instanceId:String):PubNub
