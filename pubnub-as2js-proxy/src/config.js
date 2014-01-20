@@ -6,8 +6,8 @@ var config = function () {
             replay: ['callback'],
             publish: ['callback', 'error'],
             unsubscribe: ['callback', 'error'],
-            subscribe: ['callback', 'message', 'connect', 'reconnect', 'disconnect', 'error', 'idle'],
-            here_now: ['callback', 'error'],
+            subscribe: ['callback', 'message', 'connect', 'reconnect', 'disconnect', 'error', 'idle', 'presence'],
+            here_now: ['callback', 'error', 'data'],
             grant: ['callback', 'error'],
             revoke: ['callback', 'error'],
             audit: ['callback', 'error']

@@ -22,8 +22,8 @@ package com.pubnub
 		private static var PUBLISH_FIELDS:Array = ['callback', 'error'];
 		private static var UNSUBSCRIBE_FIELDS:Array = ['callback', 'error'];
 		private static var SUBSCRIBE_FIELDS:Array =
-			['callback', 'message', 'connect', 'reconnect', 'disconnect', 'error', 'idle'];
-		private static var HERE_NOW_FIELDS:Array = ['callback', 'error'];
+			['callback', 'message', 'connect', 'reconnect', 'disconnect', 'error', 'idle', 'presence'];
+		private static var HERE_NOW_FIELDS:Array = ['callback', 'error', 'data'];
 		private static var GRANT_FIELDS:Array = ['callback', 'error'];
 		private static var REVOKE_FIELDS:Array = ['callback', 'error'];
 		private static var AUDIT_FIELDS:Array = ['callback', 'error'];
