@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               width="809" height="846" minWidth="955" minHeight="600"
+               creationComplete="init(event)">
+    <fx:Style source="demoStyles.css"/>
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+		<![CDATA[
+        import com.pubnub.PubNub;
+        import com.pubnub.PubNubSecure;
+
+        import flashx.textLayout.elements.TextFlow;
+
+        import mx.formatters.DateFormatter;
+        import mx.utils.StringUtil;
+
+        import spark.utils.TextFlowUtil;
+
+        [Bindable]
+
+        public var p:PubNub;
+        public var config:Object;
+        public var CommonValues:Object;
+        public var PAMValues:Object;
+        private var consoleString:String;
+        private var presenceString:String;
+        private var historyString:String;
+        private var flow:TextFlow;
+
+        public function init(e:Event = null):void {
+
+            getMessagesTextArea();
+
+            consoleString = "";
+            presenceString = "";
+            historyString = "";
+
+            channelTextInput.text = 'flash_channel';
+            authKeyTextInput.text = 'x';
+            originTextInput.text = 'pubsub.pubnub.com';
+            publishKeyTextInput.text = 'demo';
+            subscribeKeyTextInput.text = 'demo';
+
+            pamSecretKeyTextInput.text = 'demo';
+            pamAuthKeyTextInput.text = 'x';
+            pamChannelTextInput.text = 'flash_channel';
+            pamTtlTextInput.text = '15';
+
+            subscribe();
+        }
+
+        // Additional buttons:
+        public function getUuid(uuid:*):void {
+            appendStringToConsole(uuid);
+        }
+
+        private function auth():void {
+            p.auth(authKeyTextInput.text);
+        }
+
+        private function time():void {
+            p.time(function (msg:Number):void {
+                appendObjectToConsole(String(msg));
+            });
+        }
+
+        private function history():void {
+            p.history({
+                channel: channel_val(),
+                callback: function (message:Array):void {
+					historyAppendText(message[0]);
+				},
+                error: appendErrorToConsole
+            });
+        }
+
+        private function uuid():void {
+            p.set_uuid('some_uuid');
+            p.get_uuid(getUuid);
+            p.uuid(getUuid);
+        }
+
+        // Common buttons:
+        private function clearLogHandler():void {
+            consoleLog.text = "";
+            consoleString = "";
+        }
+
+        private function clearPresenceHandler():void {
+            presenceArea.text = "";
+            presenceString = "";
+        }
+
+        private function clearHistoryHandler():void {
+            historyArea.text = "";
+            historyString = "";
+        }
+
+        private function publish():void {
+            p.publish({
+                channel: channel_val(),
+                message: { "data": messagesTextArea.text },
+                auth_key: authKeyTextInput.text.split(/\s+/).join(''),
+                error: appendErrorToConsole
+            }, appendObjectToConsole);
+        }
+
+
+        private function subscribe():void {
+            unsubscribe();
+
+            var publish_key:String = publishKeyTextInput.text.split(/\s+/).join(''),
+                    auth_key:String = authKeyTextInput.text.split(/\s+/).join(''),
+                    cipher_key:String = StringUtil.trim(chiperKeyTextInput.text),
+                    subscribe_key:String = subscribeKeyTextInput.text.split(/\s+/).join(''),
+                    secret_key:String = pamSecretKeyTextInput.text.split(/\s+/).join(''),
+                    origin:String = originTextInput.text.split(/\s+/).join('');
+
+            p = (cipher_key ? PubNubSecure.init : PubNub.init)({
+                publish_key: publish_key,
+                auth_key: auth_key,
+                ssl: sslCheckBox.selected,
+                cipher_key: cipher_key,
+                secret_key: secret_key,
+                subscribe_key: subscribe_key,
+                origin: origin
+            });
+
+            connecting();
+
+            p.subscribe({
+                backfill: false,
+                noheresync: true,
+                channel: channel_val(),
+                message: function subscribeMessageHandler(message:Object, envelope:Object, channel:String, time:Number):void {
+                    appendObjectToConsole(message);
+                },
+                presence: function subscribePresenceHandler(message:Object, here:*, channel:String, presenceChannel:String = null):void {
+                    presenceAppend(message);
+                },
+                connect: function subscribeConnectHandler(channel:String):void {
+                    unsubscribeButton.enabled = true;
+                    subscribeButton.enabled = false;
+                    connected();
+                    appendStringToConsole(channel);
+                },
+                disconnect: appendObjectToConsole,
+                error: function subscribeErrorHandler(e:Object):void {
+                    unsubscribeButton.enabled = true;
+                    subscribeButton.enabled = false;
+                    appendErrorToConsole(e);
+                }
+            });
+        }
+
+        private function unsubscribe():void {
+            if (unsubscribeButton.enabled === false) {
+                return;
+            }
+            if (!p) {
+                noP('unsubscribe');
+                return;
+            }
+
+            p.unsubscribe({
+                channel: channel_val(),
+                callback: function (message:Object):void {
+                    disconnected();
+                    appendObjectToConsole(message);
+                    subscribeButton.enabled = true;
+                    unsubscribeButton.enabled = false;
+                }
+            });
+        }
+
+        // PAM buttons:
+        private function grant():void {
+            if (!p) {
+                noP('grant');
+                return;
+            }
+            var grantConfig:Object = {
+                channel: pamChannelTextInput.text,
+                auth_key: pamAuthKeyTextInput.text,
+                read: pamReadCheckbox.selected,
+                write: pamWriteCheckbox.selected,
+                ttl: parseInt(pamTtlTextInput.text),
+                error: appendErrorToConsole,
+                callback: appendObjectToConsole
+            };
+
+            p.grant(grantConfig);
+
+            if (pamPnpresCheckbox.selected) {
+                grantConfig.channel += '-pnpres';
+                p.grant(grantConfig);
+            }
+        }
+
+        private function revoke():void {
+            if (!p) {
+                noP('revoke');
+                return;
+            }
+
+            var revokeConfig:Object = {
+                channel: pamChannelTextInput.text,
+                auth_key: authKeyTextInput.text,
+                callback: appendObjectToConsole,
+                error: appendErrorToConsole
+            };
+
+            p.revoke(revokeConfig);
+
+            if (pamPnpresCheckbox.selected) {
+                revokeConfig.channel += '-pnpres';
+                p.revoke(revokeConfig);
+            }
+        }
+
+        private function audit():void {
+            if (!p) {
+                noP('audit');
+                return;
+            }
+
+            p.audit({
+                channel: channel_val(),
+                auth_key: authKeyTextInput.text,
+                callback: appendObjectToConsole,
+                error: appendErrorToConsole
+            });
+        }
+
+
+        // Helpers:
+        private function toggleSSL():void {
+            subscribe();
+        }
+
+        private function channel_val():String {
+            return channelTextInput.text;
+        }
+
+        private function appendObjectToConsole(message:Object):void {
+            flow = TextFlowUtil.importFromString(
+                    (consoleString = "<p><span>" + currentDate() + '</span>: <span color="0x71BDFF">' + JSON.stringify(message) + "</span></p>\n" + consoleString)
+            );
+            consoleLog.textFlow = flow;
+        }
+
+        private function appendErrorToConsole(message:Object):void {
+            flow = TextFlowUtil.importFromString(
+                    (consoleString = "<p><span>" + currentDate() + '</span>: <span color="0xFF0000">' + JSON.stringify(message) + "</span></p>\n" + consoleString)
+            );
+            consoleLog.textFlow = flow;
+        }
+
+        private function appendStringToConsole(message:String):void {
+            flow = TextFlowUtil.importFromString(
+                    (consoleString = "<p><span>" + currentDate() + '</span>: <span color="0x71BDFF">' + message + "</span></p>\n" + consoleString)
+            );
+            consoleLog.textFlow = flow;
+        }
+
+        private function presenceAppend(message:Object):void {
+            flow = TextFlowUtil.importFromString(
+                    (presenceString = "<p><span>" + currentDate() + '</span>: <span color="0xF7B23B">' + JSON.stringify(message) + "</span></p>\n" + presenceString)
+            );
+            presenceArea.textFlow = flow;
+        }
+
+        private function historyAppendText(message:Object):void {
+            flow = TextFlowUtil.importFromString(
+                    (historyString = "<p>" + JSON.stringify(message) + "</p>\n")
+            );
+            historyArea.textFlow = flow;
+        }
+
+        private function connected(str:String = ""):void {
+            if (str != "") {
+                appendStringToConsole(str);
+            }
+            this.subConnectionStatus.setStyle('backgroundColor', "#00FC00");
+        }
+
+        private function connecting(str:String = ""):void {
+            if (str != "") {
+                appendStringToConsole(str);
+            }
+            this.subConnectionStatus.setStyle('backgroundColor', "#FFD219");
+        }
+
+        private function disconnected(str:String = ""):void {
+            if (str != "") {
+                appendStringToConsole(str);
+            }
+            this.subConnectionStatus.setStyle('backgroundColor', "#FC0000");
+        }
+
+        private function getMessagesTextArea():void {
+            messagesTextArea.text = JSON.stringify({"text": "hey"});
+        }
+
+        private function networkError(str:String):void {
+            this.subConnectionStatus.setStyle('backgroundColor', "#FC0000");
+            appendStringToConsole(str);
+        }
+
+        private function noP(methodName:String):void {
+            appendStringToConsole(methodName + '(): instance is not initialized');
+        }
+
+        private function currentDate():String {
+            var CurrentDateTime:Date = new Date();
+            var CurrentDF:DateFormatter = new DateFormatter();
+            CurrentDF.formatString = "YYYY/MM/DD LL:NN:SS A"
+            var DateTimeString:String = CurrentDF.format(CurrentDateTime);
+            return DateTimeString;
+        }
+        ]]>
+	</fx:Script>
+    <s:TextArea id="messagesTextArea" x="10" y="204" width="290" height="70" editable="true"
+                enabled="true" maxChars="160"/>
+    <s:Label x="12" y="300" height="19" text="Messages:"/>
+    <s:Scroller x="10" y="316" width="386" height="272">
+        <s:RichEditableText id="consoleLog" backgroundColor="#000000" color="#FFFFFF"
+                            editable="false" fontFamily="Arial" fontSize="10"
+                            paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"
+                            fontWeight="bold"/>
+    </s:Scroller>
+    <s:Button id="clearLog" x="79" y="298" height="15" label="Clear" click="clearLogHandler()"/>
+    <s:Button x="229" y="251" label="Publish" click="publish()"/>
+    <s:TextInput id="originTextInput" x="11" y="63"/>
+    <s:TextInput id="subscribeKeyTextInput" x="232" y="41" width="314"/>
+    <s:TextInput id="channelTextInput" x="11" y="21"/>
+    <s:TextInput id="publishKeyTextInput" x="232" y="9" width="314" textAlign="left"/>
+    <s:Label x="11" y="48" text="origin"/>
+    <s:Label x="10" y="6" text="channel"/>
+    <s:Label x="151" y="45" height="15" text="subscribe key:" textAlign="right"/>
+    <s:Label x="162" y="12" text="publish key:" textAlign="right"/>
+    <s:Button x="206" y="171" label="Subscribe" click="subscribe()" id="subscribeButton"/>
+    <s:Button x="191" y="142" label="Unsubscribe" click="unsubscribe()" enabled="false" id="unsubscribeButton"/>
+    <s:Button x="326" y="142" label="Auth" click="auth()"/>
+    <s:Button x="326" y="199" label="Time" click="time()"/>
+    <s:Button x="326" y="170" label="uuid" click="uuid()"/>
+    <s:BorderContainer id="subConnectionStatus" x="326" y="71" width="53" height="13" backgroundColor="#FC0000">
+    </s:BorderContainer>
+    <s:Label x="232" y="73" color="#626262" fontStyle="italic" text="SUB Net status:"/>
+    <s:CheckBox id="sslCheckBox" x="550" y="11" label="SSL" click="toggleSSL()"/>
+    <s:Label x="12" y="89" text="auth_key"/>
+    <s:Label x="12" y="135" text="chiper_key"/>
+    <s:TextInput id="authKeyTextInput" x="11" y="104"/>
+    <s:TextInput id="chiperKeyTextInput" x="11" y="151"/>
+    <s:Group id="pamGroup" x="10" y="609" width="792" height="230">
+        <s:Rect id="pamBackground" width="100%" height="100%">
+            <s:fill>
+                <s:SolidColor color="#FF0000"/>
+            </s:fill>
+        </s:Rect>
+        <s:TextInput id="pamChannelTextInput" x="10" y="30" width="314"/>
+        <s:Label x="10" y="10" text="channel"/>
+        <s:Label x="10" y="60" text="auth_key"/>
+        <s:TextInput id="pamAuthKeyTextInput" x="10" y="80" width="314"/>
+        <s:Label x="10" y="110" text="secret key"/>
+        <s:TextInput id="pamSecretKeyTextInput" x="10" y="130" width="314"/>
+        <s:Label x="10" y="160" text="ttl"/>
+        <s:TextInput id="pamTtlTextInput" x="10" y="180" width="314"/>
+        <s:CheckBox id="pamReadCheckbox" x="365" y="31" label="Read ?"/>
+        <s:CheckBox id="pamWriteCheckbox" x="366" y="57" label="Write ?"/>
+        <s:Button id="grantButton" x="366" y="123" label="Grant" click="grant()"/>
+        <s:Button id="revokeButton" x="366" y="152" label="Revoke" click="revoke()"/>
+        <s:Button id="auditButton" x="366" y="181" label="Audit" click="audit()"/>
+        <s:CheckBox id="pamPnpresCheckbox" x="366" y="84" label="apply to *-pnpres channel too" selected="true"/>
+        <s:Label x="560" y="16" fontSize="20" fontWeight="bold" text="PAM - Access Manager"/>
+    </s:Group>
+    <s:Scroller x="420" y="92" width="382" height="199">
+        <s:RichEditableText id="presenceArea" backgroundColor="#000000" color="#FFFFFF"
+                            editable="false" fontFamily="Arial" fontSize="10"
+                            paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"
+                            fontWeight="bold"/>
+    </s:Scroller>
+    <s:Label x="420" y="76" text="presence"/>
+    <s:Scroller x="420" y="316" width="382" height="272">
+        <s:RichEditableText id="historyArea" backgroundColor="#000000" color="#FFFFFF"
+                            editable="false" fontFamily="Arial" fontSize="10"
+                            paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+    </s:Scroller>
+    <s:Label x="421" y="301" text="history"/>
+    <s:Button id="clearPresence" x="730" y="74" height="15" label="Clear" click="clearPresenceHandler()"/>
+    <s:Button id="clearHistory" x="732" y="298" height="15" label="Clear" click="clearHistoryHandler()"/>
+    <s:Button id="historyButton" x="326" y="227" label="History" click="history()"/>
+</s:Application>
