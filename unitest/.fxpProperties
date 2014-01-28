@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fxpProperties abbreviated="false" authoringTool="Flex Builder" compiles="true" parentProject="149dfa1e-1ba4-4b89-989a-b5b94ce23734" projectUUID="149dfa1e-1ba4-4b89-989a-b5b94ce23734" pureCatalystProject="false" sdkVersion="4.6.0" uuid="909e9902-4f52-4de3-9227-1f84be0f9d23" version="15">
+  <projects/>
+  <src/>
+  <swc>
+    <linked location="sdkPlaceHolder" path="sdkPlaceHolder" position="0" uuid="909e9902-4f52-4de3-9227-1f84be0f9d23"/>
+    <linked location="D:/projects/pupnub_project/flash/unitest/libs" path="/libs" position="1" uuid="909e9902-4f52-4de3-9227-1f84be0f9d23"/>
+    <linked location="${FLEXUNIT_LIB_LOCATION}/version4libs/Common" path="${FLEXUNIT_LIB_LOCATION}/version4libs/Common" position="2" uuid="909e9902-4f52-4de3-9227-1f84be0f9d23"/>
+    <linked location="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject" position="3" uuid="909e9902-4f52-4de3-9227-1f84be0f9d23"/>
+    <linked location="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject_Extended" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject_Extended" position="4" uuid="909e9902-4f52-4de3-9227-1f84be0f9d23"/>
+    <linked location="${FLEXUNIT_LOCALE_LOCATION}/version4locale/" path="${FLEXUNIT_LOCALE_LOCATION}/version4locale/" position="5" uuid="909e9902-4f52-4de3-9227-1f84be0f9d23"/>
+    <linked location="D:/projects/pupnub_project/flash/pubnublib/bin/pubnublib.swc" path="/linked-swc/pubnublib.swc" position="6" uuid="909e9902-4f52-4de3-9227-1f84be0f9d23"/>
+  </swc>
+  <misc/>
+  <theme/>
+  <mxmlFormattingPrefs groupAttributesByState="true" maxLineWidth="100" mxmlAlignAttributes="true" mxmlAttributeOrder="id,userLabel,includeIn,excludeFrom,visible,x,y,z,left,right,top,bottom,width,height,minWidth,minHeight,maxWidth,maxHeight,label" mxmlKeepAttributeValuesOrganized="true"/>
+</fxpProperties>

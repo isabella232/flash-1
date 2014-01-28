@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testrun name="" >
+<testsuite  name="Default Test Suite" project="Unitest">
+<testsuite name="applicationTest:AppTest" type="testcaseclass"/>
+<testsuite name="applicationTest:AppTestTest" type="testcaseclass"/>
+<testsuite name="applicationTest:PublishTest" type="testcaseclass"/>
+</testsuite>
+<portNumber value="8765" />
+</testrun>

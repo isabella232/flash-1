@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testrun name="" >
+<testsuite  name="Default Test Suite" project="Unitest">
+<testsuite name="applicationTest:TimeChecktest" type="testsuiteclass"/>
+<testsuite name="applicationTest:AppTest" type="testsuiteclass"/>
+<testsuite name="applicationTest:TestUUID" type="testsuiteclass"/>
+<testsuite name="applicationTest:PublishTest" type="testsuiteclass"/>
+<testsuite name="flexunit.framework:EventfulTestCase" type="testsuiteclass"/>
+<testsuite name="applicationTest:AppTestTest" type="testsuiteclass"/>
+<testsuite name="applicationTest._suites_:AppTestSuite" type="testcaseclass"/>
+</testsuite>
+<portNumber value="8765" />
+</testrun>
