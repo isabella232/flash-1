@@ -52,6 +52,10 @@ package applicationTest
 			}
 		}
 		
+		protected function handleUUIDResult( event:PubNubEvent, passThroughData:Object ):void {
+			Assert.assertMatch('not matched to uuid regex', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, event.obj);
+		}
+		
 		protected function handleTimeout( passThroughData:Object ):void {
 			Assert.fail( "Timeout reached before event"+passThroughData.toString());  
 		}
@@ -117,7 +121,7 @@ package applicationTest
 		[Test(async, timeout=20000, description="Async UUID")]
 		public function testUUID():void
 		{
-			this.resultFunction =  Async.asyncHandler(this, handleIntendedResult,15000,{result:"ok"}, handleTimeout);
+			this.resultFunction =  Async.asyncHandler(this, handleUUIDResult, 15000, null, handleTimeout);
 			prepTest.addEventListener(PubNubEvent.UUID_RESULT,  resultFunction);
 			prepTest.uuid();
 		}

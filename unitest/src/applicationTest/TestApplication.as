@@ -18,6 +18,7 @@ package applicationTest
 		private var	secret_key:String;
 		private var	origin:String;
 		private var	isSsl:Boolean;
+        private var configDemo:Object;
 		public var p:PubNub;
 		
 		public function TestApplication()
@@ -35,8 +36,8 @@ package applicationTest
 			secret_key = "demo";
 			origin = "pubsub.pubnub.com";
 			isSsl = false;
-			
-			var config:Object = {
+
+            configDemo = {
 				origin:		origin,
 				publish_key: publish_key,
 				sub_key:	subscribe_key,
@@ -357,51 +358,17 @@ package applicationTest
 				}
 			});
 		}
-		
-		public function uuid():void
-		{
-			p = (cipher_key ? PubNubSecure.init : PubNub.init)(
-				{	auth_key:	"x"	,
-					cipher_key:	""	,
-					origin:	"pubsub.pubnub.com",	
-					publish_key:	"demo",	
-					secret_key:	"demo",	
-					ssl:	false	,
-					subscribe_key:	"demo"
-				}
-			);
-			
-			p.subscribe({
-				backfill: false,
-				noheresync: true,
-				channel: channel,
-				message: function subscribeMessageHandler(message:Object, envelope:Object, channel:String, time:Number):void {
-					dispatchEvent(new PubNubEvent(PubNubEvent.UUID_RESULT, message));
-				},
-				presence: function subscribePresenceHandler(message:Object, here:*, channel:String, presenceChannel:String = null):void {
-					message.result="presence";
-					dispatchEvent(new PubNubEvent(PubNubEvent.UUID_RESULT, message));
-				},
-				connect: function subscribeConnectHandler(channel:String):void {
-					setTimeout(function uuidcall():void{
-						p.uuid(function uuidCallBack(message:Object):void {
-						var obj:Object = new Object();
-						if(message != null) {obj.result = "ok";}
-						else {obj.result = "error";}
-						dispatchEvent(new PubNubEvent(PubNubEvent.UUID_RESULT, obj));
-						p.unsubscribe({channel:channel});
-					})}, 10000);
-				},
-				disconnect: function (message:Object):void {
-					message.result="presence";
-					dispatchEvent(new PubNubEvent(PubNubEvent.UUID_RESULT, message));},
-				error: function subscribeErrorHandler(e:Object):void {
-					e.result="error";
-				}
-			});
-		}
-		
-		private function uuidCall():void{}
+
+        public function uuid():void
+        {
+            p = new PubNub(configDemo);
+
+            p.uuid(function uuidCallBack(message:String):void {
+                dispatchEvent(new PubNubEvent(PubNubEvent.UUID_RESULT, message));
+            });
+        }
+
+        private function uuidCall():void{}
 		
 		public function hereNow():void
 		{
