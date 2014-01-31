@@ -16,20 +16,6 @@
         <script src="pubnub-crypto.min.js"></script>
         <script src="pubnub-as2js-proxy.min.js"></script>
         <script>PUBNUB_AS2JS_PROXY.setFlashObjectId('${application}')</script>
-        <script language="JavaScript">
-            var jsReady = 5555;
-            function isReady() {
-                return jsReady;
-            }
-
-            function sendToActionScript(value) {
-                document.getElementById("${application}").sendToActionScript(value);
-            }
-
-            function sendToJavaScript(value) {
-                document.forms["form1"].output.value += "ActionScript says: " + value + "\n";
-            }
-        </script>
         <meta name="google" value="notranslate" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <!-- Include CSS to eliminate any default margins/padding and set the height of the html element and 
@@ -78,12 +64,7 @@
         </script>
     </head>
     <body>
-     <form name="form1" onsubmit="return false;">
-         <input type="text" name="input" value="" />
-         <input type="button" value="Send" onclick="sendToActionScript(this.form.input.value);" /><br />
-         <textarea cols="60" rows="3" name="output" readonly="true">Initializing...</textarea>
-     </form>
-        <!-- SWFObject's dynamic embed method replaces this alternative HTML content with Flash content when enough 
+        <!-- SWFObject's dynamic embed method replaces this alternative HTML content with Flash content when enough
              JavaScript and Flash plug-in support is available. The div is initially hidden so that it doesn't show
              when JavaScript is disabled.
         -->
