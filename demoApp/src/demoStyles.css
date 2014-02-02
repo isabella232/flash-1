@@ -8,3 +8,8 @@ global
 	content-background-color: #F4F5A9;
 	content-background-alpha: 0.81;
 }
+s|Button
+{
+	chromeColor: #CD0202;
+	color: #FDFCFC;
+}
