@@ -80,6 +80,13 @@ var secureSetupObject = {
     secret_key        : 'sec-c-OWYwMzYwNWYtY2FkZC00NWM2LWJiOTctYjY0MGY2MDg3M2I0'
 };
 
+var presenceSetupObject = {
+    origin            : 'presence-beta.pubnub.com',
+    publish_key       : 'demo',
+    subscribe_key     : 'demo',
+    uuid              : presence_uuid
+};
+
 var setupObject = {
     publish_key       : 'demo',
     subscribe_key     : 'demo',
