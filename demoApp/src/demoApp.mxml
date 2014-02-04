@@ -13,12 +13,13 @@
 		<![CDATA[
         import com.pubnub.PubNub;
         import com.pubnub.PubNubSecure;
-        
+
         import flashx.textLayout.elements.TextFlow;
-        
+
         import mx.formatters.DateFormatter;
         import mx.utils.StringUtil;
-        
+
+        import spark.events.TextOperationEvent;
         import spark.utils.TextFlowUtil;
 
         [Bindable]
@@ -34,17 +35,17 @@
 		private var chromeColorStatusOff:String = "#56B6F9";
 		private var chromeColorStatusOn:String = "#cd0202";
 		private var SOME_UUID:String = 'some_uuid';
-			
-			[Embed(source='../assets/Lock.png')]
-			[Bindable]
-			public var iconLock:Class; 
-			
-			[Embed(source='../assets/unLock.png')]
-			[Bindable]
-			public var iconUnLock:Class;
-			
-			public var isSsl:Boolean;
-			
+		private var currentChannel:String;
+        public var isSsl:Boolean;
+
+        [Embed(source='../assets/Lock.png')]
+        [Bindable]
+        public var iconLock:Class;
+
+        [Embed(source='../assets/unLock.png')]
+        [Bindable]
+        public var iconUnLock:Class;
+
         public function init(e:Event = null):void {
 
             getMessagesTextArea();
@@ -53,7 +54,7 @@
             presenceString = "";
             historyString = "";
 
-            channelTextInput.text = 'flash_channel';
+            channelTextInput.text = "flash_channel";
             authKeyTextInput.text = 'x';
             originTextInput.text = 'pubsub.pubnub.com';
             publishKeyTextInput.text = 'demo';
@@ -68,6 +69,7 @@
 			btnSSL.setStyle("chromeColor","#cd0202");
 			offMisc();
 			subscribe();
+            channelTextInput.addEventListener(Event.CHANGE, doSubscribe);
         }
 		
         // Additional buttons:
@@ -193,7 +195,7 @@
             }
 
             p.unsubscribe({
-                channel: channel_val(),
+                channel: currentChannel,
                 callback: function (message:Object):void {
                     disconnected();
                     appendObjectToConsole(message);
@@ -210,7 +212,7 @@
                 return;
             }
             var grantConfig:Object = {
-                channel: pamChannelTextInput.text,
+                channel: pamChannelTextInput.text.toString(),
                 auth_key: pamAuthKeyTextInput.text,
                 read: pamReadCheckbox.selected,
                 write: pamWriteCheckbox.selected,
@@ -234,7 +236,7 @@
             }
 
             var revokeConfig:Object = {
-                channel: pamChannelTextInput.text,
+                channel: pamChannelTextInput.text.toString(),
                 auth_key: authKeyTextInput.text,
                 callback: appendObjectToConsole,
                 error: appendErrorToConsole
@@ -303,42 +305,66 @@
         }
 
         private function channel_val():String {
-            return channelTextInput.text;
+            currentChannel = channelTextInput.text;
+            return currentChannel;
         }
 
         private function appendObjectToConsole(message:Object):void {
-            flow = TextFlowUtil.importFromString(
-                    (consoleString = "<p><span>" + currentDate() + '</span>: <span color="0x71BDFF">' + JSON.stringify(message) + "</span></p>\n" + consoleString)
-            );
-            consoleLog.textFlow = flow;
+            var mess:String;
+
+            mess = JSON.stringify(message)
+                    .replace(/\&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/,/g, ", ");
+
+            if (mess && mess.length > 0) {
+                appendToConsole(mess, '0x71BDFF');
+            }
         }
 
         private function appendErrorToConsole(message:Object):void {
-            flow = TextFlowUtil.importFromString(
-                    (consoleString = "<p><span>" + currentDate() + '</span>: <span color="0xFF0000">' + JSON.stringify(message) + "</span></p>\n" + consoleString)
-            );
-            consoleLog.textFlow = flow;
+            appendToConsole(JSON.stringify(message), '0xFF0000');
         }
 
         private function appendStringToConsole(message:String):void {
-            flow = TextFlowUtil.importFromString(
-                    (consoleString = "<p><span>" + currentDate() + '</span>: <span color="0x71BDFF">' + message + "</span></p>\n" + consoleString)
-            );
-            consoleLog.textFlow = flow;
+            appendToConsole(message, '0x71BDFF');
+        }
+
+        private function appendToConsole(message:String, color:String):void {
+            try {
+                flow = TextFlowUtil.importFromString(
+                        (consoleString = "<p><span>" + currentDate() + '</span>: <span color="' + color + '">' +
+                                message + "</span></p>\n" + consoleString)
+                );
+                consoleLog.textFlow = flow;
+            }
+            catch (error:Error) {
+                appendErrorToConsole(error.message);
+            }
         }
 
         private function presenceAppend(message:Object):void {
-            flow = TextFlowUtil.importFromString(
-                    (presenceString = "<p><span>" + currentDate() + '</span>: <span color="0xF7B23B">' + JSON.stringify(message) + "</span></p>\n" + presenceString)
-            );
-            presenceArea.textFlow = flow;
+            try {
+                flow = TextFlowUtil.importFromString(
+                        (presenceString = "<p><span>" + currentDate() + '</span>: <span color="0xF7B23B">' + JSON.stringify(message) + "</span></p>\n" + presenceString)
+                );
+                presenceArea.textFlow = flow;
+            }
+            catch (error:Error) {
+                appendErrorToConsole(error.message);
+            }
         }
 
         private function historyAppendText(message:Object):void {
-            flow = TextFlowUtil.importFromString(
-                    (historyString = "<p>" + JSON.stringify(message) + "</p>\n")
-            );
-            historyArea.textFlow = flow;
+            try {
+                flow = TextFlowUtil.importFromString(
+                        (historyString = "<p>" + JSON.stringify(message) + "</p>\n")
+                );
+                historyArea.textFlow = flow;
+            }
+            catch (error:Error) {
+                appendErrorToConsole(error.message);
+            }
         }
 
         private function connected(str:String = ""):void {
@@ -382,13 +408,21 @@
             var DateTimeString:String = CurrentDF.format(CurrentDateTime);
             return DateTimeString;
         }
-        ]]>
+
+        protected function doSubscribe(event:TextOperationEvent):void
+        {
+            if(currentChannel&& currentChannel.length>0){
+                unsubscribe();
+            }
+        }
+			
+		]]>
 	</fx:Script>
 	<s:BorderContainer id="topContainer" width="809" height="45">
 		<s:Button id="subscribeButton" x="23" y="6" width="118" height="32" label="SUBSCRIBE"
 				  chromeColor="#CD0202" click="subscribe()" color="#FCFAFA"/>
 		<s:Button id="unsubscribeButton" x="146" y="6" width="118" height="32" label="UNSUBSCRIBE"
-				  click="unsubscribe()" color="#131111" enabled="false"/>
+				  click="unsubscribe()" color="#F9F1F1" enabled="false"/>
 		<s:Button id="btnSSL" x="270" y="6" height="32" label="SSL" chromeColor="#56B6F9"
 				  click="toggleSSL()"/>
 		<s:Button id="btnMisc" x="358" y="6" height="32" label="MISC" click="miscHandler()"/>
@@ -405,8 +439,6 @@
 		<s:TextArea id="messagesTextArea" x="15" y="143" width="388" height="70" editable="false"
 					enabled="true" maxChars="250"/>
 		<s:Label x="17" y="229" height="19" text="Messages:"/>
-		<s:Scroller x="10" y="316" width="386" height="272">
-		</s:Scroller>
 		<s:Button id="clearLog" x="84" y="227" height="15" label="Clear" click="clearLogHandler()"/>
 		<s:Button x="331" y="191" label="Publish" click="publish()"/>
 		<s:TextInput id="originTextInput" x="119" y="36"/>
@@ -430,26 +462,26 @@
 		<s:TextInput id="authKeyTextInput" x="119" y="64"/>
 		<s:TextInput id="chiperKeyTextInput" x="118" y="93"/>
 		<s:Group id="pamGroup" x="10" y="609" width="792" height="230">
-			<s:Rect id="pamBackground" width="100%" height="100%">
+			<s:Rect id="pamBackground" x="0" y="-68" width="100%" height="216">
 				<s:fill>
 					<s:SolidColor color="#FF0000"/>
 				</s:fill>
 			</s:Rect>
-			<s:TextInput id="pamChannelTextInput" x="10" y="30" width="314"/>
-			<s:Label x="10" y="10" text="channel"/>
-			<s:Label x="10" y="60" text="auth_key"/>
-			<s:TextInput id="pamAuthKeyTextInput" x="10" y="80" width="314"/>
-			<s:Label x="10" y="110" text="secret key"/>
-			<s:TextInput id="pamSecretKeyTextInput" x="10" y="130" width="314"/>
-			<s:Label x="10" y="160" text="ttl"/>
-			<s:TextInput id="pamTtlTextInput" x="10" y="180" width="314"/>
-			<s:CheckBox id="pamReadCheckbox" x="365" y="31" label="Read ?"/>
-			<s:CheckBox id="pamWriteCheckbox" x="366" y="57" label="Write ?"/>
-			<s:Button id="grantButton" x="366" y="123" label="Grant" click="grant()"/>
-			<s:Button id="revokeButton" x="366" y="152" label="Revoke" click="revoke()"/>
-			<s:Button id="auditButton" x="366" y="181" label="Audit" click="audit()"/>
-			<s:CheckBox id="pamPnpresCheckbox" x="366" y="84" label="apply to *-pnpres channel too" selected="true"/>
-			<s:Label x="560" y="16" fontSize="20" fontWeight="bold" text="PAM - Access Manager"/>
+			<s:TextInput id="pamChannelTextInput" x="10" y="-38" width="314"/>
+			<s:Label x="10" y="-58" text="channel"/>
+			<s:Label x="10" y="-8" text="auth_key"/>
+			<s:TextInput id="pamAuthKeyTextInput" x="10" y="12" width="314"/>
+			<s:Label x="10" y="42" text="secret key"/>
+			<s:TextInput id="pamSecretKeyTextInput" x="10" y="62" width="314"/>
+			<s:Label x="10" y="92" text="ttl"/>
+			<s:TextInput id="pamTtlTextInput" x="10" y="110" width="314"/>
+			<s:CheckBox id="pamReadCheckbox" x="365" y="-37" label="Read ?"/>
+			<s:CheckBox id="pamWriteCheckbox" x="366" y="-11" label="Write ?"/>
+			<s:Button id="grantButton" x="366" y="55" label="Grant" click="grant()"/>
+			<s:Button id="revokeButton" x="366" y="84" label="Revoke" click="revoke()"/>
+			<s:Button id="auditButton" x="366" y="109" label="Audit" click="audit()"/>
+			<s:CheckBox id="pamPnpresCheckbox" x="366" y="16" label="apply to *-pnpres channel too" selected="true"/>
+			<s:Label x="560" y="-52" fontSize="20" fontWeight="bold" text="PAM - Access Manager"/>
 		</s:Group>
 		<s:Scroller x="423" y="142" width="382" height="70">
 			<s:RichEditableText id="presenceArea" backgroundColor="#000000" color="#FFFFFF"
@@ -467,10 +499,11 @@
 		<s:Button id="clearPresence" x="735" y="124" height="15" label="Clear" click="clearPresenceHandler()"/>
 		<s:Button id="clearHistory" x="737" y="227" height="15" label="Clear" click="clearHistoryHandler()"/>
 		<s:Button id="historyButton" x="475" y="224" label="History" click="history()"/>
-		<s:RichEditableText id="consoleLog" x="15" y="245" backgroundColor="#000000" color="#FFFFFF"
+		<s:Scroller x="15" y="245" width="382" height="272">
+		<s:RichEditableText id="consoleLog"  backgroundColor="#000000" color="#FFFFFF"
 							editable="false" fontFamily="Arial" fontSize="10" fontWeight="bold"
 							paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
-		
+		</s:Scroller>
 	
 	</s:BorderContainer>
 	
