@@ -263,28 +263,24 @@
                 error: appendErrorToConsole
             });
         }
-			
-			private function miscHandler():void{
-				
-				if(!miscContainer.visible){
-					onMisc();
-				}else{
-					offMisc();
-				}
-				
-			}
-			private function onMisc():void{
-				btnSSL.setStyle("chromeColor",chromeColorStatusOff);
-				miscContainer.visible = true;
-				miscContainer.y = 44;
-				bottomContainer.y = 88;
-			}
-			private function offMisc():void{
-				btnSSL.setStyle("chromeColor",chromeColorStatusOn);
-				miscContainer.visible = false;
-				bottomContainer.y = 44;
-				
-			}
+
+        private function miscHandler():void {
+            miscContainer.visible ? offMisc() : onMisc();
+        }
+
+        private function onMisc():void {
+            btnMisc.setStyle("chromeColor", chromeColorStatusOff);
+            miscContainer.visible = true;
+            miscContainer.y = 44;
+            bottomContainer.y = 88;
+        }
+
+        private function offMisc():void {
+            btnMisc.setStyle("chromeColor", chromeColorStatusOn);
+            miscContainer.visible = false;
+            bottomContainer.y = 44;
+        }
+
         // Helpers:
         private function toggleSSL():void {
             if (!isSsl) {
