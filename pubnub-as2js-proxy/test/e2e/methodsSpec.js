@@ -212,10 +212,9 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
         });
     });
 
-    // REVIEW: sometimes test breaks
     describe('#here_now', function () {
         it('should show occupancy 1 user if 1 user is subscribed to channel', function (done) {
-            this.timeout(8000);
+            this.timeout(18000);
 
             var _test = this;
 
@@ -236,7 +235,7 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
                                 channel: _test.channel,
                                 callback: 'hereNowCallbackId'
                             }]);
-                        }, 2000);
+                        }, 15000);
                         break;
                     case 'hereNowCallbackId':
                         PUBNUB_AS2JS_PROXY.unsubscribe(_test.iid, [{
@@ -318,7 +317,8 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
                 response = decode64(response);
                 expect(instanceId).to.equal(_test.siid);
                 expect(callbackId).to.equal('uglyCallbackId');
-                expect(response[0].status).to.equal(200);
+                expect(response[0]).to.have.property('channels')
+                    .that.is.an('object');
                 done()
             });
 
