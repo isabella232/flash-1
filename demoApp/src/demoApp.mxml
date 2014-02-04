@@ -287,21 +287,18 @@
 			}
         // Helpers:
         private function toggleSSL():void {
-			if(!isSsl)
-			{
-				btnSSL.setStyle("icon",iconUnLock);
-				btnSSL.setStyle("chromeColor",chromeColorStatusOff);
-				isSsl =!isSsl;
-				subscribe();
-			}
-			else
-			{
-				isSsl =!isSsl;
-				btnSSL.setStyle("icon",iconLock);
-				btnSSL.setStyle("chromeColor",chromeColorStatusOn);
-			}
-			
-			
+            if (!isSsl) {
+                btnSSL.setStyle("icon", iconUnLock);
+                btnSSL.setStyle("chromeColor", chromeColorStatusOff);
+                isSsl = !isSsl;
+                subscribe();
+            }
+            else {
+                isSsl = !isSsl;
+                btnSSL.setStyle("icon", iconLock);
+                btnSSL.setStyle("chromeColor", chromeColorStatusOn);
+                subscribe();
+            }
         }
 
         private function channel_val():String {
