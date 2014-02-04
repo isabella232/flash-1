@@ -30,10 +30,16 @@ describe('Wrapper', function () {
 
     describe('#applyCallback', function () {
         it('should call method on flash object', function () {
-            var flashMock = sinon.mock(this.wrapper.flashObject);
+            var flashMock = sinon.mock(this.obj),
+                stub = sinon.stub(document, 'getElementById').returns(this.obj),
+                payload = [this.payload, 'someString'];
 
-            flashMock.expects('callback').withExactArgs(this.iid, 'uglyCallbackId', this.payload).once();
-            this.wrapper.applyCallback('uglyCallbackId', this.payload);
+            flashMock.expects('callback').withExactArgs(this.iid, 'callbackId', payload).once();
+
+            this.wrapper.applyCallback('callbackId', payload);
+
+            stub.restore();
+            flashMock.verify();
         });
     });
 
@@ -136,18 +142,5 @@ describe('Wrapper', function () {
 
             pubnubMock.verify();
         });
-    });
-
-    it('#applyCallback', function () {
-        var flashMock = sinon.mock(this.obj),
-            stub = sinon.stub(document, 'getElementById').returns(this.obj),
-            payload = [this.payload, 'someString'];
-
-        flashMock.expects('callback').withExactArgs(this.iid, 'callbackId', payload).once();
-
-        this.wrapper.applyCallback('callbackId', payload);
-
-        stub.restore();
-        flashMock.verify();
     });
 });
