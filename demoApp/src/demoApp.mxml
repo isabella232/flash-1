@@ -428,7 +428,7 @@
 		
 	</s:BorderContainer>
 	<s:BorderContainer id="bottomContainer" x="0" y="88" width="809">
-		<s:TextArea id="messagesTextArea" x="15" y="143" width="388" height="70" editable="false"
+		<s:TextArea id="messagesTextArea" x="15" y="143" width="388" height="70" editable="true"
 					enabled="true" maxChars="250"/>
 		<s:Label x="17" y="229" height="19" text="Messages:"/>
 		<s:Button id="clearLog" x="84" y="227" height="15" label="Clear" click="clearLogHandler()"/>
