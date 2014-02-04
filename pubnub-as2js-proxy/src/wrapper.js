@@ -29,6 +29,7 @@ function Wrapper(instanceId, flashObject, setup, secure) {
  * @param {Array} payload to apply on as function
  */
 Wrapper.prototype.applyCallback = function (callbackId, payload) {
+    payload = btoa(JSON.stringify(payload));
     this.flashObject.callback(this.instanceId, callbackId, payload);
 };
 

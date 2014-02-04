@@ -34,7 +34,7 @@ describe('Wrapper', function () {
                 stub = sinon.stub(document, 'getElementById').returns(this.obj),
                 payload = [this.payload, 'someString'];
 
-            flashMock.expects('callback').withExactArgs(this.iid, 'callbackId', payload).once();
+            flashMock.expects('callback').withExactArgs(this.iid, 'callbackId', btoa(JSON.stringify(payload))).once();
 
             this.wrapper.applyCallback('callbackId', payload);
 

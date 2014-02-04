@@ -63,6 +63,7 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
             var _test = this;
 
             sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
                 expect(instanceId).to.equal(_test.iid);
                 expect(callbackId).to.equal('uglyCallbackId');
                 expect(response[0][0]).to.equal(1);
@@ -93,6 +94,8 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
             sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
                 var connect = subscribeConnectPatter.exec(callbackId),
                     message = subscribeMessagePatter.exec(callbackId);
+
+                response = decode64(response);
 
                 if (connect) {
                     (function () {
@@ -144,6 +147,8 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
             this.timeout(8000);
 
             sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
+
                 if (callbackId === 'connectedCallbackId') {
                     PUBNUB_AS2JS_PROXY.publish(_test.iid, [{
                         channel: _test.channel,
@@ -180,6 +185,7 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
             var _test = this;
 
             sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
                 expect(instanceId).to.equal(_test.iid);
                 expect(callbackId).to.equal('timeCallbackId');
                 expect(response[0]).to.be.at.least(13880976763149278);
@@ -195,6 +201,7 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
             var _test = this;
 
             sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
                 expect(instanceId).to.equal(_test.iid);
                 expect(callbackId).to.equal('uuidCallbackId');
                 expect(response[0]).to.not.be.empty;
@@ -213,6 +220,8 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
             var _test = this;
 
             sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
+
                 switch(callbackId) {
                     case 'connectedCallbackId':
                         PUBNUB_AS2JS_PROXY.publish(_test.iid, [{
@@ -262,6 +271,8 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
                 _test = this;
 
             sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
+
                 if (publishPatter.test(callbackId)) {
                     if (++responseCounter === 3) {
                         setTimeout(function () {
@@ -304,6 +315,7 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
             var _test = this;
 
             sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
                 expect(instanceId).to.equal(_test.siid);
                 expect(callbackId).to.equal('uglyCallbackId');
                 expect(response[0].status).to.equal(200);

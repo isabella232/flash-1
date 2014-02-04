@@ -7,13 +7,15 @@ package com.pubnub
 		
 		import mx.utils.ObjectUtil;
 		import mx.utils.UIDUtil;
+        import mx.utils.Base64Decoder;
 		
 		private static var allInstances:Object = {};
 		private var callbacks:Object;
 		private var heap:Object = {};
 		private var readyState:Boolean;
 		protected var instanceId:String;
-		private static var jsProxyObjectName:String = 'PUBNUB_AS2JS_PROXY';
+        private var decoder:Base64Decoder;
+        private static var jsProxyObjectName:String = 'PUBNUB_AS2JS_PROXY';
 		
 		private static var LEAVE_FIELDS:Array = ['callback', 'error'];
 		private static var SETUP_FIELDS:Array = ['error', '_is_online', 'jsonp_cb', 'db' ]
@@ -32,7 +34,8 @@ package com.pubnub
 			instanceId = generateId();
 			callbacks = {};
 			readyState = false;
-			
+            decoder = new Base64Decoder();
+
 			setupCallbacks();
 			PubNub.allInstances[instanceId] = this;
 			
@@ -65,8 +68,9 @@ package com.pubnub
 			ExternalInterface.addCallback('error', errorHandler);
 		}
 		
-		private function callCallback(callbackId:String, payload:Array):void {
-			callbacks[callbackId].apply(this, payload);
+		private function callCallback(callbackId:String, payload:String):void {
+            decoder.decode(payload);
+			callbacks[callbackId].apply(this, JSON.parse(decoder.toByteArray().toString()));
 		}
 		
 		// Handlers
@@ -86,7 +90,7 @@ package com.pubnub
 			// TODO: throw error
 		}
 		
-		public static function callbackHandler(instanceId:String, callbackId:String, payload:Array=undefined):void {
+		public static function callbackHandler(instanceId:String, callbackId:String, payload:String=undefined):void {
 			getInstanceById(instanceId).callCallback(callbackId, payload);
 		}
 		
