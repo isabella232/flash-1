@@ -93,15 +93,14 @@
             });
         }
 
-        private function doSetUuid():void {
-			
-			p.set_uuid(SOME_UUID);
-			p.uuid(onSetUuid);
-		}
+        private function doUUID():void {
+            p.uuid(onSetUuid);
+        }
 
-		private function doGetUuid():void {
-			p.get_uuid(onSetUuid);
-		}
+        private function doGetUUID():void {
+            p.set_uuid(SOME_UUID);
+            p.get_uuid(onSetUuid);
+        }
 		
 		private function doHereNow():void{
 			p.here_now({
@@ -423,8 +422,8 @@
 	</s:BorderContainer>
 	<s:BorderContainer id="miscContainer" x="0" y="44" width="809" height="45">
 		<s:Button x="11" y="5" label="time" click="time()"/>
-		<s:Button id="setUuid" x="93" y="5" label="setUuid" click="doSetUuid()"/>
-		<s:Button id="getUuid" x="175" y="5" label="getUuid" click="doGetUuid()"/>
+		<s:Button id="UUID" x="93" y="5" label="UUID" click="doUUID()"/>
+		<s:Button id="getUUID" x="175" y="5" label="getUUID" click="doGetUUID()"/>
 		<s:Button id="btnHereNow" x="260" y="5" label="Here now" click="doHereNow()"/>
 		
 	</s:BorderContainer>
