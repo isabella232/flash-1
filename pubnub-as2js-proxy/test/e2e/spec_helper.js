@@ -57,6 +57,23 @@ function decode64(string) {
     return JSON.parse(atob(string));
 }
 
+// NOTICE: only one handler for event supported
+function EventEmitter() {
+    this.events = {};
+}
+
+EventEmitter.prototype.on = function (event_name, fn) {
+    this.events[event_name] = fn;
+};
+
+EventEmitter.prototype.emit = function (event_name, payload) {
+    if (event_name in this.events && typeof this.events[event_name] === 'function') {
+        this.events[event_name](payload);
+    }
+};
+
+var presence_uuid = Date.now();
+
 var secureSetupObject = {
     publish_key       : 'pub-c-05bbe7bf-b4b8-4ce2-8f85-d7b88e8c0e2d',
     subscribe_key     : 'sub-c-d01d9f66-6166-11e3-bb82-02ee2ddab7fe',
