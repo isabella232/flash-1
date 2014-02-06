@@ -207,7 +207,6 @@ function build_url( url_components, url_params ) {
     } );
 
     url += "?" + params.join(PARAMSBIT);
-
     return url;
 }
 
@@ -365,6 +364,7 @@ function PN_API(setup) {
     ,   TIMETOKEN     = 0
     ,   RESUMED       = false
     ,   CHANNELS      = {}
+    ,   STATE         = {}
     ,   PRESENCE_HB_TIMEOUT  = null
     ,   PRESENCE_HB_INTERVAL = validate_presence_heartbeat(setup['pnexpires'] || 0, setup['error'])
     ,   PRESENCE_HB_RUNNING  = false
@@ -773,6 +773,7 @@ function PN_API(setup) {
                 }
                 if (!CB_CALLED) callback({action : "leave"});
                 CHANNELS[channel] = 0;
+                if (channel in STATE) delete STATE[channel];
             } );
 
             // Reset Connection if Count Less
@@ -801,7 +802,7 @@ function PN_API(setup) {
             ,   timetoken     = args['timetoken']   || 0
             ,   sub_timeout   = args['timeout']     || SUB_TIMEOUT
             ,   windowing     = args['windowing']   || SUB_WINDOWING
-            ,   metadata      = args['metadata']
+            ,   state         = args['state']
             ,   pnexpires     = args['pnexpires']
             ,   restore       = args['restore'];
 
@@ -835,6 +836,13 @@ function PN_API(setup) {
                     disconnect   : disconnect,
                     reconnect    : reconnect
                 };
+                if (state) {
+                    if (channel in state) {
+                        STATE[channel] = state[channel];
+                    } else {
+                        STATE[channel] = state;
+                    }
+                }
 
                 // Presence Enabled?
                 if (!presence) return;
@@ -909,7 +917,10 @@ function PN_API(setup) {
                 _reset_offline();
 
                 var data = { 'uuid' : UUID, 'auth' : auth_key };
-                if (metadata) data['metadata'] = metadata;
+      
+                var st = JSON.stringify(STATE);
+                if (st.length > 2) data['metadata'] = JSON.stringify(STATE);
+
                 if (PRESENCE_HB_INTERVAL) data['pnexpires'] = PRESENCE_HB_INTERVAL;
                 start_presence_heartbeat();
                 SUB_RECEIVER = xdr({
@@ -917,7 +928,7 @@ function PN_API(setup) {
                     callback : jsonp,
                     fail     : function(response) {
                         _invoke_error(response, errcb);
-                        SUB_RECEIVER = null;
+                        //SUB_RECEIVER = null;
                         SELF['time'](_test_connection);
                     },
                     data     : data,
@@ -928,7 +939,7 @@ function PN_API(setup) {
                     ],
                     success : function(messages) {
 
-                        SUB_RECEIVER = null;
+                        //SUB_RECEIVER = null;
                         // Check for Errors
                         if (!messages || (
                             typeof messages == 'object' &&
@@ -1031,11 +1042,11 @@ function PN_API(setup) {
             ,   channel  = args['channel']
             ,   jsonp    = jsonp_cb()
             ,   disable_uuids = args['disable_uuids']
-            ,   metadata = args['metadata']
+            ,   state = args['state']
             ,   data     = { 'uuid' : UUID, 'auth' : auth_key };
 
             if (disable_uuids) data['disable_uuids'] = 1;
-            if (metadata) data['metadata'] = 1;
+            if (state) data['metadata'] = 1;
 
             // Make sure we have a Channel
             if (!callback)      return error('Missing Callback');
@@ -1102,7 +1113,7 @@ function PN_API(setup) {
             ,   err      = args['error']    || function(){}
             ,   auth_key = args['auth_key'] || AUTH_KEY
             ,   jsonp    = jsonp_cb()
-            ,   metadata = args['metadata']
+            ,   state    = args['state']
             ,   uuid     = args['uuid'] || UUID
             ,   channel  = args['channel']
             ,   url
@@ -1115,9 +1126,11 @@ function PN_API(setup) {
 
             if (jsonp != '0') { data['callback'] = jsonp; }
 
-            data['metadata'] = JSON.stringify(metadata);
+            if (CHANNELS[channel] && CHANNELS[channel].subscribed) STATE[channel] = state;
 
-            if (metadata) {
+            data['metadata'] = JSON.stringify(state);
+
+            if (state) {
                 url      = [
                     STD_ORIGIN, 'v2', 'presence',
                     'sub-key', SUBSCRIBE_KEY,
@@ -1308,11 +1321,16 @@ function PN_API(setup) {
         },
         'presence_heartbeat' : function(args) {
             var callback = args['callback'] || function() {}
-            var err    = args['error']    || function() {}
+            var err      = args['error']    || function() {}
             var jsonp    = jsonp_cb();
+            var data     = { 'uuid' : UUID, 'auth' : AUTH_KEY };
+
+            var st = JSON.stringify(STATE);
+            if (st.length > 2) data['metadata'] = JSON.stringify(STATE);
+
             xdr({
                 callback : jsonp,
-                data     : { 'uuid' : UUID, 'auth' : AUTH_KEY },
+                data     : data,
                 timeout  : SECOND * 5,
                 url      : [
                     STD_ORIGIN, 'v2', 'presence',
