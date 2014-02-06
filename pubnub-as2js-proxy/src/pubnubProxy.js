@@ -86,16 +86,12 @@ PubnubProxy.prototype.getInstance = function (instanceId) {
     return this.instances[instanceId];
 };
 
-PubnubProxy.prototype.get_uuid = function (instanceId, callbackId) {
-    var instance = this.getInstance(instanceId);
-
-    instance.applyCallback(callbackId, [instance.pubnub.get_uuid()])
+PubnubProxy.prototype.get_uuid = function (instanceId) {
+    return this.getInstance(instanceId).pubnub.get_uuid();
 };
 
-PubnubProxy.prototype.uuid = function (instanceId, callbackId) {
-    var instance = this.getInstance(instanceId);
-
-    instance.applyCallback(callbackId, [instance.pubnub.uuid()])
+PubnubProxy.prototype.uuid = function (instanceId) {
+    return this.getInstance(instanceId).pubnub.uuid();
 };
 
 PubnubProxy.prototype.proxyError = function (message) {

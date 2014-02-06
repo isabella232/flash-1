@@ -177,20 +177,20 @@ package com.pubnub
 			jsCall('time', [callbackId]);
 		}
 		
-		public function uuid(callback:Function):void {
-			var callbackId:String = mockCallback(callback);
-			// there is only argumetn, it's not array!!!
-			jsCall('uuid', callbackId);
+		public function uuid(callback:Function = undefined):* {
+            var uuid:String = jsCallSync('uuid');
+
+			return (callback is Function) ? callback(uuid) : uuid;
 		}
 		
 		public function set_uuid(uuid:String):void {
 			jsCall('set_uuid', [uuid]);
 		}
 		
-		public function get_uuid(callback:Function):void {
-			var callbackId:String = mockCallback(callback);
-			// there is only argumetn, it's not array!!!
-			jsCall('get_uuid', callbackId);
+		public function get_uuid(callback:Function = undefined):* {
+            var uuid:String = jsCallSync('get_uuid');
+
+            return (callback is Function) ? callback(uuid) : uuid;
 		}
 		
 		// Helpers
@@ -226,6 +226,13 @@ package com.pubnub
 				heap[method] = args;
 			}
 		}
+
+        public function jsCallSync(method:String):String {
+            return ExternalInterface.call(
+                PubNub.jsProxyObjectName + '.' + method,
+                instanceId
+            );
+        }
 		
 		// Utils
 		private static function generateId():String {

@@ -199,18 +199,15 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
     });
 
     describe('#uuid', function () {
-        it('should return uuid in callback', function (done) {
-            var _test = this;
+        it('should return uuid synchronously', function () {
+            expect(PUBNUB_AS2JS_PROXY.uuid(this.iid)).to.have.length.above(10);
+        });
+    });
 
-            sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
-                response = decode64(response);
-                expect(instanceId).to.equal(_test.iid);
-                expect(callbackId).to.equal('uuidCallbackId');
-                expect(response[0]).to.not.be.empty;
-                done();
-            });
-
-            PUBNUB_AS2JS_PROXY.uuid(this.iid, 'uuidCallbackId');
+    describe('#get_uuid', function () {
+        it('should return uuid synchronously', function () {
+            PUBNUB_AS2JS_PROXY.set_uuid(this.iid, ['someUuid']);
+            expect(PUBNUB_AS2JS_PROXY.get_uuid(this.iid)).to.be.equal('someUuid');
         });
     });
 

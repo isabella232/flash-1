@@ -2,6 +2,7 @@ package applicationTest {
     import com.pubnub.PubNub;
 
     import flash.events.EventDispatcher;
+    import flash.utils.setTimeout;
 
     import flexunit.framework.Assert;
 
@@ -12,6 +13,7 @@ package applicationTest {
         public var channel:String;
         public var messageString:String;
         public var resultFunction:Function;
+        public const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
         [Before(async)]
         public function setUp():void {
@@ -43,8 +45,30 @@ package applicationTest {
             });
         }
 
+        [Test(description="Should generate uuid synchonously")]
+        public function testSynchronousUUID():void {
+            Assert.assertMatch(UUID, p.uuid());
+        }
+
+        [Test(async, timeout=1000, description="Should return uuid synchonously")]
+        public function testSynchronousGetUUID():void {
+            var expected:String = "uglyUUID";
+
+            var uuidHandler:Function = function (event:PubNubEvent, passThroughData:Object):void {
+                Assert.assertEquals(expected, event.result);
+            };
+
+            resultFunction = Async.asyncHandler(this, uuidHandler, 1000, expected);
+            addEventListener(PubNubEvent.SET_UUID_RESULT, resultFunction);
+
+            p.set_uuid(expected);
+            setTimeout(function ():void {
+                dispatchEvent(new PubNubEvent(PubNubEvent.SET_UUID_RESULT, p.get_uuid()));
+            }, 100);
+        }
+
         protected function handleUUIDResult(event:PubNubEvent, passThroughData:Object):void {
-            Assert.assertMatch('not matched to uuid regex', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, event.result);
+            Assert.assertMatch('not matched to uuid regex', UUID, event.result);
         }
 
         protected function handleSetUUIDResult(event:PubNubEvent, uuid:String):void {

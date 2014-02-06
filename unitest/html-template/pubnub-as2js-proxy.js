@@ -70,7 +70,7 @@ Wrapper.prototype.applyMethod = function (method, args) {
     if (config().methods_to_delegate.indexOf(method) < 0) {return;}
     var l,
         i;
-    console.log('applying', method);
+
     for (i = 0, l = args.length; i < l; i++) {
         if (config().methods_with_callback_in_args.indexOf(method) >= 0 &&
             i === (l - 1) &&
@@ -201,16 +201,12 @@ PubnubProxy.prototype.getInstance = function (instanceId) {
     return this.instances[instanceId];
 };
 
-PubnubProxy.prototype.get_uuid = function (instanceId, callbackId) {
-    var instance = this.getInstance(instanceId);
-
-    instance.applyCallback(callbackId, [instance.pubnub.get_uuid()])
+PubnubProxy.prototype.get_uuid = function (instanceId) {
+    return this.getInstance(instanceId).pubnub.get_uuid();
 };
 
-PubnubProxy.prototype.uuid = function (instanceId, callbackId) {
-    var instance = this.getInstance(instanceId);
-
-    instance.applyCallback(callbackId, [instance.pubnub.uuid()])
+PubnubProxy.prototype.uuid = function (instanceId) {
+    return this.getInstance(instanceId).pubnub.uuid();
 };
 
 PubnubProxy.prototype.proxyError = function (message) {
