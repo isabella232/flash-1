@@ -8,8 +8,10 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
     before(function () {
         this.iid = 'uglyInstanceId';
         this.siid = 'secureInstanceId';
+        this.piid = 'presenceInstanceId';
         PUBNUB_AS2JS_PROXY.createInstance(this.iid, setupObject);
         PUBNUB_AS2JS_PROXY.createInstance(this.siid, secureSetupObject);
+        PUBNUB_AS2JS_PROXY.createInstance(this.piid, presenceSetupObject);
         this.instance = PUBNUB_AS2JS_PROXY.getInstance(this.iid);
         this.channelCounter = 0;
     });
@@ -331,5 +333,74 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
                 ttl: 360000
             }, 'uglyCallbackId']);
         });
+    });
+
+    describe('#where_now', function () {
+        it('should return channel a,b,c in result for uuid y, when uuid y subscribed to channel x', function (done) {
+            var _test = this,
+                emitter = new EventEmitter();
+
+            sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
+                emitter.emit(callbackId, response[0]);
+            });
+
+            this.timeout(10000);
+
+            var ch1 = channel + '-' + 'where-now' + '-1';
+            var ch2 = channel + '-' + 'where-now' + '-2';
+            var ch3 = channel + '-' + 'where-now' + '-3';
+            var where_now_set = false;
+
+            PUBNUB_AS2JS_PROXY.subscribe(this.piid, [
+                {
+                    channel: [ch1, ch2, ch3],
+                    connect: 'connectCallbackId',
+                    callback: 'messageCallbackId',
+                    error: 'subscribeErrorCallbackId'
+                }
+            ]);
+
+            emitter.on('connectCallbackId', function (channel) {
+                if (!where_now_set) {
+                    setTimeout(function () {
+                        PUBNUB_AS2JS_PROXY.where_now(_test.piid, [
+                            {
+                                uuid: presence_uuid,
+                                callback: 'whereNowCallbackId',
+                                error: 'whereNowErrorCallbackId'
+                            }
+                        ]);
+                    }, 7000);
+                    where_now_set = true;
+                }
+            });
+
+            emitter.on('whereNowCallbackId', function (data) {
+                expect(data).to.have.property('channels')
+                    .that.is.an('array')
+                    .that.have.length(3)
+                    .that.have.members([ch1, ch2, ch3]);
+
+                PUBNUB_AS2JS_PROXY.unsubscribe(_test.piid, [
+                    {channel: ch1}
+                ]);
+                PUBNUB_AS2JS_PROXY.unsubscribe(_test.piid, [
+                    {channel: ch2}
+                ]);
+                PUBNUB_AS2JS_PROXY.unsubscribe(_test.piid, [
+                    {channel: ch3}
+                ]);
+                done();
+            });
+
+            emitter.on('subscribeErrorCallbackId', function () {
+                done(new Error('Error occurred in subscribe'));
+            });
+
+            emitter.on('whereNowErrorCallbackId', function (error) {
+                done(new Error("Error occurred in where now " + JSON.stringify(error)));
+            });
+        })
     });
 });

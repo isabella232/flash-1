@@ -35,38 +35,38 @@ package applicationTest {
             var auditFunction:Function;
 
             grantCallback = function (event:PubNubEvent, passThroughData:Object):void {
-                Assert.assertEquals(200, event.result.status);
+                Assert.assertEquals(1, event.result.auths.asdf.r);
+                Assert.assertEquals(1, event.result.auths.asdf.w);
             };
 
             auditCallback = function (event:PubNubEvent, passThroughData:Object):void {
-                Assert.assertEquals(200, event.result.status);
+                Assert.assertEquals(1, event.result.auths.asdf.r);
+                Assert.assertEquals(1, event.result.auths.asdf.w);
             };
 
-            grantFunction = Async.asyncHandler(this, grantCallback, 4000);
-            auditFunction = Async.asyncHandler(this, auditCallback, 4000);
+            grantFunction = Async.asyncHandler(this, grantCallback, 9000);
+            auditFunction = Async.asyncHandler(this, auditCallback, 9000);
 
             addEventListener(AUDIT_CALLBACK_EVENT, auditFunction);
             addEventListener(GRANT_CALLBACK_EVENT, grantFunction);
 
-            setTimeout(function ():void {
-                a.grant({
-                    channel: channel,
-                    auth_key: auth_key,
-                    read: true,
-                    write: true,
-                    ttl: 100,
-                    callback: function (response:Object):void {
-                        dispatchEvent(new PubNubEvent(GRANT_CALLBACK_EVENT, response));
-                        a.audit({
-                            channel: channel,
-                            auth_key: auth_key,
-                            callback: function (response:Object):void {
-                                dispatchEvent(new PubNubEvent(AUDIT_CALLBACK_EVENT, response));
-                            }
-                        });
-                    }
-                });
-            }, 1000);
+            a.grant({
+                channel: channel,
+                auth_key: auth_key,
+                read: true,
+                write: true,
+                ttl: 100,
+                callback: function (response:Object):void {
+                    dispatchEvent(new PubNubEvent(GRANT_CALLBACK_EVENT, response));
+                    a.audit({
+                        channel: channel,
+                        auth_key: auth_key,
+                        callback: function (response:Object):void {
+                            dispatchEvent(new PubNubEvent(AUDIT_CALLBACK_EVENT, response));
+                        }
+                    });
+                }
+            });
         }
     }
 }

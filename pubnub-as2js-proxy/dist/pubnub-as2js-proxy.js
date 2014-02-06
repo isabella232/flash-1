@@ -14,14 +14,15 @@ var config = function () {
             here_now: ['callback', 'error', 'data'],
             grant: ['callback', 'error'],
             revoke: ['callback', 'error'],
-            audit: ['callback', 'error']
+            audit: ['callback', 'error'],
+            where_now: ['callback', 'error']
         },
         methods_with_callback_in_args: [
             'history', 'time', 'publish', 'unsubscribe', 'subscribe', 'here_now', 'grant',
-            'audit', 'revoke', 'time'
+            'audit', 'revoke', 'time', 'where_now'
         ],
         methods_to_delegate: ['history', 'replay', 'subscribe', 'publish', 'unsubscribe', 'here_now', 'grant', 'revoke',
-            'audit', 'auth', 'time', 'set_uuid']
+            'audit', 'auth', 'time', 'set_uuid', 'where_now']
     };
 };
 

@@ -6,6 +6,7 @@ package applicationTest.suites {
     import applicationTest.TestSubscribe;
     import applicationTest.TestTime;
     import applicationTest.TestUUID;
+    import applicationTest.TestWhereNow;
 
     [Suite]
     [RunWith("org.flexunit.runners.Suite")]
@@ -18,5 +19,6 @@ package applicationTest.suites {
         public var hereNowTest:TestHereNow;
         public var historyTest:TestHistory;
         public var grantTest:TestGrant;
+        public var whereNowTest:TestWhereNow;
     }
 }

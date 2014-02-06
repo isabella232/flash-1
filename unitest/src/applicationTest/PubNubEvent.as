@@ -9,6 +9,7 @@ package applicationTest {
         public static const UUID_RESULT:String = "UUID_RESULT";
         public static const SET_UUID_RESULT:String = "SET_UUID_RESULT";
         public static const HERE_NOW_RESULT:String = "HERE_NOW_RESULT";
+        public static const WHERE_NOW_RESULT:String = "WHERE_NOW_RESULT";
         public static const HISTORY_RESULT_1:String = "HISTORY_RESULT_1";
         public static const HISTORY_RESULT_2:String = "HISTORY_RESULT_2";
         public static const GRUNT_RESULT:String = "GRUNT_RESULT";

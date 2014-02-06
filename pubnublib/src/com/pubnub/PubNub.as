@@ -29,7 +29,8 @@ package com.pubnub
 		private static var GRANT_FIELDS:Array = ['callback', 'error'];
 		private static var REVOKE_FIELDS:Array = ['callback', 'error'];
 		private static var AUDIT_FIELDS:Array = ['callback', 'error'];
-		
+		private static var WHERE_NOW_FIELDS:Array = ['callback', 'error'];
+
 		public function PubNub(config:Object) {
 			instanceId = generateId();
 			callbacks = {};
@@ -157,6 +158,14 @@ package com.pubnub
 			var newArgs:Object = mockObjectCallbacks(args, PubNub.AUDIT_FIELDS);
 			
 			jsCall('audit', [newArgs, callbackId]);
+		}
+
+		public function where_now(args:Object, callback:Function=undefined):void
+		{
+			var callbackId:String = mockCallback(callback);
+			var newArgs:Object = mockObjectCallbacks(args, PubNub.WHERE_NOW_FIELDS);
+
+			jsCall('where_now', [newArgs, callbackId]);
 		}
 		
 		public function auth(auth:String):void {

@@ -5,10 +5,17 @@ package applicationTest {
         private static var SECRET_KEY:String = "sec-c-NjU5NTBmOWMtOGE5Zi00ZTA2LWIwZjgtOTIzNGMzMGQwZTE0";
 
         public static var pamConfig:Object = {
-            origin: "pubsub.pubnub.com",
+            origin: "pam-beta.pubnub.com",
             publish_key: PUBLISH_KEY,
             subscribe_key: SUBSCRIBE_KEY,
             secret_key: SECRET_KEY
+        };
+
+        public static var presenceConfig:Object = {
+            origin: "presence-beta.pubnub.com",
+            publish_key: 'demo',
+            subscribe_key: 'demo',
+            uuid: (new Date()).time
         };
 
         public static var demoConfig:Object = {
