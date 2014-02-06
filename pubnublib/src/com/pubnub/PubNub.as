@@ -156,7 +156,7 @@ package com.pubnub
 			var callbackId:String = mockCallback(callback);
 			var newArgs:Object = mockObjectCallbacks(args, PubNub.AUDIT_FIELDS);
 			
-			jsCall('grant', [newArgs, callbackId]);
+			jsCall('audit', [newArgs, callbackId]);
 		}
 		
 		public function auth(auth:String):void {
