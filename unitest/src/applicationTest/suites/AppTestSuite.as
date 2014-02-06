@@ -3,6 +3,7 @@ package applicationTest.suites {
     import applicationTest.TestHereNow;
     import applicationTest.TestHistory;
     import applicationTest.TestPublish;
+    import applicationTest.TestState;
     import applicationTest.TestSubscribe;
     import applicationTest.TestTime;
     import applicationTest.TestUUID;
@@ -20,5 +21,6 @@ package applicationTest.suites {
         public var historyTest:TestHistory;
         public var grantTest:TestGrant;
         public var whereNowTest:TestWhereNow;
+        public var stateTest:TestState;
     }
 }

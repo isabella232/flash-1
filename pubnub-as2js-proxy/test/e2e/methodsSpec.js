@@ -400,4 +400,53 @@ describe('Proxy object methods delegation to PUBNUB object', function () {
             });
         })
     });
+
+    describe('#state()', function () {
+        it('should be able to set metadata for uuid', function (done) {
+            var _test = this;
+            var uuid = PUBNUB_AS2JS_PROXY.uuid(this.piid);
+            var state = { 'name': 'name-' + uuid};
+            var emitter = new EventEmitter();
+
+            sandbox.stub(this.flashObject, 'callback', function (instanceId, callbackId, response) {
+                response = decode64(response);
+                emitter.emit(callbackId, response[0]);
+            });
+
+            PUBNUB_AS2JS_PROXY.state(this.piid, [
+                {
+                    channel: channel,
+                    uuid: uuid,
+                    state: state,
+                    callback: 'stateCallback',
+                    error: 'errorCallback'
+                }
+            ]);
+
+            emitter.on('stateCallback', function (response) {
+                expect(response).to.deep.equal(state);
+                PUBNUB_AS2JS_PROXY.state(_test.piid, [
+                    {
+                        channel: channel,
+                        uuid: uuid,
+                        callback: 'stateCallback2',
+                        error: 'errorCallback2'
+                    }
+                ]);
+            });
+
+            emitter.on('stateCallback2', function (response) {
+                expect(response).to.deep.equal(state);
+                done();
+            });
+
+            emitter.on('errorCallback', function (error) {
+                done(new Error("Error occurred in state " + JSON.stringify(error)));
+            });
+
+            emitter.on('errorCallback2', function (error) {
+                done(new Error("Error occurred in state 2-nd state " + JSON.stringify(error)));
+            });
+        });
+    });
 });
