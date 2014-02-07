@@ -59,4 +59,14 @@ describe('Proxy object synchronous methods delegation to PUBNUB object', functio
             expect(PUBNUB_AS2JS_PROXY.get_cipher_key(this.iid), undefined).to.be.equal('someUnknownKey');
         });
     });
+
+    describe('#raw_encrypt and #raw_decrypt methods', function () {
+        it('should be able to encrypt/decrypt strings', function () {
+            var raw_string = 'should be able to encrypt/decrypt strings';
+            var key = 'kkeeyy';
+            var encrypted_value = PUBNUB_AS2JS_PROXY.raw_encrypt(this.iid, [raw_string, key]);
+
+            expect(PUBNUB_AS2JS_PROXY.raw_decrypt(this.iid, [encrypted_value, key])).to.be.equal(raw_string);
+        });
+    });
 });

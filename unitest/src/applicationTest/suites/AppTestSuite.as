@@ -4,6 +4,7 @@ package applicationTest.suites {
     import applicationTest.TestHereNow;
     import applicationTest.TestHistory;
     import applicationTest.TestPublish;
+    import applicationTest.TestRawEncryption;
     import applicationTest.TestState;
     import applicationTest.TestSubscribe;
     import applicationTest.TestTime;
@@ -24,5 +25,6 @@ package applicationTest.suites {
         public var whereNowTest:TestWhereNow;
         public var stateTest:TestState;
         public var cipherKeyTest:TestCipherKey;
+        public var rawEncryptionTest:TestRawEncryption;
     }
 }

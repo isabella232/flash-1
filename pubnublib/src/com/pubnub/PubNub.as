@@ -210,6 +210,14 @@ package com.pubnub
 			return jsCallSync('get_cipher_key');
 		}
 
+		public function raw_encrypt(input:String, key:String):String {
+			return jsCallSync('raw_encrypt', [input, key]);
+		}
+
+		public function raw_decrypt(input:String, key:String):String {
+			return jsCallSync('raw_decrypt', [input, key]);
+		}
+
 		// Helpers
 		private function mockObjectCallbacks(obj:Object, fields:Array):Object {
 			var newObject:Object = ObjectUtil.copy(obj);
