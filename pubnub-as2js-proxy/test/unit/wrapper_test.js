@@ -94,7 +94,7 @@ describe('Wrapper', function () {
                     publish: ['oneCallbackField', 'anotherCallbackField']
                 },
                 methods_with_callback_in_args: ['publish'],
-                methods_to_delegate: ['publish']
+                async_methods_to_delegate: ['publish']
             });
         });
 
