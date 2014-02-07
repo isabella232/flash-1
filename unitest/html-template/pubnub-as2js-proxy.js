@@ -22,8 +22,9 @@ var config = function () {
             'history', 'time', 'publish', 'unsubscribe', 'subscribe', 'here_now', 'grant',
             'audit', 'revoke', 'time', 'where_now', 'state'
         ],
-        methods_to_delegate: ['history', 'replay', 'subscribe', 'publish', 'unsubscribe', 'here_now', 'grant', 'revoke',
-            'audit', 'auth', 'time', 'set_uuid', 'where_now', 'state']
+        async_methods_to_delegate: ['history', 'replay', 'subscribe', 'publish', 'unsubscribe', 'here_now', 'grant', 'revoke',
+            'audit', 'time', 'where_now', 'state'],
+        sync_methods_to_delegate: ['set_uuid', 'get_uuid', 'uuid', 'auth']
     };
 };
 
@@ -68,7 +69,7 @@ Wrapper.prototype.applyCallback = function (callbackId, payload) {
  * @param {Array} args to apply
  */
 Wrapper.prototype.applyMethod = function (method, args) {
-    if (config().methods_to_delegate.indexOf(method) < 0) {return;}
+    if (config().async_methods_to_delegate.indexOf(method) < 0) {return;}
     var l,
         i;
 
@@ -117,7 +118,8 @@ Wrapper.prototype.proxyError = function (message) {
 
 // Source: src/pubnubProxy.js
 function PubnubProxy() {
-    this.delegate(config().methods_to_delegate);
+    this.delegateAsync(config().async_methods_to_delegate);
+    this.delegateSync(config().sync_methods_to_delegate);
     this.flashObject = null;
     this.flashObjectId = 'pubnubFlashObject';
     this.instances = {};
@@ -147,7 +149,7 @@ PubnubProxy.prototype.getFlashObject = function () {
  *
  * @param {Array} methods to delegate
  */
-PubnubProxy.prototype.delegate = function (methods) {
+PubnubProxy.prototype.delegateAsync = function (methods) {
     if (!isArray(methods)) {throw new TypeError('delegate method accepts only methods array')}
 
     var _proxy = this,
@@ -158,6 +160,23 @@ PubnubProxy.prototype.delegate = function (methods) {
         this[methods[i]] = function (method) {
             return function (instanceId, args) {
                 _proxy.delegatedMethod.call(_proxy, instanceId, method, args);
+            };
+        }(methods[i])
+    }
+};
+
+PubnubProxy.prototype.delegateSync = function (methods) {
+    if (!isArray(methods)) {throw new TypeError('delegateSynchronous method accepts only methods array')}
+
+    var _proxy = this,
+        methodsLength = methods.length,
+        i;
+
+    for (i = 0; i < methodsLength; i++) {
+        this[methods[i]] = function (method) {
+            return function (instanceId, args) {
+                var pubnub = _proxy.getInstance(instanceId).pubnub;
+                return pubnub[method].apply(pubnub, args);
             };
         }(methods[i])
     }
@@ -200,14 +219,6 @@ PubnubProxy.prototype.getInstance = function (instanceId) {
     }
 
     return this.instances[instanceId];
-};
-
-PubnubProxy.prototype.get_uuid = function (instanceId) {
-    return this.getInstance(instanceId).pubnub.get_uuid();
-};
-
-PubnubProxy.prototype.uuid = function (instanceId) {
-    return this.getInstance(instanceId).pubnub.uuid();
 };
 
 PubnubProxy.prototype.proxyError = function (message) {

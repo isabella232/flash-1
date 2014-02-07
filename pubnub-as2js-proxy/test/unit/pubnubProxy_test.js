@@ -37,10 +37,10 @@ describe("PROXY", function () {
         it('should accept array as only argument', function () {
             var _test = this,
                 failFn = function () {
-                    _test.p.delegate('oneMethod');
+                    _test.p.delegateAsync('oneMethod');
                 },
                 successFn = function () {
-                    _test.p.delegate(['oneMethod']);
+                    _test.p.delegateAsync(['oneMethod']);
                 };
 
             expectFailAndSuccessFns(failFn, successFn, TypeError);
@@ -49,7 +49,30 @@ describe("PROXY", function () {
         it('should dynamically define methods that are passed as params', function () {
             var methods = ['oneMethod', 'anotherMethod'];
 
-            this.p.delegate(methods);
+            this.p.delegateAsync(methods);
+
+            expect(this.p.oneMethod).to.be.a('function');
+            expect(this.p.anotherMethod).to.be.a('function');
+        });
+    });
+
+    describe('delegate synchronous methods', function () {
+        it('should accept array as only argument', function () {
+            var _test = this,
+                failFn = function () {
+                    _test.p.delegateSync('oneMethod');
+                },
+                successFn = function () {
+                    _test.p.delegateSync(['oneMethod']);
+                };
+
+            expectFailAndSuccessFns(failFn, successFn, TypeError);
+        });
+
+        it('should dynamically define methods that are passed as params', function () {
+            var methods = ['oneMethod', 'anotherMethod'];
+
+            this.p.delegateSync(methods);
 
             expect(this.p.oneMethod).to.be.a('function');
             expect(this.p.anotherMethod).to.be.a('function');
@@ -93,48 +116,6 @@ describe("PROXY", function () {
             this.p.instances = {uglyInstanceId: {}};
 
             expectFailAndSuccessFns(failFn, successFn, Error);
-        });
-    });
-
-    describe('methods to delegate that are not wrapped dynamically', function () {
-        beforeEach(function () {
-            this.proxyMock = sinon.mock(this.p);
-            this.instance = {
-                applyCallback: sinon.spy(),
-                pubnub: {
-                    get_uuid: sinon.spy(),
-                    set_uuid: sinon.spy(),
-                    uuid: sinon.spy()
-                }
-            };
-        });
-
-        describe('#get_uuid', function () {
-            it('should return uuid', function (){
-                this.proxyMock.expects('getInstance').withExactArgs('uglyId').once().returns(this.instance);
-
-                this.p.createInstance('uglyId');
-                this.p.get_uuid('uglyId', 'uuidCallback');
-
-                expect(this.instance.applyCallback.called).to.be(true);
-                expect(this.instance.pubnub.get_uuid.called).to.be(true);
-
-                this.proxyMock.verify();
-            });
-        });
-
-        describe('#uuid', function () {
-            it('should generate and return uuid', function (){
-                this.proxyMock.expects('getInstance').withExactArgs('uglyId').once().returns(this.instance);
-
-                this.p.createInstance('uglyId');
-                this.p.uuid('uglyId', 'uuidCallback');
-
-                expect(this.instance.applyCallback.calledOnce).to.be(true);
-                expect(this.instance.pubnub.uuid.calledOnce).to.be(true);
-
-                this.proxyMock.verify();
-            });
         });
     });
 });

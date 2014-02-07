@@ -18,7 +18,8 @@ var config = function () {
             'history', 'time', 'publish', 'unsubscribe', 'subscribe', 'here_now', 'grant',
             'audit', 'revoke', 'time', 'where_now', 'state'
         ],
-        methods_to_delegate: ['history', 'replay', 'subscribe', 'publish', 'unsubscribe', 'here_now', 'grant', 'revoke',
-            'audit', 'auth', 'time', 'set_uuid', 'where_now', 'state']
+        async_methods_to_delegate: ['history', 'replay', 'subscribe', 'publish', 'unsubscribe', 'here_now', 'grant', 'revoke',
+            'audit', 'time', 'where_now', 'state'],
+        sync_methods_to_delegate: ['set_uuid', 'get_uuid', 'uuid', 'auth']
     };
 };

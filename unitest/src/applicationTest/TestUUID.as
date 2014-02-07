@@ -50,21 +50,12 @@ package applicationTest {
             Assert.assertMatch(UUID, p.uuid());
         }
 
-        [Test(async, timeout=1000, description="Should return uuid synchonously")]
+        [Test(description="Should return uuid synchonously")]
         public function testSynchronousGetUUID():void {
             var expected:String = "uglyUUID";
 
-            var uuidHandler:Function = function (event:PubNubEvent, passThroughData:Object):void {
-                Assert.assertEquals(expected, event.result);
-            };
-
-            resultFunction = Async.asyncHandler(this, uuidHandler, 1000, expected);
-            addEventListener(PubNubEvent.SET_UUID_RESULT, resultFunction);
-
             p.set_uuid(expected);
-            setTimeout(function ():void {
-                dispatchEvent(new PubNubEvent(PubNubEvent.SET_UUID_RESULT, p.get_uuid()));
-            }, 100);
+            Assert.assertEquals(expected, p.get_uuid());
         }
 
         protected function handleUUIDResult(event:PubNubEvent, passThroughData:Object):void {

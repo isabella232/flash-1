@@ -39,7 +39,7 @@ Wrapper.prototype.applyCallback = function (callbackId, payload) {
  * @param {Array} args to apply
  */
 Wrapper.prototype.applyMethod = function (method, args) {
-    if (config().methods_to_delegate.indexOf(method) < 0) {return;}
+    if (config().async_methods_to_delegate.indexOf(method) < 0) {return;}
     var l,
         i;
 
