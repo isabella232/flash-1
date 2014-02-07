@@ -69,4 +69,13 @@ describe('Proxy object synchronous methods delegation to PUBNUB object', functio
             expect(PUBNUB_AS2JS_PROXY.raw_decrypt(this.iid, [encrypted_value, key])).to.be.equal(raw_string);
         });
     });
+
+    describe('#set_heartbeat and #get_heartbeat methods', function () {
+        it('should be able to set/get heartbeat interval', function () {
+            var interval = 10;
+
+            PUBNUB_AS2JS_PROXY.set_heartbeat(this.iid, [interval]);
+            expect(PUBNUB_AS2JS_PROXY.get_heartbeat(this.iid)).to.be.equal(interval);
+        });
+    });
 });

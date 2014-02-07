@@ -1,6 +1,7 @@
 package applicationTest.suites {
     import applicationTest.TestCipherKey;
     import applicationTest.TestGrant;
+    import applicationTest.TestHeartbeat;
     import applicationTest.TestHereNow;
     import applicationTest.TestHistory;
     import applicationTest.TestPublish;
@@ -26,5 +27,6 @@ package applicationTest.suites {
         public var stateTest:TestState;
         public var cipherKeyTest:TestCipherKey;
         public var rawEncryptionTest:TestRawEncryption;
+        public var heartbeatTest:TestHeartbeat;
     }
 }

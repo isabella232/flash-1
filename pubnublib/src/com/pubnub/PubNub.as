@@ -218,6 +218,14 @@ package com.pubnub
 			return jsCallSync('raw_decrypt', [input, key]);
 		}
 
+		public function set_heartbeat(interval:Number):void {
+			jsCallSync('set_heartbeat', [interval]);
+		}
+
+		public function get_heartbeat():Number {
+			return Number(jsCallSync('get_heartbeat'));
+		}
+
 		// Helpers
 		private function mockObjectCallbacks(obj:Object, fields:Array):Object {
 			var newObject:Object = ObjectUtil.copy(obj);
