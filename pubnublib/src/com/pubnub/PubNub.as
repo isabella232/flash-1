@@ -201,7 +201,15 @@ package com.pubnub
 
             return (callback is Function) ? callback(uuid) : uuid;
 		}
-		
+
+		public function set_cipher_key(key:String):void {
+			jsCallSync('set_cipher_key', [key]);
+		}
+
+		public function get_cipher_key():String {
+			return jsCallSync('get_cipher_key');
+		}
+
 		// Helpers
 		private function mockObjectCallbacks(obj:Object, fields:Array):Object {
 			var newObject:Object = ObjectUtil.copy(obj);
@@ -236,12 +244,13 @@ package com.pubnub
 			}
 		}
 
-        public function jsCallSync(method:String):String {
-            return ExternalInterface.call(
-                PubNub.jsProxyObjectName + '.' + method,
-                instanceId
-            );
-        }
+		public function jsCallSync(method:String, args:* = undefined):String {
+			return ExternalInterface.call(
+				PubNub.jsProxyObjectName + '.' + method,
+				instanceId,
+				args
+			);
+		}
 		
 		// Utils
 		private static function generateId():String {

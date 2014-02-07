@@ -52,4 +52,11 @@ describe('Proxy object synchronous methods delegation to PUBNUB object', functio
             expect(PUBNUB_AS2JS_PROXY.get_uuid(this.iid)).to.be.equal('someUuid');
         });
     });
+
+    describe('#cipher_key methods', function () {
+        it('should be able to set and get cipher key', function () {
+            PUBNUB_AS2JS_PROXY.set_cipher_key(this.iid, ['someUnknownKey']);
+            expect(PUBNUB_AS2JS_PROXY.get_cipher_key(this.iid), undefined).to.be.equal('someUnknownKey');
+        });
+    });
 });

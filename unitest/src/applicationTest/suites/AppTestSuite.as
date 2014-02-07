@@ -1,4 +1,5 @@
 package applicationTest.suites {
+    import applicationTest.TestCipherKey;
     import applicationTest.TestGrant;
     import applicationTest.TestHereNow;
     import applicationTest.TestHistory;
@@ -22,5 +23,6 @@ package applicationTest.suites {
         public var grantTest:TestGrant;
         public var whereNowTest:TestWhereNow;
         public var stateTest:TestState;
+        public var cipherKeyTest:TestCipherKey;
     }
 }
