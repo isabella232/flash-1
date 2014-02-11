@@ -31,5 +31,17 @@ package applicationTest {
         public static function generateChannel():String {
             return "flash_test_channel_" + (new Date()).time;
         }
+
+        public static function inListDeep(array:Array, obj:Object):Boolean {
+            var isTrue:Boolean;
+
+            for (var i:int = 0; i < array.length; i++) {
+                if (JSON.stringify(array[i]) === JSON.stringify(obj)) {
+                    isTrue = true;
+                }
+            }
+
+            return isTrue;
+        }
     }
 }
