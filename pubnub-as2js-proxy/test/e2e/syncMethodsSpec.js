@@ -71,11 +71,20 @@ describe('Proxy object synchronous methods delegation to PUBNUB object', functio
     });
 
     describe('#set_heartbeat and #get_heartbeat methods', function () {
-        it('should be able to set/get heartbeat interval', function () {
+        it('should be able to set/get heartbeat', function () {
             var interval = 10;
 
             PUBNUB_AS2JS_PROXY.set_heartbeat(this.iid, [interval]);
             expect(PUBNUB_AS2JS_PROXY.get_heartbeat(this.iid)).to.be.equal(interval);
+        });
+    });
+
+    describe('#set_heartbeat_interval and #get_heartbeat_interval methods', function () {
+        it('should be able to set/get heartbeat interval', function () {
+            var interval = 14;
+
+            PUBNUB_AS2JS_PROXY.set_heartbeat_interval(this.iid, [interval]);
+            expect(PUBNUB_AS2JS_PROXY.get_heartbeat_interval(this.iid)).to.be.equal(interval);
         });
     });
 });

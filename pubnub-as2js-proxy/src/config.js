@@ -21,6 +21,6 @@ var config = function () {
         async_methods_to_delegate: ['history', 'replay', 'subscribe', 'publish', 'unsubscribe', 'here_now', 'grant', 'revoke',
             'audit', 'time', 'where_now', 'state'],
         sync_methods_to_delegate: ['set_uuid', 'get_uuid', 'uuid', 'auth', 'set_cipher_key', 'get_cipher_key', 'raw_encrypt',
-            'raw_decrypt', 'set_heartbeat', 'get_heartbeat']
+            'raw_decrypt', 'set_heartbeat', 'get_heartbeat', 'set_heartbeat_interval', 'get_heartbeat_interval']
     };
 };

@@ -226,6 +226,14 @@ package com.pubnub
 			return Number(jsCallSync('get_heartbeat'));
 		}
 
+		public function set_heartbeat_interval(interval:Number):void {
+			jsCallSync('set_heartbeat_interval', [interval]);
+		}
+
+		public function get_heartbeat_interval():Number {
+			return Number(jsCallSync('get_heartbeat_interval'));
+		}
+
 		// Helpers
 		private function mockObjectCallbacks(obj:Object, fields:Array):Object {
 			var newObject:Object = ObjectUtil.copy(obj);

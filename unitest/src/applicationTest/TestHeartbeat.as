@@ -15,15 +15,16 @@ package applicationTest {
             channel = TestHelper.generateChannel();
         }
 
-        [Test(description="Should be able to set and get heartbeat interval")]
-        public function testGetAndSetHeartbeatInterval():void {
+        [Test(description="Should be able to set and get heartbeat")]
+        public function testGetAndSetHeartbeat():void {
             var interval:Number = 10;
 
             p.set_heartbeat(interval);
             Assert.assertEquals(interval, p.get_heartbeat());
         }
 
-        [Test(description="Should be able to set and get heartbeat interval using subscribe method")]
+        [Ignore]
+        [Test(description="Should be able to set and get heartbeat using subscribe method")]
         public function testSettingHeartbeatInSubscribe():void {
             p.set_heartbeat(8);
 
