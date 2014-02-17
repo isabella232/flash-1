@@ -14,8 +14,6 @@
         import com.pubnub.PubNub;
         import com.pubnub.PubNubSecure;
 
-        import mx.collections.ArrayCollection;
-
         import flashx.textLayout.elements.TextFlow;
 
         import mx.formatters.DateFormatter;
@@ -47,8 +45,6 @@
         [Embed(source='../assets/unLock.png')]
         [Bindable]
         public var iconUnLock:Class;
-        [Bindable]
-        public var metadataProvider:ArrayCollection;
 
         public function init(e:Event = null):void {
 
