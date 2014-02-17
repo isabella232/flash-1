@@ -2,17 +2,19 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
                xmlns:s="library://ns.adobe.com/flex/spark"
                xmlns:mx="library://ns.adobe.com/flex/mx"
-			   xmlns:comp="components.*"
-               width="809" height="846" minWidth="955" minHeight="600"
+                xmlns:comp="components.*"
+               width="825" minWidth="825" minHeight="600"
                creationComplete="init(event)">
     <fx:Style source="demoStyles.css"/>
     <fx:Declarations>
         <!-- Place non-visual elements (e.g., services, value objects) here -->
     </fx:Declarations>
     <fx:Script>
-		<![CDATA[
+    <![CDATA[
         import com.pubnub.PubNub;
         import com.pubnub.PubNubSecure;
+
+        import mx.collections.ArrayCollection;
 
         import flashx.textLayout.elements.TextFlow;
 
@@ -32,10 +34,10 @@
         private var presenceString:String;
         private var historyString:String;
         private var flow:TextFlow;
-		private var chromeColorStatusOff:String = "#56B6F9";
-		private var chromeColorStatusOn:String = "#cd0202";
-		private var SOME_UUID:String = 'some_uuid';
-		private var currentChannel:String;
+        private var chromeColorStatusOff:String = "#56B6F9";
+        private var chromeColorStatusOn:String = "#cd0202";
+        private var SOME_UUID:String = 'some_uuid';
+        private var currentChannel:String;
         public var isSsl:Boolean;
 
         [Embed(source='../assets/Lock.png')]
@@ -45,18 +47,22 @@
         [Embed(source='../assets/unLock.png')]
         [Bindable]
         public var iconUnLock:Class;
+        [Bindable]
+        public var metadataProvider:ArrayCollection;
 
         public function init(e:Event = null):void {
 
+            Security.allowInsecureDomain("*");
+            Security.allowDomain("*");
             getMessagesTextArea();
 
             consoleString = "";
             presenceString = "";
             historyString = "";
 
-            channelTextInput.text = "flash_channel";
+            channelTextInput.text = presenceChannelInput.text = "flash_channel";
             authKeyTextInput.text = 'x';
-            originTextInput.text = 'pubsub.pubnub.com';
+            originTextInput.text = 'presence-beta.pubnub.com';
             publishKeyTextInput.text = 'demo';
             subscribeKeyTextInput.text = 'demo';
 
@@ -64,14 +70,17 @@
             pamAuthKeyTextInput.text = 'x';
             pamChannelTextInput.text = 'flash_channel';
             pamTtlTextInput.text = '15';
-			
-			btnSSL.setStyle("icon",iconLock);
-			btnSSL.setStyle("chromeColor","#cd0202");
-			offMisc();
-			subscribe();
+
+            btnSSL.setStyle("icon", iconLock);
+            btnSSL.setStyle("chromeColor", "#cd0202");
+
+            miscContainer.visible = miscContainer.includeInLayout = false;
+            presenceContainer.visible = presenceContainer.includeInLayout = false;
+
+            subscribe();
             channelTextInput.addEventListener(Event.CHANGE, doSubscribe);
         }
-		
+
         // Additional buttons:
         public function onSetUuid(uuid:*):void {
             appendStringToConsole(uuid);
@@ -87,8 +96,8 @@
             p.history({
                 channel: channel_val(),
                 callback: function (message:Array):void {
-					historyAppendText(message[0]);
-				},
+                    historyAppendText(message[0]);
+                },
                 error: appendErrorToConsole
             });
         }
@@ -101,17 +110,25 @@
             p.set_uuid(SOME_UUID);
             p.get_uuid(onSetUuid);
         }
-		
-		private function doHereNow():void{
-			p.here_now({
-				channel: channel_val(), 
-				callback: function (msg:Object):void {
-					appendObjectToConsole(msg);
-				}
-			});
-				
-		}
-        // Common buttons:
+
+        private function hereNowHandler():void {
+            p.here_now({
+                channel: presenceChannelCheckbox.selected ? presenceChannelInput.text : false,
+                state: presenceStateCheckbox.selected,
+                uuids: presenceUUIDsCheckbox.selected ? 1 : 0,
+                callback: appendObjectToConsole,
+                error: appendErrorToConsole
+            });
+        }
+
+        private function whereNowHandler():void {
+            p.where_now({
+                uuid: presenceUUIDInput.text,
+                callback: appendObjectToConsole,
+                error: appendErrorToConsole
+            });
+        }
+
         private function clearLogHandler():void {
             consoleLog.text = "";
             consoleString = "";
@@ -173,6 +190,7 @@
                     unsubscribeButton.enabled = true;
                     subscribeButton.enabled = false;
                     connected();
+                    updateHeartbeatValues();
                     appendStringToConsole(channel);
                 },
                 disconnect: appendObjectToConsole,
@@ -263,21 +281,64 @@
             });
         }
 
-        private function miscHandler():void {
-            miscContainer.visible ? offMisc() : onMisc();
+        private function stateClickHandler(event:MouseEvent):void {
+            var state:Object = {};
+
+            if (keyField1.text && valueField1.text) {
+                state[keyField1.text] = valueField1.text;
+            }
+
+            if (keyField2.text && valueField2.text) {
+                state[keyField2.text] = valueField2.text;
+            }
+
+            if (keyField3.text && valueField3.text) {
+                state[keyField3.text] = valueField3.text;
+            }
+
+            p.state({
+                channel: presenceChannelInput.text,
+                state: state,
+                callback: appendObjectToConsole,
+                error: appendErrorToConsole
+            });
         }
 
-        private function onMisc():void {
-            btnMisc.setStyle("chromeColor", chromeColorStatusOff);
-            miscContainer.visible = true;
-            miscContainer.y = 44;
-            bottomContainer.y = 88;
+        private function updateHeartbeatValues():void {
+            presenceHeartbeatInput.text = p.get_heartbeat().toString();
+            presenceHeartbeatIntervalInput.text = p.get_heartbeat_interval().toString();
         }
 
-        private function offMisc():void {
-            btnMisc.setStyle("chromeColor", chromeColorStatusOn);
-            miscContainer.visible = false;
-            bottomContainer.y = 44;
+        private function setCurrentUUIDHandler():void {
+            presenceUUIDInput.text = p.get_uuid();
+        }
+
+        private function setHeartbeatHandler():void {
+            p.set_heartbeat(parseInt(presenceHeartbeatInput.text));
+            updateHeartbeatValues();
+        }
+
+        private function setHeartbeatIntervalHandler():void {
+            p.set_heartbeat(parseInt(presenceHeartbeatIntervalInput.text));
+            updateHeartbeatValues();
+        }
+
+        private function getHeartbeatHandler():void {
+            presenceHeartbeatInput.text = p.get_heartbeat().toString();
+        }
+
+        private function getHeartbeatIntervalHandler():void {
+            presenceHeartbeatIntervalInput.text = p.get_heartbeat_interval().toString();
+        }
+
+        private function miscToggle():void {
+            miscContainer.visible = miscContainer.includeInLayout = !miscContainer.visible;
+            miscTab.setStyle("chromeColor", miscContainer.visible ? chromeColorStatusOff : chromeColorStatusOn);
+        }
+
+        private function presenceToggle():void {
+            presenceContainer.visible = presenceContainer.includeInLayout = !presenceContainer.visible;
+            presenceTab.setStyle("chromeColor", presenceContainer.visible ? chromeColorStatusOff : chromeColorStatusOn);
         }
 
         // Helpers:
@@ -297,8 +358,15 @@
         }
 
         private function channel_val():String {
+            if (presenceBindToSubscribeChannelCheckbox.selected) {
+                presenceChannelInput.text = channelTextInput.text;
+            }
             currentChannel = channelTextInput.text;
             return currentChannel;
+        }
+
+        private function channelChangedHandler():void {
+            channel_val();
         }
 
         private function appendObjectToConsole(message:Object):void {
@@ -396,38 +464,92 @@
         private function currentDate():String {
             var CurrentDateTime:Date = new Date();
             var CurrentDF:DateFormatter = new DateFormatter();
-            CurrentDF.formatString = "YYYY/MM/DD LL:NN:SS A"
+            CurrentDF.formatString = "YYYY/MM/DD LL:NN:SS A";
             var DateTimeString:String = CurrentDF.format(CurrentDateTime);
             return DateTimeString;
         }
 
-        protected function doSubscribe(event:TextOperationEvent):void
-        {
-            if(currentChannel&& currentChannel.length>0){
+        protected function doSubscribe(event:TextOperationEvent):void {
+            if (currentChannel && currentChannel.length > 0) {
                 unsubscribe();
             }
         }
-			
-		]]>
+        ]]>
 	</fx:Script>
+	<s:Scroller height="862" horizontalScrollPolicy="off">
+		
+	<s:VGroup horizontalAlign="center">
 	<s:BorderContainer id="topContainer" width="809" height="45">
-		<s:Button id="subscribeButton" x="23" y="6" width="118" height="32" label="SUBSCRIBE"
-				  chromeColor="#CD0202" click="subscribe()" color="#FCFAFA"/>
-		<s:Button id="unsubscribeButton" x="146" y="6" width="118" height="32" label="UNSUBSCRIBE"
-				  click="unsubscribe()" color="#F9F1F1" enabled="false"/>
-		<s:Button id="btnSSL" x="270" y="6" height="32" label="SSL" chromeColor="#56B6F9"
-				  click="toggleSSL()"/>
-		<s:Button id="btnMisc" x="358" y="6" height="32" label="MISC" click="miscHandler()"/>
-		
+		<s:HGroup>
+			<s:Button id="subscribeButton" width="118" height="32" label="SUBSCRIBE"
+					  chromeColor="#CD0202" click="subscribe()" color="#FCFAFA"/>
+			<s:Button id="unsubscribeButton" width="118" height="32" label="UNSUBSCRIBE"
+					  click="unsubscribe()" color="#F9F1F1" enabled="false"/>
+			<s:Button id="btnSSL" height="32" label="SSL" chromeColor="#56B6F9"
+					  click="toggleSSL()"/>
+			<s:Button id="miscTab" height="32" label="MISC" click="miscToggle()"/>
+			<s:Button id="presenceTab" height="32" label="PRESENCE" click="presenceToggle()"/>
+		</s:HGroup>
 	</s:BorderContainer>
-	<s:BorderContainer id="miscContainer" x="0" y="44" width="809" height="45">
-		<s:Button x="11" y="5" label="time" click="time()"/>
-		<s:Button id="UUID" x="93" y="5" label="UUID" click="doUUID()"/>
-		<s:Button id="getUUID" x="175" y="5" label="getUUID" click="doGetUUID()"/>
-		<s:Button id="btnHereNow" x="260" y="5" label="Here now" click="doHereNow()"/>
-		
-	</s:BorderContainer>
-	<s:BorderContainer id="bottomContainer" x="0" y="88" width="809">
+
+	<s:VGroup>
+		<s:BorderContainer id="miscContainer" width="783" height="44">
+			<s:Button x="11" y="5" label="time" click="time()"/>
+			<s:Button id="UUID" x="93" y="5" label="UUID" click="doUUID()"/>
+			<s:Button id="getUUID" x="175" y="5" label="getUUID" click="doGetUUID()"/>
+		</s:BorderContainer>
+		<s:BorderContainer id="presenceContainer" visible="true" width="783" height="162"
+						   includeInLayout="true">
+			<s:VGroup x="10" top="34" bottom="40">
+				<s:HGroup>
+					<s:Label text="key: "/>
+					<s:TextInput id="keyField1" width="77"/>
+					<s:Label text="value: "/>
+					<s:TextInput id="valueField1" width="77"/>
+				</s:HGroup>
+				<s:HGroup>
+					<s:Label text="key: "/>
+					<s:TextInput id="keyField2" width="77"/>
+					<s:Label text="value: "/>
+					<s:TextInput id="valueField2" width="77"/>
+				</s:HGroup>
+				<s:HGroup>
+					<s:Label text="key: "/>
+					<s:TextInput id="keyField3" width="77"/>
+					<s:Label text="value: "/>
+					<s:TextInput id="valueField3" width="77"/>
+				</s:HGroup>
+			</s:VGroup>
+			<s:Button id="presenceStateUpdateButton" label="Update" right="545" top="5" click="stateClickHandler(event)"/>
+			<s:Label x="10" y="10" fontWeight="bold" text="State fields:"/>
+            <s:TextInput id="presenceChannelInput" x="378" y="5" width="227" enabled="true"
+                         prompt="channel"/>
+			    <s:Button id="presenceHereNowButton" x="296" y="45" label="Here now" click="hereNowHandler()"/>
+
+                <s:CheckBox id="presenceUUIDsCheckbox" x="499" y="47" label="uuids" selected="true"/>
+                <s:CheckBox id="presenceStateCheckbox" x="559" y="46" label="state"
+							selected="true"/>
+				<s:CheckBox id="presenceChannelCheckbox" x="378" y="47" width="113"
+							label="single channel ^" selected="true"/>
+				<s:CheckBox id="presenceBindToSubscribeChannelCheckbox" x="613" y="7"
+							label="Bind to subscribe channel" selected="true"/>
+			<s:Button id="presenceWhereNowButton" x="296" y="89" label="Where Now" click="whereNowHandler()"/>
+			<s:TextInput id="presenceUUIDInput" x="389" y="88" width="262" enabled="true"
+						 prompt="uuid"/>
+			<s:Label x="296" y="10" fontWeight="bold" text="Channel:"/>
+			<s:Button id="presenceSetCurrentUUIDButton" x="659" y="88" label="Set Current UUID" click="setCurrentUUIDHandler()"/>
+			<s:Label x="10" y="138" fontWeight="bold" text="Hearbeat:"/>
+			<s:Label x="371" y="138" fontWeight="bold" text="Hearbeat interval:"/>
+			<s:TextInput id="presenceHeartbeatIntervalInput" x="484" y="132" prompt="in seconds"/>
+			<s:Button id="presenceHeartbeatIntervalGet" x="621" y="132" label="get" click="getHeartbeatIntervalHandler()"/>
+			<s:Button id="presenceHeartbeatIntervalSet" x="700" y="132" label="set" click="setHeartbeatIntervalHandler()"/>
+			<s:TextInput id="presenceHeartbeatInput" x="74" y="132" prompt="in seconds"/>
+			<s:Button id="presenceHeartbeatGet" x="211" y="132" label="get" click="getHeartbeatHandler()"/>
+			<s:Button id="presenceHeartbeatSet" x="290" y="132" label="set" click="setHeartbeatHandler()"/>
+		</s:BorderContainer>
+	</s:VGroup>
+	
+	<s:BorderContainer id="bottomContainer" width="809" height="772">
 		<s:TextArea id="messagesTextArea" x="15" y="143" width="388" height="70" editable="true"
 					enabled="true" maxChars="250"/>
 		<s:Label x="17" y="229" height="19" text="Messages:"/>
@@ -435,16 +557,12 @@
 		<s:Button x="331" y="191" label="Publish" click="publish()"/>
 		<s:TextInput id="originTextInput" x="119" y="36"/>
 		<s:TextInput id="subscribeKeyTextInput" x="420" y="40" width="314"/>
-		<s:TextInput id="channelTextInput" x="119" y="6"/>
+		<s:TextInput id="channelTextInput" x="119" y="6" change="channelChangedHandler()"/>
 		<s:TextInput id="publishKeyTextInput" x="420" y="8" width="314" textAlign="left"/>
 		<s:Label x="47" y="42" text="origin"/>
 		<s:Label x="46" y="12" text="channel"/>
 		<s:Label x="339" y="44" height="15" text="subscribe key:" textAlign="right"/>
 		<s:Label x="350" y="11" text="publish key:" textAlign="right"/>
-		
-		
-		
-		
 		
 		<s:BorderContainer id="subConnectionStatus" x="391" y="92" width="53" height="13" backgroundColor="#FC0000">
 		</s:BorderContainer>
@@ -496,9 +614,7 @@
 							editable="false" fontFamily="Arial" fontSize="10" fontWeight="bold"
 							paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
 		</s:Scroller>
-	
 	</s:BorderContainer>
-	
-	
-	
+	</s:VGroup>
+	</s:Scroller>
 </s:Application>
