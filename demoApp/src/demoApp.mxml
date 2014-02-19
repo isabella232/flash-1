@@ -2,8 +2,8 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
                xmlns:s="library://ns.adobe.com/flex/spark"
                xmlns:mx="library://ns.adobe.com/flex/mx"
-                xmlns:comp="components.*"
-               width="825" minWidth="825" minHeight="600"
+               xmlns:comp="components.*"
+               width="825" height="1028"
                creationComplete="init(event)">
     <fx:Style source="demoStyles.css"/>
     <fx:Declarations>
@@ -472,11 +472,9 @@
         }
         ]]>
 	</fx:Script>
-	<s:Scroller height="862" horizontalScrollPolicy="off">
-		
 	<s:VGroup horizontalAlign="center">
-	<s:BorderContainer id="topContainer" width="809" height="45">
-		<s:HGroup>
+	<s:BorderContainer id="topContainer" width ="100%" >
+		<s:HGroup paddingTop="6" paddingBottom="6" horizontalCenter="0" verticalCenter="0">
 			<s:Button id="subscribeButton" width="118" height="32" label="SUBSCRIBE"
 					  chromeColor="#CD0202" click="subscribe()" color="#FCFAFA"/>
 			<s:Button id="unsubscribeButton" width="118" height="32" label="UNSUBSCRIBE"
@@ -488,14 +486,17 @@
 		</s:HGroup>
 	</s:BorderContainer>
 
-	<s:VGroup>
-		<s:BorderContainer id="miscContainer" width="783" height="44">
-			<s:Button x="11" y="5" label="time" click="time()"/>
-			<s:Button id="UUID" x="93" y="5" label="UUID" click="doUUID()"/>
-			<s:Button id="getUUID" x="175" y="5" label="getUUID" click="doGetUUID()"/>
+	<s:VGroup width ="100%" horizontalAlign="center" paddingTop="6" paddingBottom="6">
+		<s:BorderContainer id="miscContainer" width="100%" backgroundColor="#FDF9F9"
+						   borderColor="#FEFEFE" chromeColor="#FCF9F9">
+			<s:HGroup  horizontalCenter="0" verticalCenter="0">
+				<s:Button x="11" y="5" label="time" click="time()"/>
+				<s:Button id="UUID" x="93" y="5" label="UUID" click="doUUID()"/>
+				<s:Button id="getUUID" x="175" y="5" label="getUUID" click="doGetUUID()"/>
+			</s:HGroup>
 		</s:BorderContainer>
-		<s:BorderContainer id="presenceContainer" visible="true" width="783" height="162"
-						   includeInLayout="true">
+		<s:BorderContainer id="presenceContainer" visible="true" bottom="6" width="100%"
+						   borderColor="#FCFAFA" includeInLayout="true">
 			<s:VGroup x="10" top="34" bottom="40">
 				<s:HGroup>
 					<s:Label text="key: "/>
@@ -545,7 +546,7 @@
 		</s:BorderContainer>
 	</s:VGroup>
 	
-	<s:BorderContainer id="bottomContainer" width="809" height="772">
+	<s:BorderContainer id="bottomContainer" width="100%" height="765" borderColor="#A7A3A3">
 		<s:TextArea id="messagesTextArea" x="15" y="143" width="388" height="70" editable="true"
 					enabled="true" maxChars="250"/>
 		<s:Label x="17" y="229" height="19" text="Messages:"/>
@@ -612,5 +613,4 @@
 		</s:Scroller>
 	</s:BorderContainer>
 	</s:VGroup>
-	</s:Scroller>
 </s:Application>
