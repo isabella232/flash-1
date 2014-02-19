@@ -64,6 +64,7 @@ package applicationTest {
             });
         }
 
+        [Ignore]
         [Test(async, timeout=5000, description="#state() should be able to delete state for uuid")]
         public function testDeleteState():void {
             var uuid:String = p.uuid();

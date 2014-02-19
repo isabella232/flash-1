@@ -217,10 +217,10 @@ package applicationTest {
                 Assert.assertTrue(event.result.channels[ch2]);
                 Assert.assertTrue(event.result.channels[ch3]);
 
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid, metadata: { name: 'name-' + uuid }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch1].uuids, { uuid: uuid1, metadata: { name: 'name-' + uuid1 }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch2].uuids, { uuid: uuid2, metadata: { name: 'name-' + uuid2 }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch3].uuids, { uuid: uuid3, metadata: { name: 'name-' + uuid3 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid, state: { name: 'name-' + uuid }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch1].uuids, { uuid: uuid1, state: { name: 'name-' + uuid1 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch2].uuids, { uuid: uuid2, state: { name: 'name-' + uuid2 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch3].uuids, { uuid: uuid3, state: { name: 'name-' + uuid3 }}));
 
                 Assert.assertEquals(event.result.channels[ch].occupancy, 1);
                 Assert.assertEquals(event.result.channels[ch1].occupancy, 1);
@@ -323,10 +323,10 @@ package applicationTest {
                 Assert.assertTrue(event.result.channels[ch2]);
                 Assert.assertTrue(event.result.channels[ch3]);
 
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid, metadata: { name: 'name-' + uuid }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch1].uuids, { uuid: uuid, metadata: { name: 'name-' + uuid1 }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch2].uuids, { uuid: uuid, metadata: { name: 'name-' + uuid2 }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch3].uuids, { uuid: uuid, metadata: { name: 'name-' + uuid3 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid, state: { name: 'name-' + uuid }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch1].uuids, { uuid: uuid, state: { name: 'name-' + uuid1 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch2].uuids, { uuid: uuid, state: { name: 'name-' + uuid2 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch3].uuids, { uuid: uuid, state: { name: 'name-' + uuid3 }}));
 
                 Assert.assertEquals(event.result.channels[ch].occupancy, 1);
                 Assert.assertEquals(event.result.channels[ch1].occupancy, 1);
@@ -428,10 +428,10 @@ package applicationTest {
             finalCallback = function (event:PubNubEvent, passThroughData:Object):void {
                 Assert.assertTrue(event.result.channels[ch]);
 
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid, metadata: { name: 'name-' + uuid }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid1, metadata: { name: 'name-' + uuid1 }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid2, metadata: { name: 'name-' + uuid2 }}));
-                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid3, metadata: { name: 'name-' + uuid3 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid, state: { name: 'name-' + uuid }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid1, state: { name: 'name-' + uuid1 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid2, state: { name: 'name-' + uuid2 }}));
+                Assert.assertTrue(TestHelper.inListDeep(event.result.channels[ch].uuids, { uuid: uuid3, state: { name: 'name-' + uuid3 }}));
 
                 Assert.assertEquals(event.result.channels[ch].occupancy, 4);
 
