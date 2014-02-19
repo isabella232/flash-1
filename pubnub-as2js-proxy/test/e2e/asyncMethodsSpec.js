@@ -38,7 +38,7 @@ describe('Proxy object asynchronous methods delegation to PUBNUB object', functi
             pubnubMock.verify();
         });
 
-        it('should create secure instance if setup object and true secure flag are passed into constructor', function () {
+        it.skip('should create secure instance if setup object and true secure flag are passed into constructor', function () {
             var pubnubMock = sandbox.mock(PUBNUB);
 
             pubnubMock.expects('secure').withExactArgs(this.setupObject).once();
