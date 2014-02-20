@@ -16,6 +16,7 @@ package applicationTest {
         public static const RW_GRANT_RESULT:String = "RW_GRANT_RESULT";
         public static const RW_GRANT_AUDIT_RESULT:String = "RW_GRANT_AUDIT_RESULT";
         public static const NOT_EXPECTED_ERROR:String = "NOT_EXPECTED_ERROR";
+        public static const ERROR:String = "ERROR";
 
         private var _result:*;
 

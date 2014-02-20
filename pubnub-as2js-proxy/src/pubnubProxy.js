@@ -90,7 +90,6 @@ PubnubProxy.prototype.createInstance = function (instanceId, setup, secure) {
     }
 
     var flashObject = this.getFlashObject();
-    setup = setup || false;
 
     this.instances[instanceId] = new Wrapper(instanceId, flashObject, setup, secure);
     flashObject.created(instanceId);

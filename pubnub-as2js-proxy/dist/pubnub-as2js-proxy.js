@@ -43,6 +43,8 @@ var config = function () {
 function Wrapper(instanceId, flashObject, setup, secure) {
     this.instanceId = instanceId;
     this.flashObject = flashObject;
+
+    setup = setup || {};
     setup.error = this.proxyError.bind(this);
 
     if (setup && secure) {
@@ -208,7 +210,6 @@ PubnubProxy.prototype.createInstance = function (instanceId, setup, secure) {
     }
 
     var flashObject = this.getFlashObject();
-    setup = setup || false;
 
     this.instances[instanceId] = new Wrapper(instanceId, flashObject, setup, secure);
     flashObject.created(instanceId);

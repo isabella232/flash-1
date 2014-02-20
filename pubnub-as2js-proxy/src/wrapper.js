@@ -12,6 +12,8 @@
 function Wrapper(instanceId, flashObject, setup, secure) {
     this.instanceId = instanceId;
     this.flashObject = flashObject;
+
+    setup = setup || {};
     setup.error = this.proxyError.bind(this);
 
     if (setup && secure) {

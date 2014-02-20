@@ -1,5 +1,6 @@
 package applicationTest.suites {
     import applicationTest.TestCipherKey;
+    import applicationTest.TestError;
     import applicationTest.TestGrant;
     import applicationTest.TestHeartbeat;
     import applicationTest.TestHeartbeatInterval;
@@ -30,5 +31,6 @@ package applicationTest.suites {
         public var rawEncryptionTest:TestRawEncryption;
         public var heartbeatTest:TestHeartbeat;
         public var heartbeatIntervalTest:TestHeartbeatInterval;
+        public var errorTest:TestError;
     }
 }

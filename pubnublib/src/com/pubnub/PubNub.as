@@ -17,8 +17,6 @@ package com.pubnub
         private var decoder:Base64Decoder;
         private static var jsProxyObjectName:String = 'PUBNUB_AS2JS_PROXY';
 		
-		private static var LEAVE_FIELDS:Array = ['callback', 'error'];
-		private static var SETUP_FIELDS:Array = ['error', '_is_online', 'jsonp_cb', 'db' ]
 		private static var HISTORY_FIELDS:Array = ['callback', 'error'];
 		private static var REPLAY_FIELDS:Array = ['callback'];
 		private static var PUBLISH_FIELDS:Array = ['callback', 'error'];
@@ -32,11 +30,12 @@ package com.pubnub
 		private static var WHERE_NOW_FIELDS:Array = ['callback', 'error'];
 		private static var STATE_FIELDS:Array = ['callback', 'error'];
 
-		public function PubNub(config:Object) {
+		public function PubNub(config:Object = null) {
 			instanceId = generateId();
 			callbacks = {};
 			readyState = false;
-            decoder = new Base64Decoder();
+			decoder = new Base64Decoder();
+			config = config || {};
 
 			setupCallbacks();
 			PubNub.allInstances[instanceId] = this;
@@ -67,7 +66,8 @@ package com.pubnub
 		public static function setupCallbacks():void {
 			ExternalInterface.addCallback('created', createdHandler);
 			ExternalInterface.addCallback('callback', callbackHandler);
-			ExternalInterface.addCallback('error', errorHandler);
+			ExternalInterface.addCallback('error', staticErrorHandler);
+			ExternalInterface.addCallback('instanceError', instanceErrorHandler);
 		}
 		
 		private function callCallback(callbackId:String, payload:String):void {
@@ -88,10 +88,18 @@ package com.pubnub
 			}
 		}
 		
-		public static function errorHandler(message:String):void {
-			// TODO: throw error
+		protected static function staticErrorHandler(message:String):void {
+			throw new Error(message);
 		}
-		
+
+		public function handleError(message:String):void {
+			throw new Error('Instance #' + instanceId + ' error: ' + message);
+		}
+
+		protected static function instanceErrorHandler(instanceId:String, message:String):void {
+			getInstanceById(instanceId).handleError(message);
+		}
+
 		public static function callbackHandler(instanceId:String, callbackId:String, payload:String=undefined):void {
 			getInstanceById(instanceId).callCallback(callbackId, payload);
 		}
