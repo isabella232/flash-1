@@ -147,7 +147,7 @@
         private function publish():void {
             p.publish({
                 channel: channel_val(),
-                message: { "data": messagesTextArea.text },
+                message: messagesTextArea.text,
                 auth_key: authKeyTextInput.text.split(/\s+/).join(''),
                 error: appendErrorToConsole
             }, appendObjectToConsole);
