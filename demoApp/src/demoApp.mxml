@@ -35,6 +35,8 @@
         private var chromeColorStatusOff:String = "#56B6F9";
         private var chromeColorStatusOn:String = "#cd0202";
         private var SOME_UUID:String = 'some_uuid';
+        private var currentHeartbeat:int;
+        private var currentHeartbeatInterval:int;
         private var currentChannel:String;
         public var isSsl:Boolean;
 
@@ -72,6 +74,9 @@
 
             miscContainer.visible = miscContainer.includeInLayout = false;
             presenceContainer.visible = presenceContainer.includeInLayout = false;
+
+            currentHeartbeat = 10;
+            currentHeartbeatInterval = 3;
 
             subscribe();
             channelTextInput.addEventListener(Event.CHANGE, doSubscribe);
@@ -167,7 +172,9 @@
                 cipher_key: cipher_key,
                 secret_key: secret_key,
                 subscribe_key: subscribe_key,
-                origin: origin
+                origin: origin,
+                heartbeat: currentHeartbeat,
+                heartbeat_interval: currentHeartbeatInterval
             });
 
             connecting();
@@ -310,12 +317,14 @@
         }
 
         private function setHeartbeatHandler():void {
-            p.set_heartbeat(parseInt(presenceHeartbeatInput.text));
+            currentHeartbeat = parseInt(presenceHeartbeatInput.text);
+            p.set_heartbeat(currentHeartbeat);
             updateHeartbeatValues();
         }
 
         private function setHeartbeatIntervalHandler():void {
-            p.set_heartbeat(parseInt(presenceHeartbeatIntervalInput.text));
+            currentHeartbeatInterval = parseInt(presenceHeartbeatIntervalInput.text);
+            p.set_heartbeat_interval(currentHeartbeatInterval);
             updateHeartbeatValues();
         }
 
