@@ -159,7 +159,7 @@
 
             var publish_key:String = publishKeyTextInput.text.split(/\s+/).join(''),
                     auth_key:String = authKeyTextInput.text.split(/\s+/).join(''),
-                    cipher_key:String = StringUtil.trim(chiperKeyTextInput.text),
+                    cipher_key:String = StringUtil.trim(cipherKeyTextInput.text),
                     subscribe_key:String = subscribeKeyTextInput.text.split(/\s+/).join(''),
                     secret_key:String = pamSecretKeyTextInput.text.split(/\s+/).join(''),
                     origin:String = originTextInput.text.split(/\s+/).join('');
@@ -578,9 +578,9 @@
 		</s:BorderContainer>
 		<s:Label x="326" y="103" color="#626262" fontStyle="italic" text="SUB Net status"/>
 		<s:Label x="48" y="70" text="auth_key"/>
-		<s:Label x="37" y="101" text="chiper_key"/>
+		<s:Label x="37" y="101" text="cipher_key"/>
 		<s:TextInput id="authKeyTextInput" x="119" y="64"/>
-		<s:TextInput id="chiperKeyTextInput" x="118" y="93"/>
+		<s:TextInput id="cipherKeyTextInput" x="118" y="93"/>
 		<s:Group id="pamGroup" x="10" y="609" width="792" height="230">
 			<s:Rect id="pamBackground" x="0" y="-68" width="100%" height="216">
 				<s:fill>
