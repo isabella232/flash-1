@@ -108,7 +108,6 @@
         }
 
         private function doGetUUID():void {
-            p.set_uuid(SOME_UUID);
             p.get_uuid(onSetUuid);
         }
 
@@ -173,6 +172,7 @@
                 secret_key: secret_key,
                 subscribe_key: subscribe_key,
                 origin: origin,
+                uuid: uuid_val(),
                 heartbeat: currentHeartbeat,
                 heartbeat_interval: currentHeartbeatInterval
             });
@@ -370,6 +370,10 @@
             return currentChannel;
         }
 
+        private function uuid_val():String {
+            return useDefaultUUIDCheckbox.selected ? p.uuid() : uuidInput.text;
+        }
+
         private function channelChangedHandler():void {
             channel_val();
         }
@@ -543,12 +547,12 @@
 			<s:TextInput id="presenceUUIDInput" x="389" y="88" width="262" enabled="true"
 						 prompt="uuid"/>
 			<s:Label x="296" y="10" fontWeight="bold" text="Channel:"/>
-			<s:Button id="presenceSetCurrentUUIDButton" x="659" y="88" label="Set Current UUID" click="setCurrentUUIDHandler()"/>
+			<s:Button id="presenceSetCurrentUUIDButton" x="659" y="88" label="use current UUID" click="setCurrentUUIDHandler()"/>
 			<s:Label x="10" y="138" fontWeight="bold" text="Hearbeat:"/>
-			<s:Label x="371" y="138" fontWeight="bold" text="Hearbeat interval:"/>
-			<s:TextInput id="presenceHeartbeatIntervalInput" x="484" y="132" prompt="in seconds"/>
-			<s:Button id="presenceHeartbeatIntervalGet" x="621" y="132" label="get" click="getHeartbeatIntervalHandler()"/>
-			<s:Button id="presenceHeartbeatIntervalSet" x="700" y="132" label="set" click="setHeartbeatIntervalHandler()"/>
+			<s:Label x="375" y="138" fontWeight="bold" text="Hearbeat interval:"/>
+			<s:TextInput id="presenceHeartbeatIntervalInput" x="488" y="132" prompt="in seconds"/>
+			<s:Button id="presenceHeartbeatIntervalGet" x="625" y="132" label="get" click="getHeartbeatIntervalHandler()"/>
+			<s:Button id="presenceHeartbeatIntervalSet" x="704" y="132" label="set" click="setHeartbeatIntervalHandler()"/>
 			<s:TextInput id="presenceHeartbeatInput" x="74" y="132" prompt="in seconds"/>
 			<s:Button id="presenceHeartbeatGet" x="211" y="132" label="get" click="getHeartbeatHandler()"/>
 			<s:Button id="presenceHeartbeatSet" x="290" y="132" label="set" click="setHeartbeatHandler()"/>
@@ -562,17 +566,17 @@
 		<s:Button id="clearLog" x="84" y="227" height="15" label="Clear" click="clearLogHandler()"/>
 		<s:Button x="331" y="191" label="Publish" click="publish()"/>
 		<s:TextInput id="originTextInput" x="119" y="36"/>
-		<s:TextInput id="subscribeKeyTextInput" x="420" y="40" width="314"/>
+		<s:TextInput id="subscribeKeyTextInput" x="420" y="39" width="314"/>
 		<s:TextInput id="channelTextInput" x="119" y="6" change="channelChangedHandler()"/>
 		<s:TextInput id="publishKeyTextInput" x="420" y="8" width="314" textAlign="left"/>
 		<s:Label x="47" y="42" text="origin"/>
 		<s:Label x="46" y="12" text="channel"/>
-		<s:Label x="339" y="44" height="15" text="subscribe key:" textAlign="right"/>
-		<s:Label x="350" y="11" text="publish key:" textAlign="right"/>
+		<s:Label x="332" y="44" height="15" text="subscribe key" textAlign="right"/>
+		<s:Label x="346" y="12" text="publish key" textAlign="right"/>
 		
-		<s:BorderContainer id="subConnectionStatus" x="391" y="92" width="53" height="13" backgroundColor="#FC0000">
+		<s:BorderContainer id="subConnectionStatus" x="420" y="101" width="53" height="13" backgroundColor="#FC0000">
 		</s:BorderContainer>
-		<s:Label x="297" y="94" color="#626262" fontStyle="italic" text="SUB Net status:"/>
+		<s:Label x="326" y="103" color="#626262" fontStyle="italic" text="SUB Net status"/>
 		<s:Label x="48" y="70" text="auth_key"/>
 		<s:Label x="37" y="101" text="chiper_key"/>
 		<s:TextInput id="authKeyTextInput" x="119" y="64"/>
@@ -620,6 +624,9 @@
 							editable="false" fontFamily="Arial" fontSize="10" fontWeight="bold"
 							paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
 		</s:Scroller>
+		<s:TextInput id="uuidInput" x="420" y="71" width="229" text="flash_client"/>
+		<s:Label x="379" y="77" text="UUID"/>
+		<s:CheckBox id="useDefaultUUIDCheckbox" x="653" y="73" label="use default"/>
 	</s:BorderContainer>
 	</s:VGroup>
 </s:Application>
