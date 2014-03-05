@@ -288,10 +288,10 @@ function isArray(arg) {
  * ====
  * each( [1,2,3], function(item) { } )
  */
-function each( o, f ) {
+function each( o, f, old_logic) {
     if ( !o || !f ) return;
 
-    if ( isArray(o) )
+    if ( isArray(o) || ( old_logic && typeof o[0] != 'undefined' ) )
         for ( var i = 0, l = o.length; i < l; )
             f.call( o[i], o[i], i++ );
     else
@@ -324,13 +324,20 @@ function encode(path) { return encodeURIComponent(path) }
  * ==================================
  * generate_channel_list(channels_object);
  */
-function generate_channel_list(channels) {
+function generate_channel_list(channels, nopresence) {
     var list = [];
     each( channels, function( channel, status ) {
-        if (status.subscribed) list.push(channel);
-    } );
+        if (nopresence) {
+            if(channel.search('-pnpres') < 0) { 
+                if (status.subscribed) list.push(channel);
+            }    
+        } else {
+            if (status.subscribed) list.push(channel);
+        }  
+    });
     return list.sort();
 }
+
 
 // PUBNUB READY TO CONNECT
 function ready() { timeout( function() {
@@ -371,6 +378,7 @@ function PN_API(setup) {
     ,   PRESENCE_HB_INTERVAL = setup['heartbeat_interval'] || PRESENCE_HB - 3
     ,   PRESENCE_HB_RUNNING  = false
     ,   NO_WAIT_FOR_PENDING  = setup['no_wait_for_pending']
+    ,   COMPATIBLE_35 = setup['compatible_3.5']  || false
     ,   xdr           = setup['xdr']
     ,   error         = setup['error']      || function() {}
     ,   _is_online    = setup['_is_online'] || function() { return 1 }
@@ -426,7 +434,7 @@ function PN_API(setup) {
 
         clearTimeout(PRESENCE_HB_TIMEOUT);
 
-        if (!PRESENCE_HB_INTERVAL || PRESENCE_HB_INTERVAL >= 500 || PRESENCE_HB_INTERVAL < 1 || !generate_channel_list(CHANNELS).length){
+        if (!PRESENCE_HB_INTERVAL || PRESENCE_HB_INTERVAL >= 500 || PRESENCE_HB_INTERVAL < 1 || !generate_channel_list(CHANNELS,true).length){
             PRESENCE_HB_RUNNING = false;
             return;
         }
@@ -507,9 +515,12 @@ function PN_API(setup) {
             // Prevent Leaving a Presence Channel
             if (channel.indexOf(PRESENCE_SUFFIX) > 0) return true;
 
-            // No Leave Patch (Prevent Blocking Leave if Desired)
-            if (NOLEAVE)      return false;
-            if (!SSL && jsonp == '0') return false;
+            if (COMPATIBLE_35) {
+                if (!SSL)         return false;
+                if (jsonp == '0') return false;
+            }
+            
+            if (NOLEAVE)  return false;
 
             if (jsonp != '0') data['callback'] = jsonp;
 
@@ -571,17 +582,18 @@ function PN_API(setup) {
             });
         */
         'history' : function( args, callback ) {
-            var callback = args['callback'] || callback
-            ,   count    = args['count']    || args['limit'] || 100
-            ,   reverse  = args['reverse']  || "false"
-            ,   err      = args['error']    || function(){}
-            ,   auth_key = args['auth_key'] || AUTH_KEY
-            ,   cipher_key = args['cipher_key']
-            ,   channel  = args['channel']
-            ,   start    = args['start']
-            ,   end      = args['end']
-            ,   params   = {}
-            ,   jsonp    = jsonp_cb();
+            var callback         = args['callback'] || callback
+            ,   count            = args['count']    || args['limit'] || 100
+            ,   reverse          = args['reverse']  || "false"
+            ,   err              = args['error']    || function(){}
+            ,   auth_key         = args['auth_key'] || AUTH_KEY
+            ,   cipher_key       = args['cipher_key']
+            ,   channel          = args['channel']
+            ,   start            = args['start']
+            ,   end              = args['end']
+            ,   include_token    = args['include_token']
+            ,   params           = {}
+            ,   jsonp            = jsonp_cb();
 
             // Make sure we have a Channel
             if (!channel)       return error('Missing Channel');
@@ -593,9 +605,10 @@ function PN_API(setup) {
             params['reverse']     = reverse;
             params['auth']        = auth_key;
 
-            if (jsonp) params['callback'] = jsonp;
-            if (start) params['start']    = start;
-            if (end)   params['end']      = end;
+            if (jsonp) params['callback']              = jsonp;
+            if (start) params['start']                 = start;
+            if (end)   params['end']                   = end;
+            if (include_token) params['include_token'] = 'true';
 
             // Send Message
             xdr({
@@ -834,7 +847,7 @@ function PN_API(setup) {
             if (!SUBSCRIBE_KEY) return error('Missing Subscribe Key');
 
             if (heartbeat || heartbeat === 0) {
-                set_heartbeat(heartbeat);
+                SELF['set_heartbeat'](heartbeat);
             }
 
             // Setup Channel(s)
@@ -935,11 +948,12 @@ function PN_API(setup) {
                 _reset_offline();
 
                 var data = { 'uuid' : UUID, 'auth' : auth_key };
-      
+
                 var st = JSON.stringify(STATE);
                 if (st.length > 2) data['state'] = JSON.stringify(STATE);
 
                 if (PRESENCE_HB) data['heartbeat'] = PRESENCE_HB;
+
                 start_presence_heartbeat();
                 SUB_RECEIVER = xdr({
                     timeout  : sub_timeout,
@@ -1222,9 +1236,9 @@ function PN_API(setup) {
                     + "pnsdk=" + encode(PNSDK) + "&"
                     + "r=" + r + "&"
                     + "timestamp=" + encode(timestamp);
-                     
+
             if (ttl || ttl === 0) sign_input += "&" + "ttl=" + ttl;
-             
+
             sign_input += "&" + "w=" + w;
 
             var signature = hmac_SHA256( sign_input, SECRET_KEY );
@@ -1349,6 +1363,8 @@ function PN_API(setup) {
             var st = JSON['stringify'](STATE);
             if (st.length > 2) data['state'] = JSON['stringify'](STATE);
 
+            if (PRESENCE_HB > 0 && PRESENCE_HB < 320) data['heartbeat'] = PRESENCE_HB;
+
             xdr({
                 callback : jsonp,
                 data     : data,
@@ -1356,7 +1372,7 @@ function PN_API(setup) {
                 url      : [
                     STD_ORIGIN, 'v2', 'presence',
                     'sub-key', SUBSCRIBE_KEY,
-                    'channel' , encode(generate_channel_list(CHANNELS)['join'](',')),
+                    'channel' , encode(generate_channel_list(CHANNELS, true)['join'](',')),
                     'heartbeat'
                 ],
                 success  : function(response) {
@@ -2662,13 +2678,23 @@ function error(message) { console['error'](message) }
  * ======
  * var elements = search('a div span');
  */
-function search( elements, start ) {
+function search( elements, start) {
     var list = [];
     each( elements.split(/\s+/), function(el) {
         each( (start || document).getElementsByTagName(el), function(node) {
             list.push(node);
         } );
-    } );
+    });
+    return list;
+}
+
+function search_old(a) { 
+    var list = [];
+    each( a.split(/\s+/), function(el) {
+        each( (document).getElementsByTagName(el), function(node) {
+            list.push(node);
+        },1 );
+    }, 1);
     return list;
 }
 
@@ -2712,7 +2738,7 @@ function unbind( type, el, fun ) {
  * ====
  * head().appendChild(elm);
  */
-function head() { return search('head')[0] }
+function head() { return search_old('head')[0] }
 
 /**
  * ATTR
@@ -2950,6 +2976,8 @@ var PDIV          = $('pubnub') || 0
     ,   KEEPALIVE     = (+setup['keepalive']   || DEF_KEEPALIVE)   * SECOND
     ,   UUID          = setup['uuid'] || db['get'](SUBSCRIBE_KEY+'uuid')||'';
 
+    var leave_on_unload = setup['leave_on_unload'] || 0;
+
     setup['xdr']        = xdr;
     setup['db']         = db;
     setup['error']      = setup['error'] || error;
@@ -2983,7 +3011,7 @@ var PDIV          = $('pubnub') || 0
 
     // Add Leave Functions
     bind( 'beforeunload', window, function() {
-        SELF['each-channel'](function(ch){ SELF['LEAVE']( ch.name, 0 ) });
+        if (leave_on_unload) SELF['each-channel'](function(ch){ SELF['LEAVE']( ch.name, 0 ) });
         return true;
     } );
 
