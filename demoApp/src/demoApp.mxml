@@ -77,9 +77,8 @@
 
             currentHeartbeat = 10;
             currentHeartbeatInterval = 3;
-
-            subscribe();
             channelTextInput.addEventListener(Event.CHANGE, doSubscribe);
+            subscribe();
         }
 
         // Additional buttons:
