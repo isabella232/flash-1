@@ -38,7 +38,7 @@
         private var currentHeartbeat:int;
         private var currentHeartbeatInterval:int;
         private var currentChannel:String;
-        public var isSsl:Boolean;
+        public var isSsl:Boolean = false;
 
         [Embed(source='../assets/Lock.png')]
         [Bindable]
@@ -346,19 +346,11 @@
         }
 
         // Helpers:
-        private function toggleSSL():void {
-            if (!isSsl) {
-                btnSSL.setStyle("icon", iconUnLock);
-                btnSSL.setStyle("chromeColor", chromeColorStatusOff);
+        private function sslToggle():void {
                 isSsl = !isSsl;
+                btnSSL.setStyle("icon", isSsl ? iconLock : iconUnLock);
+                btnSSL.setStyle("chromeColor", isSsl ? chromeColorStatusOff : chromeColorStatusOn);
                 subscribe();
-            }
-            else {
-                isSsl = !isSsl;
-                btnSSL.setStyle("icon", iconLock);
-                btnSSL.setStyle("chromeColor", chromeColorStatusOn);
-                subscribe();
-            }
         }
 
         private function channel_val():String {
@@ -492,7 +484,7 @@
 			<s:Button id="unsubscribeButton" width="118" height="32" label="UNSUBSCRIBE"
 					  click="unsubscribe()" color="#F9F1F1" enabled="false"/>
 			<s:Button id="btnSSL" height="32" label="SSL" chromeColor="#56B6F9"
-					  click="toggleSSL()"/>
+					  click="sslToggle()"/>
 			<s:Button id="miscTab" height="32" label="MISC" click="miscToggle()"/>
 			<s:Button id="presenceTab" height="32" label="PRESENCE" click="presenceToggle()"/>
 		</s:HGroup>
