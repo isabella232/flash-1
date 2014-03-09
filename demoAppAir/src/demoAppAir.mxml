@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+                       xmlns:s="library://ns.adobe.com/flex/spark"
+                       xmlns:mx="library://ns.adobe.com/flex/mx"
+                       xmlns:comp="components.*"
+                       width="825" height="1028"
+                       creationComplete="initEvent(event)">
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+        <![CDATA[
+        import mx.events.FlexEvent;
+
+        import flashx.textLayout.elements.TextFlow;
+
+        import mx.formatters.DateFormatter;
+        import mx.utils.StringUtil;
+
+        import spark.events.TextOperationEvent;
+        import spark.utils.TextFlowUtil;
+
+        private var html:HTMLLoader = new HTMLLoader();
+        private var urlRequest:URLRequest = new URLRequest('demoAppAir.html');
+
+        [Bindable]
+        public var p:*;
+        public var config:Object;
+        public var CommonValues:Object;
+        public var PAMValues:Object;
+        private var consoleString:String;
+        private var presenceString:String;
+        private var historyString:String;
+        private var flow:TextFlow;
+        private var chromeColorStatusOff:String = "#56B6F9";
+        private var chromeColorStatusOn:String = "#cd0202";
+        private var SOME_UUID:String = 'some_uuid';
+        private var currentHeartbeat:int;
+        private var currentHeartbeatInterval:int;
+        private var currentChannel:String;
+        public var isSsl:Boolean = false;
+
+        [Embed(source='../assets/Lock.png')]
+        [Bindable]
+        public var iconLock:Class;
+
+        [Embed(source='../assets/unLock.png')]
+        [Bindable]
+        public var iconUnLock:Class;
+
+        protected function initEvent(event:FlexEvent):void {
+
+            getMessagesTextArea();
+
+            consoleString = "";
+            presenceString = "";
+            historyString = "";
+
+            channelTextInput.text = "flash_channel";
+            authKeyTextInput.text = 'x';
+            originTextInput.text = 'pubsub.pubnub.com';
+            publishKeyTextInput.text = 'demo';
+            subscribeKeyTextInput.text = 'demo';
+
+            pamSecretKeyTextInput.text = 'demo';
+            pamAuthKeyTextInput.text = 'x';
+            pamChannelTextInput.text = 'flash_channel';
+            pamTtlTextInput.text = '15';
+
+            btnSSL.setStyle("icon", iconUnLock);
+            btnSSL.setStyle("chromeColor", chromeColorStatusOn);
+            offMisc();
+            channelTextInput.addEventListener(Event.CHANGE, doSubscribe);
+            html.addEventListener(Event.COMPLETE, onHTMLComplete);
+            html.load(urlRequest);
+            html.idleTimeout = 320000;
+        }
+
+        private function onHTMLComplete(e:Event):void {
+            html.window.console.log = trace;
+            subscribe();
+        }
+
+        // Additional buttons:
+        private function time():void {
+            p.time(function (msg:Number):void {
+                appendObjectToConsole(String(msg));
+            });
+        }
+
+        private function history():void {
+            p.history({
+                channel: channel_val(),
+                callback: function (message:Array):void {
+                    historyAppendText(message[0]);
+                },
+                error: appendErrorToConsole
+            });
+        }
+
+        private function doUUID():void {
+            appendStringToConsole(p.uuid());
+        }
+
+        private function doGetUUID():void {
+            appendStringToConsole(p.get_uuid());
+        }
+
+        private function doHereNow():void {
+            p.here_now({
+                channel: channel_val(),
+                callback: function (msg:Object):void {
+                    appendObjectToConsole(msg);
+                }
+            });
+        }
+
+        // Common buttons:
+        private function clearLogHandler():void {
+            consoleLog.text = "";
+            consoleString = "";
+        }
+
+        private function clearPresenceHandler():void {
+            presenceArea.text = "";
+            presenceString = "";
+        }
+
+        private function clearHistoryHandler():void {
+            historyArea.text = "";
+            historyString = "";
+        }
+
+        private function publish():void {
+            var message:*;
+
+            try {
+                message = JSON.parse(messagesTextArea.text);
+            } catch (e:Error) {
+                message = messagesTextArea.text;
+            }
+
+            p.publish({
+                channel: channel_val(),
+                message: message,
+                auth_key: authKeyTextInput.text.split(/\s+/).join(''),
+                error: appendErrorToConsole
+            }, appendObjectToConsole);
+        }
+
+
+        private function subscribe():void {
+
+            unsubscribe();
+
+            var publish_key:String = publishKeyTextInput.text.split(/\s+/).join(''),
+                    auth_key:String = authKeyTextInput.text.split(/\s+/).join(''),
+                    cipher_key:String = StringUtil.trim(chiperKeyTextInput.text),
+                    subscribe_key:String = subscribeKeyTextInput.text.split(/\s+/).join(''),
+                    secret_key:String = pamSecretKeyTextInput.text.split(/\s+/).join(''),
+                    origin:String = originTextInput.text.split(/\s+/).join('');
+
+            p = html.window.PUBNUB.init({
+                publish_key: publish_key,
+                auth_key: auth_key,
+                ssl: isSsl,
+                cipher_key: cipher_key,
+                secret_key: secret_key,
+                subscribe_key: subscribe_key,
+                origin: origin
+            });
+            connecting();
+
+            p.subscribe({
+                backfill: false,
+                noheresync: true,
+                channel: channel_val(),
+                message: function subscribeMessageHandler(message:Object, envelope:Object, channel:String, time:Number):void {
+                    appendObjectToConsole(message);
+                },
+                presence: function subscribePresenceHandler(message:Object, here:*, channel:String, presenceChannel:String = null):void {
+                    presenceAppend(message);
+                },
+                connect: function subscribeConnectHandler(channel:String):void {
+                    unsubscribeButton.enabled = true;
+                    subscribeButton.enabled = false;
+                    connected();
+                    appendStringToConsole(channel);
+                },
+                error: function subscribeErrorHandler(e:Object):void {
+                    unsubscribeButton.enabled = true;
+                    subscribeButton.enabled = false;
+                    appendErrorToConsole(e);
+                }
+            });
+
+        }
+
+        private function unsubscribe():void {
+            if (unsubscribeButton.enabled === false) {
+                return;
+            }
+            if (!p) {
+                noP('unsubscribe');
+                return;
+            }
+
+            p.unsubscribe({
+                channel: currentChannel,
+                callback: function (message:Object):void {
+                    disconnected();
+                    appendObjectToConsole(JSON.parse(html.window.JSON._stringify(message)));
+                    subscribeButton.enabled = true;
+                    unsubscribeButton.enabled = false;
+                }
+            });
+        }
+
+        // PAM buttons:
+        private function grant():void {
+            if (!p) {
+                noP('grant');
+                return;
+            }
+            var grantConfig:Object = {
+                channel: pamChannelTextInput.text.toString(),
+                auth_key: pamAuthKeyTextInput.text,
+                read: pamReadCheckbox.selected,
+                write: pamWriteCheckbox.selected,
+                ttl: parseInt(pamTtlTextInput.text),
+                error: appendErrorToConsole,
+                callback: appendObjectToConsole
+            };
+
+            p.grant(grantConfig);
+
+            if (pamPnpresCheckbox.selected) {
+                grantConfig.channel += '-pnpres';
+                p.grant(grantConfig);
+            }
+        }
+
+        private function revoke():void {
+            if (!p) {
+                noP('revoke');
+                return;
+            }
+
+            var revokeConfig:Object = {
+                channel: pamChannelTextInput.text.toString(),
+                auth_key: authKeyTextInput.text,
+                callback: appendObjectToConsole,
+                error: appendErrorToConsole
+            };
+
+            p.revoke(revokeConfig);
+
+            if (pamPnpresCheckbox.selected) {
+                revokeConfig.channel += '-pnpres';
+                p.revoke(revokeConfig);
+            }
+        }
+
+        private function audit():void {
+            if (!p) {
+                noP('audit');
+                return;
+            }
+
+            p.audit({
+                channel: channel_val(),
+                auth_key: authKeyTextInput.text,
+                callback: appendObjectToConsole,
+                error: appendErrorToConsole
+            });
+        }
+
+        private function miscHandler():void {
+            miscContainer.visible ? offMisc() : onMisc();
+        }
+
+        private function onMisc():void {
+            btnMisc.setStyle("chromeColor", chromeColorStatusOff);
+            miscContainer.visible = true;
+            miscContainer.y = 44;
+            bottomContainer.y = 88;
+        }
+
+        private function offMisc():void {
+            btnMisc.setStyle("chromeColor", chromeColorStatusOn);
+            miscContainer.visible = false;
+            bottomContainer.y = 44;
+        }
+
+        // Helpers:
+        private function toggleSSL():void {
+            if (!isSsl) {
+                btnSSL.setStyle("icon", iconLock);
+                btnSSL.setStyle("chromeColor", chromeColorStatusOff);
+                isSsl = !isSsl;
+                subscribe();
+            }
+            else {
+                isSsl = !isSsl;
+                btnSSL.setStyle("icon", iconUnLock);
+                btnSSL.setStyle("chromeColor", chromeColorStatusOn);
+                subscribe();
+            }
+        }
+
+        private function channel_val():String {
+            currentChannel = channelTextInput.text;
+            return currentChannel;
+        }
+
+        private function appendObjectToConsole(message:Object):void {
+            var mess:String;
+
+            mess = html.window.JSON.stringify(message)
+                    .replace(/\&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/,/g, ", ");
+
+            if (mess && mess.length > 0) {
+                appendToConsole(mess, '0x71BDFF');
+            }
+        }
+
+        private function appendErrorToConsole(message:Object):void {
+            appendToConsole(html.window.JSON.stringify(message), '0xFF0000');
+        }
+
+        private function appendStringToConsole(message:String):void {
+            appendToConsole(message, '0x71BDFF');
+        }
+
+        private function appendToConsole(message:String, color:String):void {
+            try {
+                flow = TextFlowUtil.importFromString(
+                        (consoleString = "<p><span>" + currentDate() + '</span>: <span color="' + color + '">' +
+                                message + "</span></p>\n" + consoleString)
+                );
+                consoleLog.textFlow = flow;
+            }
+            catch (error:Error) {
+                appendErrorToConsole(error.message);
+            }
+        }
+
+        private function presenceAppend(message:Object):void {
+            try {
+                flow = TextFlowUtil.importFromString(
+                        (presenceString = "<p><span>" + currentDate() + '</span>: <span color="0xF7B23B">' + html.window.JSON.stringify(message) + "</span></p>\n" + presenceString)
+                );
+                presenceArea.textFlow = flow;
+            }
+            catch (error:Error) {
+                appendErrorToConsole(error.message);
+            }
+        }
+
+        private function historyAppendText(message:Object):void {
+            try {
+                flow = TextFlowUtil.importFromString(
+                        (historyString = "<p>" + html.window.JSON.stringify(message) + "</p>\n")
+                );
+                historyArea.textFlow = flow;
+            }
+            catch (error:Error) {
+                appendErrorToConsole(error.message);
+            }
+        }
+
+        private function connected(str:String = ""):void {
+            if (str != "") {
+                appendStringToConsole(str);
+            }
+            this.subConnectionStatus.setStyle('backgroundColor', "#00FC00");
+        }
+
+        private function connecting(str:String = ""):void {
+            if (str != "") {
+                appendStringToConsole(str);
+            }
+            this.subConnectionStatus.setStyle('backgroundColor', "#FFD219");
+        }
+
+        private function disconnected(str:String = ""):void {
+            if (str != "") {
+                appendStringToConsole(str);
+            }
+            this.subConnectionStatus.setStyle('backgroundColor', "#FC0000");
+        }
+
+        private function getMessagesTextArea():void {
+            messagesTextArea.text = JSON.stringify({"text": "hey"});
+        }
+
+        private function networkError(str:String):void {
+            this.subConnectionStatus.setStyle('backgroundColor', "#FC0000");
+            appendStringToConsole(str);
+        }
+
+        private function noP(methodName:String):void {
+            appendStringToConsole(methodName + '(): instance is not initialized');
+        }
+
+        private function currentDate():String {
+            var CurrentDateTime:Date = new Date();
+            var CurrentDF:DateFormatter = new DateFormatter();
+            CurrentDF.formatString = "YYYY/MM/DD LL:NN:SS A";
+            var DateTimeString:String = CurrentDF.format(CurrentDateTime);
+            return DateTimeString;
+        }
+
+        protected function doSubscribe(event:TextOperationEvent):void {
+            if (currentChannel && currentChannel.length > 0) {
+                unsubscribe();
+            }
+        }
+        ]]>
+    </fx:Script>
+    <s:BorderContainer id="topContainer" width="809" height="45">
+        <s:Button id="subscribeButton" x="23" y="6" width="118" height="32" label="SUBSCRIBE"
+                  chromeColor="#CD0202" click="subscribe()" color="#FCFAFA"/>
+        <s:Button id="unsubscribeButton" x="146" y="6" width="118" height="32" label="UNSUBSCRIBE"
+                  chromeColor="#CD0202" click="unsubscribe()" color="#FCF9F9" enabled="false"/>
+        <s:Button id="btnSSL" x="270" y="6" height="32" label="SSL" chromeColor="#CD0202"
+                  click="toggleSSL()" color="#FCF9F9"/>
+        <s:Button id="btnMisc" x="358" y="6" height="32" label="MISC" chromeColor="#CD0202"
+                  click="miscHandler()" color="#FCF9F9"/>
+
+    </s:BorderContainer>
+    <s:BorderContainer id="miscContainer" x="0" y="44" width="809" height="45">
+        <s:Button x="11" y="5" label="time" chromeColor="#CD0202" click="time()" color="#FCF9F9"/>
+        <s:Button id="UUID" x="93" y="5" label="UUID" chromeColor="#CD0202" click="doUUID()"
+                  color="#FCF9F9"/>
+        <s:Button id="getUUID" x="175" y="5" label="getUUID" chromeColor="#CD0202"
+                  click="doGetUUID()" color="#FCF9F9"/>
+        <s:Button id="btnHereNow" x="260" y="5" label="Here now" chromeColor="#CD0202"
+                  click="doHereNow()" color="#FCF9F9"/>
+
+    </s:BorderContainer>
+    <s:BorderContainer id="bottomContainer" x="0" y="88" width="809">
+        <s:TextArea id="messagesTextArea" x="15" y="143" width="388" height="70"
+                    chromeColor="#CCCCCC" contentBackgroundAlpha="0.82"
+                    contentBackgroundColor="#F4F5A9" editable="true" enabled="true" maxChars="250"/>
+        <s:Label x="17" y="229" height="19" text="Messages:"/>
+        <s:Button id="clearLog" x="84" y="227" height="15" label="Clear" chromeColor="#CD0202"
+                  click="clearLogHandler()" color="#FCF9F9"/>
+        <s:Button x="331" y="191" label="Publish" chromeColor="#CD0202" click="publish()"
+                  color="#FCF9F9"/>
+        <s:TextInput id="originTextInput" x="119" y="36" contentBackgroundAlpha="0.82"
+                     contentBackgroundColor="#F4F5A9"/>
+        <s:TextInput id="subscribeKeyTextInput" x="420" y="40" width="314"
+                     contentBackgroundAlpha="0.82" contentBackgroundColor="#F4F5A9"/>
+        <s:TextInput id="channelTextInput" x="119" y="6" contentBackgroundAlpha="0.82"
+                     contentBackgroundColor="#F4F5A9"/>
+        <s:TextInput id="publishKeyTextInput" x="420" y="8" width="314" contentBackgroundAlpha="0.82"
+                     contentBackgroundColor="#F4F5A9" textAlign="left"/>
+        <s:Label x="47" y="42" text="origin"/>
+        <s:Label x="46" y="12" text="channel"/>
+        <s:Label x="339" y="44" height="15" text="subscribe key:" textAlign="right"/>
+        <s:Label x="350" y="11" text="publish key:" textAlign="right"/>
+
+
+        <s:BorderContainer id="subConnectionStatus" x="391" y="92" width="53" height="13" backgroundColor="#FC0000">
+        </s:BorderContainer>
+        <s:Label x="297" y="94" color="#626262" fontStyle="italic" text="SUB Net status:"/>
+        <s:Label x="48" y="70" text="auth_key"/>
+        <s:Label x="37" y="101" text="chiper_key"/>
+        <s:TextInput id="authKeyTextInput" x="119" y="64" contentBackgroundAlpha="0.82"
+                     contentBackgroundColor="#F4F5A9"/>
+        <s:TextInput id="chiperKeyTextInput" x="118" y="93" contentBackgroundAlpha="0.82"
+                     contentBackgroundColor="#F4F5A9"/>
+        <s:Group id="pamGroup" x="10" y="609" width="792" height="230">
+            <s:Rect id="pamBackground" x="0" y="-68" width="100%" height="216">
+                <s:fill>
+                    <s:SolidColor color="#FF0000"/>
+                </s:fill>
+            </s:Rect>
+            <s:TextInput id="pamChannelTextInput" x="10" y="-38" width="314"/>
+            <s:Label x="10" y="-58" text="channel"/>
+            <s:Label x="10" y="-8" text="auth_key"/>
+            <s:TextInput id="pamAuthKeyTextInput" x="10" y="12" width="314"
+                         contentBackgroundAlpha="0.82" contentBackgroundColor="#F4F5A9"/>
+            <s:Label x="10" y="42" text="secret key"/>
+            <s:TextInput id="pamSecretKeyTextInput" x="10" y="62" width="314"
+                         contentBackgroundAlpha="0.82" contentBackgroundColor="#F4F5A9"/>
+            <s:Label x="10" y="92" text="ttl"/>
+            <s:TextInput id="pamTtlTextInput" x="10" y="110" width="314"
+                         contentBackgroundAlpha="0.82" contentBackgroundColor="#F4F5A9"/>
+            <s:CheckBox id="pamReadCheckbox" x="365" y="-37" label="Read ?"/>
+            <s:CheckBox id="pamWriteCheckbox" x="366" y="-11" label="Write ?"/>
+            <s:Button id="grantButton" x="366" y="55" label="Grant" chromeColor="#CD0202"
+                      click="grant()" color="#FCF9F9"/>
+            <s:Button id="revokeButton" x="366" y="84" label="Revoke" chromeColor="#CD0202"
+                      click="revoke()" color="#FCF9F9"/>
+            <s:Button id="auditButton" x="366" y="109" label="Audit" chromeColor="#CD0202"
+                      click="audit()" color="#FCF9F9"/>
+            <s:CheckBox id="pamPnpresCheckbox" x="366" y="16" label="apply to *-pnpres channel too" selected="true"/>
+            <s:Label x="560" y="-52" fontSize="20" fontWeight="bold" text="PAM - Access Manager"/>
+        </s:Group>
+        <s:Scroller x="423" y="142" width="382" height="70">
+            <s:RichEditableText id="presenceArea" backgroundColor="#000000" color="#FFFFFF"
+                                editable="false" fontFamily="Arial" fontSize="10"
+                                paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"
+                                fontWeight="bold"/>
+        </s:Scroller>
+        <s:Label x="425" y="126" text="presence"/>
+        <s:Scroller x="425" y="245" width="382" height="272">
+            <s:RichEditableText id="historyArea" backgroundColor="#000000" color="#FFFFFF"
+                                editable="false" fontFamily="Arial" fontSize="10"
+                                paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+        </s:Scroller>
+        <s:Label x="426" y="230" text="history"/>
+        <s:Button id="clearPresence" x="735" y="124" height="15" label="Clear" chromeColor="#CD0202"
+                  click="clearPresenceHandler()" color="#FCF9F9"/>
+        <s:Button id="clearHistory" x="737" y="227" height="15" label="Clear" chromeColor="#CD0202"
+                  click="clearHistoryHandler()" color="#FCF9F9"/>
+        <s:Button id="historyButton" x="475" y="224" label="History" chromeColor="#CD0202"
+                  click="history()" color="#FCF9F9"/>
+        <s:Scroller x="15" y="245" width="382" height="272">
+            <s:RichEditableText id="consoleLog" backgroundColor="#000000" color="#FFFFFF"
+                                editable="false" fontFamily="Arial" fontSize="10" fontWeight="bold"
+                                paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
+        </s:Scroller>
+    </s:BorderContainer>
+</s:WindowedApplication>

@@ -1,0 +1,15 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+
+global
+{
+    content-background-color: #F4F5A9;
+    content-background-alpha: 0.81;
+}
+s|Button
+{
+    chromeColor: #CD0202;
+    color: #FDFCFC;
+}
