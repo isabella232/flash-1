@@ -1,0 +1,16 @@
+<!doctype html>
+<head>
+    <script src="hmac-sha256.js"></script>
+    <script src="enc-base64-min.js"></script>
+    <script src="pubnub.js"></script>
+    <script src="pubnub-crypto.min.js"></script>
+    <script>
+        window.JSON._parse = JSON.parse;
+        window.JSON._stringify = JSON.stringify;
+
+        window.JSON.parse = runtime.JSON.parse;
+        window.JSON.stringify = runtime.JSON.stringify;
+    </script>
+</head>
+<body></body>
+</html>
