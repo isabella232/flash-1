@@ -16,25 +16,67 @@ business collaborative solutions, and more.
 
 We've rewritten this client as a wrapper around our tried-and-true JavaScript client.  Caveat emptor!
 
-### Example App
+## Flash Example App
 An example app is available in the demoApp directory.
+To set it up from scratch, perform the following steps:
 
-### Set Up
-To set the client up from scratch, perform the following steps:
+1. Clone repository
 
-1. Create a new Flex Project in Flash Builder
-2. While setting up the project in the wizard, click "Add SWF Folder", and select the pubnublib/bin directory.
-3. In the html-template folder, add pubnub.min.js and pubnub.crypto.min.js. (These files can be found in the PubNub JS Repository located at https://github.com/pubnub/javascript/tree/master/web)
-4. In the html-template folder, add pubnub-as2js-proxy.js. (This can be found in the pubnub-as2js-proxy/dist directory.)
-5. In the html-template folder, open index.template.html as a text file, and add the following as the last entries within the HEAD tags:
+``` sh
+# Checkout repo into a local folder
+$ git clone https://github.com/pubnub/flash.git ./pubnub-flash
 
-```javascript
-    <script src="pubnub.min.js"></script>
-    <script src="pubnub-crypto.min.js"></script>
-    <script src="pubnub-as2js-proxy.js"></script>
-    <script>PUBNUB_AS2JS_PROXY.setFlashObjectId('${application}')</script>
+# switch to branch 3.5
+$ git checkout -b 3.5 origin/3.5
 ```
 
-6. In your MXML file, add the contents of simplePubNubDemo.txt. Be sure to set the keys appropriately.
+2. Set Flash Builder workspace to match root folder of repository
 
- 
+![ScreenShot](/screenshots/demoApp-setup1.png)
+
+3. Import builder projects from folders `pubnublib` and `demoApp`, they are in repository root
+
+![ScreenShot](/screenshots/demoApp-setup2.png)
+
+![ScreenShot](/screenshots/demoApp-setup3.png)
+
+![ScreenShot](/screenshots/demoApp-setup4.png)
+
+4. Set up HTTP to work with the demoApp project. Don't forget to press `Validate Configuration` button
+
+![ScreenShot](/screenshots/demoApp-setup5.png)
+
+5. Create and launch WebApplication configuration for the demoApp project
+
+![ScreenShot](/screenshots/demoApp-setup6.png)
+
+![ScreenShot](/screenshots/demoApp-setup7.png)
+
+6. Browser should load demoApp project and connect to flash_channel automatically. Subscribe button should turn inactive from that point.
+
+![ScreenShot](/screenshots/demoApp-setup8.png)
+
+## Air Example App
+
+1. Clone repository
+
+``` sh
+# Checkout repo into a local folder
+$ git clone https://github.com/pubnub/flash.git ./pubnub-flash
+
+# switch to branch 3.5
+$ git checkout -b 3.5 origin/3.5
+```
+
+2. Set Flash Builder workspace to match root folder of repository
+3. Import builder project from `demoAppAir` folder, it is in repository root
+
+![ScreenShot](/screenshots/demoAppAir-setup1.png)
+
+4. Create and launch `DesktopApplication` configuration for demoAppAir
+
+![ScreenShot](/screenshots/demoAppAir-setup2.png)
+
+5. Upon launch, app should automatically connect to default channel. Subscribe button should turn inactive.
+
+![ScreenShot](/screenshots/demoAppAir-setup3.png)
