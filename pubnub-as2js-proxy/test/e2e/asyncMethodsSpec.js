@@ -284,7 +284,6 @@ describe('Proxy object asynchronous methods delegation to PUBNUB object', functi
     });
 
     describe('#grant', function () {
-        // IE 11 fails here because of using uninitialized variable data in pubnub.js v.3.5.48 row 942
         it('should invoke callback on flash object after granting permissions', function (done) {
             var _test = this;
 
