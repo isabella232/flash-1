@@ -23,9 +23,6 @@ To set it up from scratch, perform the following steps:
   ``` sh
   # Checkout repo into a local folder
   $ git clone https://github.com/pubnub/flash.git ./pubnub-flash
-  
-  # switch to branch 3.6
-  $ git checkout -b 3.6 origin/3.6
   ```
 
 2. Set Flash Builder workspace to match root folder of repository
@@ -61,9 +58,6 @@ To set it up from scratch, perform the following steps:
   ``` sh
   # Checkout repo into a local folder
   $ git clone https://github.com/pubnub/flash.git ./pubnub-flash
-  
-  # switch to branch 3.6
-  $ git checkout -b 3.6 origin/3.6
   ```
 
 2. Set Flash Builder workspace to match root folder of repository
