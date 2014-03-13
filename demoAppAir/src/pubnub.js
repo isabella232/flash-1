@@ -162,6 +162,7 @@ var NOW             = 1
 ,   PARAMSBIT       = '&'
 ,   PRESENCE_HB_THRESHOLD = 5
 ,   PRESENCE_HB_DEFAULT  = 30
+,   SDK_VER         = '3.6.0'
 ,   REPL            = /{([\w\-]+)}/g;
 
 /**
@@ -280,7 +281,7 @@ function uuid(callback) {
 }
 function isArray(arg) {
     var type = Object.prototype.toString.call(arg);
-    return   ( type === "[object Array]" || type === "[object NodeList]" || type === "[object ScriptBridgingArrayProxyObject]");
+    return   ( type === "[object Array]" || type === "[object NodeList]");
 }
 
 /**
@@ -572,6 +573,9 @@ function PN_API(setup) {
         'set_heartbeat_interval' : function(heartbeat_interval) {
             PRESENCE_HB_INTERVAL = heartbeat_interval;
             _presence_heartbeat();
+        },
+        'get_version' : function() {
+            return SDK_VER;
         },
 
         /*
@@ -1198,7 +1202,7 @@ function PN_API(setup) {
                 channel  : 'my_chat',
                 callback : fun,
                 error    : fun,
-                ttl      : 60, // Seconds
+                ttl      : 24 * 60, // Minutes
                 read     : true,
                 write    : true,
                 auth_key : '3y8uiajdklytowsj'
@@ -1212,7 +1216,6 @@ function PN_API(setup) {
             ,   ttl      = args['ttl']
             ,   r        = (args['read'] )?"1":"0"
             ,   w        = (args['write'])?"1":"0"
-            ,   data     = {}
             ,   auth_key = args['auth_key'];
 
             // Make sure we have a Channel
@@ -1221,8 +1224,6 @@ function PN_API(setup) {
             if (!SUBSCRIBE_KEY) return error('Missing Subscribe Key');
             if (!PUBLISH_KEY)   return error('Missing Publish Key');
             if (!SECRET_KEY)    return error('Missing Secret Key');
-
-            if (jsonp != '0') { data['callback'] = jsonp; }
 
             var timestamp  = Math.floor(new Date().getTime() / 1000)
             ,   sign_input = SUBSCRIBE_KEY + "\n" + PUBLISH_KEY + "\n"
@@ -1254,6 +1255,7 @@ function PN_API(setup) {
                 'timestamp' : timestamp
             };
 
+            if (jsonp != '0') { data['callback'] = jsonp; }
             if (ttl || ttl === 0) data['ttl'] = ttl;
             if (auth_key) data['auth'] = auth_key;
 
@@ -1296,8 +1298,6 @@ function PN_API(setup) {
             if (!PUBLISH_KEY)   return error('Missing Publish Key');
             if (!SECRET_KEY)    return error('Missing Secret Key');
 
-            if (jsonp != '0') { data['callback'] = jsonp; }
-
             var timestamp  = Math.floor(new Date().getTime() / 1000)
             ,   sign_input = SUBSCRIBE_KEY + "\n"
                 + PUBLISH_KEY + "\n"
@@ -1315,6 +1315,7 @@ function PN_API(setup) {
 
             var data = { 'signature' : signature, 'timestamp' : timestamp };
 
+            if (jsonp != '0') { data['callback'] = jsonp; }
             if (channel)  data['channel'] = channel;
             if (auth_key) data['auth']    = auth_key;
 
