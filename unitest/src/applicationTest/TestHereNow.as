@@ -33,13 +33,13 @@ package applicationTest {
 
         [Before(async)]
         public function setUp():void {
-            uuid = TestHelper.presenceConfig.uuid;
-            uuid1 = TestHelper.presenceConfig.uuid + '-1';
-            uuid2 = TestHelper.presenceConfig.uuid + '-2';
-            uuid3 = TestHelper.presenceConfig.uuid + '-3';
+            uuid = TestHelper.demoConfig.uuid;
+            uuid1 = TestHelper.demoConfig.uuid + '-1';
+            uuid2 = TestHelper.demoConfig.uuid + '-2';
+            uuid3 = TestHelper.demoConfig.uuid + '-3';
 
             var config:Object;
-            config = TestHelper.presenceConfig;
+            config = TestHelper.demoConfig;
             p = new PubNub(config);
             config.uuid = uuid1;
             p1 = new PubNub(config);

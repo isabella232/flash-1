@@ -58,7 +58,7 @@
 
             channelTextInput.text = presenceChannelInput.text = "air_channel";
             authKeyTextInput.text = 'x';
-            originTextInput.text = 'presence-beta.pubnub.com';
+            originTextInput.text = 'pubsub.pubnub.com';
             publishKeyTextInput.text = 'demo';
             subscribeKeyTextInput.text = 'demo';
 
@@ -581,7 +581,7 @@
                       click="clearLogHandler()" color="#FDF9F9"/>
             <s:Button x="331" y="191" label="Publish" chromeColor="#CD0202" click="publish()"
                       color="#FDF9F9"/>
-            <s:TextInput id="originTextInput" x="119" y="36" text="presence-beta.pubnub.com"/>
+            <s:TextInput id="originTextInput" x="119" y="36" text="pubsub.pubnub.com"/>
             <s:TextInput id="subscribeKeyTextInput" x="420" y="39" width="314" text="demo"/>
             <s:TextInput id="channelTextInput" x="119" y="6" change="channelChangedHandler()"/>
             <s:TextInput id="publishKeyTextInput" x="420" y="8" width="314" text="demo"

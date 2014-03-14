@@ -60,7 +60,7 @@
 
             channelTextInput.text = presenceChannelInput.text = "flash_channel";
             authKeyTextInput.text = 'x';
-            originTextInput.text = 'presence-beta.pubnub.com';
+            originTextInput.text = 'pubsub.pubnub.com';
             publishKeyTextInput.text = 'demo';
             subscribeKeyTextInput.text = 'demo';
 

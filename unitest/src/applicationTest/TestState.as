@@ -18,7 +18,7 @@ package applicationTest {
 
         [Before(async)]
         public function setUp():void {
-            p = new PubNub(TestHelper.presenceConfig);
+            p = new PubNub(TestHelper.demoConfig);
             channel = TestHelper.generateChannel();
             messageString = 'Hi from ActionScript';
         }

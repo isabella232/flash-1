@@ -11,17 +11,11 @@ package applicationTest {
             secret_key: SECRET_KEY
         };
 
-        public static var presenceConfig:Object = {
-            origin: "presence-beta.pubnub.com",
-            publish_key: 'demo',
-            subscribe_key: 'demo',
-            uuid: (new Date()).time
-        };
-
         public static var demoConfig:Object = {
             origin: "pubsub.pubnub.com",
             publish_key: "demo",
-            subscribe_key: "demo"
+            subscribe_key: "demo",
+            uuid: (new Date()).time
         };
 
         public function TestHelper() {

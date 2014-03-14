@@ -81,7 +81,7 @@ var secureSetupObject = {
 };
 
 var presenceSetupObject = {
-    origin            : 'presence-beta.pubnub.com',
+    origin            : 'pubsub.pubnub.com',
     publish_key       : 'demo',
     subscribe_key     : 'demo',
     uuid              : presence_uuid

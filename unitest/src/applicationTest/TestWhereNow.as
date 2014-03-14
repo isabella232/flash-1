@@ -19,7 +19,7 @@ package applicationTest {
 
         [Before(async)]
         public function setUp():void {
-            p = new PubNub(TestHelper.presenceConfig);
+            p = new PubNub(TestHelper.demoConfig);
             channel = TestHelper.generateChannel();
             messageString = 'Hi from ActionScript';
         }
@@ -45,7 +45,7 @@ package applicationTest {
                     dispatchEvent(new PubNubEvent(PubNubEvent.WHERE_NOW_RESULT + '_CONNECTED', response));
                     setTimeout(function ():void {
                         p.where_now({
-                            uuid: TestHelper.presenceConfig.uuid,
+                            uuid: TestHelper.demoConfig.uuid,
                             callback: function (data:Object):void {
                                 dispatchEvent(new PubNubEvent(PubNubEvent.WHERE_NOW_RESULT, data));
                             }
