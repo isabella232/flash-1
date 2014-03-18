@@ -669,7 +669,7 @@
                                 <s:Button  label="Publish" click="publish()" styleName="redButton"/>
                             </s:VGroup>
                             <s:VGroup width="100%" gap="0">
-                                <s:HGroup width="100%" verticalAlign="middle">
+                                <s:HGroup width="365" verticalAlign="middle">
                                     <s:Label  text="presence"/>
                                     <s:Spacer width="100%"/>
                                     <s:Button id="clearPresence"  height="21" label="Clear" click="clearPresenceHandler()" styleName="redButton"/>
