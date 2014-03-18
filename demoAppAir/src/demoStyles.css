@@ -7,9 +7,81 @@ global
 {
     content-background-color: #F4F5A9;
     content-background-alpha: 0.81;
+    symbol-color: #FFFEFE;
 }
-s|Button
+.redButton
 {
-    chromeColor: #CD0202;
-    color: #FDFCFC;
+    fontFamily: "Arial";
+    chromeColor: #ce7777;
+    color: #413a3a;
+    fontSize: 14;
+    borderStyle: none;
+    paddingTop: 0px;
+    paddingBottom: 0px;
+}
+
+.redButton1
+{
+    fontFamily: "Arial";
+    chromeColor: #ce2029;
+    color: #413a3a;
+    fontSize: 14;
+    borderStyle: none;
+    paddingTop: 0px;
+    paddingBottom: 0px;
+}
+
+.topButton{
+    fontFamily: "Arial";
+    fontSize: 14px;
+    paddingTop: 0px;
+    chromeColor: #ce2029;
+    color: "#fcfafa";
+    borderStyle: none;
+}
+.labelTitle{
+    fontFamily: Arial;
+    fontWeight: bold;
+    fontSize: 11;
+    color: #a39e9e;
+}
+.labelText{
+    fontFamily: Arial;
+    fontWeight: bold;
+    fontSize: 12;
+    color: #706f6f;
+}
+
+.textInputBase{
+    fontFamily: Arial;
+    borderStyle:"inset";
+    cornerRadius:"7";
+    fontWeight:"bold";
+    textAlign:"left";
+    shadowDirection:"center";
+    shadowDistance:"5";
+    fontSize:"12";
+    backgroundAlpha:"0.6";
+    dropShadowColor:"0xFF0000";
+
+}
+s|CheckBox
+{
+    symbolColor: #332C2C;
+}
+.RichEditableText
+{
+    backgroundColor: #FF0000;
+    color: #FFFFFF;
+    fontFamily: Arial;
+    fontSize: 10;
+    fontWeight: bold;
+    paddingBottom: 10;
+    paddingLeft: 10;
+    paddingRight: 10;
+    paddingTop: 10;
+}
+s|Scroller
+{
+    symbolColor: #332C2C;
 }

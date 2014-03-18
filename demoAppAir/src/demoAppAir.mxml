@@ -3,11 +3,11 @@
                        xmlns:s="library://ns.adobe.com/flex/spark"
                        xmlns:mx="library://ns.adobe.com/flex/mx"
                        xmlns:comp="components.*"
-                       width="825" height="1028"
+                       backgroundColor="0xcccccc"
+                       width="825" height="750"
                        creationComplete="initEvent(event)">
-    <fx:Declarations>
-        <!-- Place non-visual elements (e.g., services, value objects) here -->
-    </fx:Declarations>
+    <fx:Style source="demoStyles.css"/>
+
     <fx:Script>
         <![CDATA[
         import mx.events.FlexEvent;
@@ -32,8 +32,9 @@
         private var presenceString:String;
         private var historyString:String;
         private var flow:TextFlow;
-        private var chromeColorStatusOn:String = "#56B6F9";
-        private var chromeColorStatusOff:String = "#cd0202";
+        private const colorRed:String = "#ce7777";
+        private var chromeColorStatusOff:String = "#cccccc";
+        private var chromeColorStatusOn:String = "#ce7777";
         private var SOME_UUID:String = 'some_uuid';
         private var currentHeartbeat:int;
         private var currentHeartbeatInterval:int;
@@ -67,8 +68,8 @@
             pamChannelTextInput.text = 'air_channel';
             pamTtlTextInput.text = '15';
 
-            btnSSL.setStyle("icon", iconLock);
-            btnSSL.setStyle("chromeColor", chromeColorStatusOff);
+            btnSSL.setStyle("icon", iconUnLock);
+            btnSSL.setStyle("chromeColor", chromeColorStatusOn);
 
             miscContainer.visible = miscContainer.includeInLayout = false;
             presenceContainer.visible = presenceContainer.includeInLayout = false;
@@ -197,15 +198,24 @@
                     presenceAppend(message);
                 },
                 connect: function subscribeConnectHandler(channel:String):void {
+                    unsubscribeButton.visible = true;
                     unsubscribeButton.enabled = true;
+                    unsubscribeButton.includeInLayout = true;
                     subscribeButton.enabled = false;
+                    subscribeButton.includeInLayout = false;
+                    subscribeButton.visible = false;
+
                     connected();
                     updateHeartbeatValues();
                     appendStringToConsole(channel);
                 },
                 error: function subscribeErrorHandler(e:Object):void {
+                    unsubscribeButton.visible = true;
                     unsubscribeButton.enabled = true;
+                    unsubscribeButton.includeInLayout = true;
                     subscribeButton.enabled = false;
+                    subscribeButton.includeInLayout = false;
+                    subscribeButton.visible = false;
                     appendErrorToConsole(e);
                 }
             });
@@ -227,6 +237,13 @@
                     appendObjectToConsole(message);
                     subscribeButton.enabled = true;
                     unsubscribeButton.enabled = false;
+
+                    subscribeButton.visible = true;
+                    subscribeButton.enabled = true;
+                    subscribeButton.includeInLayout = true;
+                    unsubscribeButton.enabled = false;
+                    unsubscribeButton.includeInLayout = false;
+                    unsubscribeButton.visible = false;
                 }
             });
         }
@@ -344,19 +361,19 @@
 
         private function miscToggle():void {
             miscContainer.visible = miscContainer.includeInLayout = !miscContainer.visible;
-            miscTab.setStyle("chromeColor", miscContainer.visible ? chromeColorStatusOn : chromeColorStatusOff);
+            miscTab.setStyle("chromeColor", miscContainer.visible ? chromeColorStatusOff : chromeColorStatusOn);
         }
 
         private function presenceToggle():void {
             presenceContainer.visible = presenceContainer.includeInLayout = !presenceContainer.visible;
-            presenceTab.setStyle("chromeColor", presenceContainer.visible ? chromeColorStatusOn : chromeColorStatusOff);
+            presenceTab.setStyle("chromeColor", presenceContainer.visible ? chromeColorStatusOff : chromeColorStatusOn);
         }
 
         // Helpers:
         private function sslToggle():void {
             isSsl = !isSsl;
             btnSSL.setStyle("icon", isSsl ? iconLock : iconUnLock);
-            btnSSL.setStyle("chromeColor", isSsl ? chromeColorStatusOn : chromeColorStatusOff);
+            btnSSL.setStyle("chromeColor", isSsl ? chromeColorStatusOff : chromeColorStatusOn);
             subscribe();
         }
 
@@ -438,21 +455,21 @@
             if (str != "") {
                 appendStringToConsole(str);
             }
-            this.subConnectionStatus.setStyle('backgroundColor', "#00FC00");
+            this.subConnectionStatus.setStyle('backgroundColor', "#45c799");
         }
 
         private function connecting(str:String = ""):void {
             if (str != "") {
                 appendStringToConsole(str);
             }
-            this.subConnectionStatus.setStyle('backgroundColor', "#FFD219");
+            this.subConnectionStatus.setStyle('backgroundColor', "#bbbbbb");
         }
 
         private function disconnected(str:String = ""):void {
             if (str != "") {
                 appendStringToConsole(str);
             }
-            this.subConnectionStatus.setStyle('backgroundColor', "#FC0000");
+            this.subConnectionStatus.setStyle('backgroundColor', "#colorRed");
         }
 
         private function getMessagesTextArea():void {
@@ -483,175 +500,229 @@
         }
         ]]>
     </fx:Script>
-    <s:VGroup horizontalAlign="center">
-        <s:BorderContainer id="topContainer" width="100%">
-            <s:HGroup paddingTop="6" paddingBottom="6" horizontalCenter="0" verticalCenter="0">
-                <s:Button id="subscribeButton" width="118" height="32" label="SUBSCRIBE"
-                          chromeColor="#CD0202" click="subscribe()" color="#FCFAFA"/>
-                <s:Button id="unsubscribeButton" width="118" height="32" label="UNSUBSCRIBE"
-                          chromeColor="#CD0202" click="unsubscribe()" color="#F9F1F1"
-                          enabled="false"/>
-                <s:Button id="btnSSL" height="32" label="SSL" chromeColor="#56B6F9"
-                          click="sslToggle()" color="#FEFDFD"/>
-                <s:Button id="miscTab" height="32" label="MISC" chromeColor="#CD0202"
-                          click="miscToggle()" color="#FDF9F9"/>
-                <s:Button id="presenceTab" height="32" label="PRESENCE" chromeColor="#CD0202"
-                          click="presenceToggle()" color="#FEFBFB"/>
+    <s:VGroup verticalAlign="top" width="800" horizontalAlign="center"  horizontalCenter="0">
+
+        <s:HGroup width="100%" height="55" verticalAlign="middle">
+            <s:Button id="subscribeButton" width="130" height="32" label="SUBSCRIBE" includeInLayout="false" visible="false"
+                      click="subscribe()"  styleName="redButton"/>
+            <s:Button id="unsubscribeButton" width="130" height="32" label="UNSUBSCRIBE"
+                      click="unsubscribe()"  enabled="false" styleName="redButton"/>
+            <s:Button id="btnSSL" height="32" label="SSL"
+                      click="sslToggle()" styleName="redButton"/>
+            <s:Button id="miscTab" height="32" label="MISC" click="miscToggle()"
+                      styleName="redButton"/>
+            <s:Button id="presenceTab" height="32" label="PRESENCE" click="presenceToggle()" styleName="redButton"/>
+            <s:HGroup width="100%" horizontalAlign="right">
+
+                <s:BorderContainer id="subConnectionStatus" width="100%" height="48"
+                                   backgroundColor="{Number(colorRed)}" color="#FEFEFE" cornerRadius="7" borderColor="0xfefefe">
+                    <s:Label x="11" y="8" color="#F4F0F0"  text="connection status" styleName="labelTitle"/>
+                    <s:Label id="labelConnectionStatus" x="10" y="25" width="275" color="#FEFBFB"
+                             paddingBottom="6" styleName="labelText"
+                             text="NOT CONNECTED - Press 'Subscribe' Button" textAlign="left"
+                             verticalAlign="middle"/>
+                </s:BorderContainer>
             </s:HGroup>
-        </s:BorderContainer>
+        </s:HGroup>
 
-        <s:VGroup width="100%" horizontalAlign="center" paddingTop="6" paddingBottom="6">
-            <s:BorderContainer id="miscContainer" width="100%" backgroundColor="#FDF9F9"
-                               borderColor="#FEFEFE" chromeColor="#FCF9F9">
-                <s:HGroup horizontalCenter="0" verticalCenter="0">
-                    <s:Button x="11" y="5" label="time" chromeColor="#CD0202" click="time()"
-                              color="#F9F5F5"/>
-                    <s:Button id="UUID" x="93" y="5" label="UUID" chromeColor="#CD0202"
-                              click="doUUID()" color="#F9F5F5"/>
-                    <s:Button id="getUUID" x="175" y="5" label="getUUID" chromeColor="#CD0202"
-                              click="doGetUUID()" color="#F9F5F5"/>
-                </s:HGroup>
-            </s:BorderContainer>
-            <s:BorderContainer id="presenceContainer" visible="true" bottom="6" width="100%"
-                               borderColor="#FCFAFA" includeInLayout="true">
-                <s:VGroup x="10" top="34" bottom="40">
-                    <s:HGroup>
-                        <s:Label text="key: "/>
-                        <s:TextInput id="keyField1" width="77"/>
-                        <s:Label text="value: "/>
-                        <s:TextInput id="valueField1" width="77"/>
-                    </s:HGroup>
-                    <s:HGroup>
-                        <s:Label text="key: "/>
-                        <s:TextInput id="keyField2" width="77"/>
-                        <s:Label text="value: "/>
-                        <s:TextInput id="valueField2" width="77"/>
-                    </s:HGroup>
-                    <s:HGroup>
-                        <s:Label text="key: "/>
-                        <s:TextInput id="keyField3" width="77"/>
-                        <s:Label text="value: "/>
-                        <s:TextInput id="valueField3" width="77"/>
-                    </s:HGroup>
+        <s:Scroller width="100%" height="650">
+            <s:VGroup width="100%" horizontalAlign="center" height="100%">
+                <s:VGroup width ="100%" horizontalAlign="center" paddingTop="6" paddingBottom="0">
+                    <s:BorderContainer id="miscContainer" width="100%" backgroundColor="0xeeeeee"
+                                       borderColor="0xfefefe"  cornerRadius="7" height="40" >
+                        <s:HGroup width="100%" height="100%" verticalAlign="middle" horizontalAlign="center">
+                            <s:Button label="Time" click="time()" styleName="redButton"/>
+                            <s:Button id="UUID"  label="UUID" click="doUUID()" styleName="redButton"/>
+                            <s:Button id="getUUID"  label="GetUUID" click="doGetUUID()"  styleName="redButton" />
+                        </s:HGroup>
+                    </s:BorderContainer>
+
+                    <s:BorderContainer id="presenceContainer" width="100%" backgroundColor="0xeeeeee" height="185"
+                                       borderAlpha="1.0" borderColor="0xfefefe" cornerRadius="7"
+                                       includeInLayout="true">
+                        <s:Group width="100%" height="165" top="10">
+                            <s:VGroup x="10" top="34" bottom="40">
+                                <s:HGroup verticalAlign="middle">
+                                    <s:Label text="key: "/>
+                                    <s:TextInput id="keyField1" width="77"/>
+                                    <s:Label text="value: "/>
+                                    <s:TextInput id="valueField1" width="77"/>
+                                </s:HGroup>
+                                <s:HGroup verticalAlign="middle">
+                                    <s:Label text="key: "/>
+                                    <s:TextInput id="keyField2" width="77"/>
+                                    <s:Label text="value: "/>
+                                    <s:TextInput id="valueField2" width="77" chromeColor="#CCCCCC"
+                                                 contentBackgroundColor="#F4F5A9"/>
+                                </s:HGroup>
+                                <s:HGroup verticalAlign="middle">
+                                    <s:Label text="key: "/>
+                                    <s:TextInput id="keyField3" width="77"/>
+                                    <s:Label text="value: "/>
+                                    <s:TextInput id="valueField3" width="77"/>
+                                </s:HGroup>
+                            </s:VGroup>
+                            <s:Button id="presenceStateUpdateButton" label="Update" right="547" top="5" click="stateClickHandler(event)" styleName="redButton"/>
+                            <s:Label x="10" y="10" fontWeight="bold" text="State fields:"/>
+                            <s:TextInput id="presenceChannelInput" x="382" y="10" width="227" chromeColor="#CCCCCC"
+                                         color="#868181" contentBackgroundColor="#F4F5A9" enabled="true"
+                                         fontFamily="Arial" prompt="channel" styleName="textInputBase"/>
+                            <s:Button id="presenceHereNowButton" x="285" y="42" width="94" label="Here now"
+                                      click="hereNowHandler()" styleName="redButton"/>
+
+                            <s:CheckBox id="presenceUUIDsCheckbox" x="503" y="43" label="uuids" selected="true"/>
+                            <s:CheckBox id="presenceStateCheckbox" x="563" y="43" label="state"
+                                        selected="true"/>
+                            <s:CheckBox id="presenceChannelCheckbox" x="385" y="43" width="113"
+                                        label="single channel ^" selected="true"/>
+                            <s:CheckBox id="presenceBindToSubscribeChannelCheckbox" x="614" y="11"
+                                        label="Bind to subscribe channel" selected="true"/>
+                            <s:Button id="presenceWhereNowButton" x="285" y="88" label="Where Now" click="whereNowHandler()" styleName="redButton"/>
+                            <s:TextInput id="presenceUUIDInput" x="385" y="88" width="224" enabled="true"
+                                         prompt="uuid"/>
+                            <s:Label x="289" y="10" fontWeight="bold" text="Channel:"/>
+                            <s:Button id="presenceSetCurrentUUIDButton" x="615" y="88" label="Use current UUID" click="setCurrentUUIDHandler()" styleName="redButton"/>
+                            <s:Label x="10" y="122" fontWeight="bold" text="Hearbeat:"/>
+                            <s:Label x="384" y="120" fontWeight="bold" text="Hearbeat interval:"/>
+                            <s:TextInput id="presenceHeartbeatIntervalInput" x="385" y="139" prompt="in seconds"/>
+                            <s:Button id="presenceHeartbeatIntervalGet" x="521" y="139" label="Get" click="getHeartbeatIntervalHandler()" styleName="redButton"/>
+                            <s:Button id="presenceHeartbeatIntervalSet" x="600" y="139" label="Set" click="setHeartbeatIntervalHandler()" styleName="redButton"/>
+                            <s:TextInput id="presenceHeartbeatInput" x="11" y="139" prompt="in seconds"/>
+                            <s:Button id="presenceHeartbeatGet" x="148" y="139" label="Get" click="getHeartbeatHandler()" styleName="redButton"/>
+                            <s:Button id="presenceHeartbeatSet" x="227" y="139" label="Set" click="setHeartbeatHandler()" styleName="redButton"/>
+                        </s:Group>
+
+                    </s:BorderContainer>
                 </s:VGroup>
-                <s:Button id="presenceStateUpdateButton" right="545" top="5" label="Update"
-                          chromeColor="#CD0202" click="stateClickHandler(event)" color="#FEFCFC"/>
-                <s:Label x="10" y="10" fontWeight="bold" text="State fields:"/>
-                <s:TextInput id="presenceChannelInput" x="378" y="5" width="227" enabled="true"
-                             prompt="channel"/>
-                <s:Button id="presenceHereNowButton" x="296" y="45" label="Here now"
-                          chromeColor="#CD0202" click="hereNowHandler()" color="#FCFAFA"/>
 
-                <s:CheckBox id="presenceUUIDsCheckbox" x="499" y="47" label="uuids" selected="true"/>
-                <s:CheckBox id="presenceStateCheckbox" x="559" y="46" label="state"
-                            selected="true"/>
-                <s:CheckBox id="presenceChannelCheckbox" x="378" y="47" width="113"
-                            label="single channel ^" selected="true"/>
-                <s:CheckBox id="presenceBindToSubscribeChannelCheckbox" x="613" y="7"
-                            label="Bind to subscribe channel" selected="true"/>
-                <s:Button id="presenceWhereNowButton" x="296" y="89" label="Where Now"
-                          chromeColor="#CD0202" click="whereNowHandler()" color="#FDFDFD"/>
-                <s:TextInput id="presenceUUIDInput" x="389" y="88" width="262" enabled="true"
-                             prompt="uuid"/>
-                <s:Label x="296" y="10" fontWeight="bold" text="Channel:"/>
-                <s:Button id="presenceSetCurrentUUIDButton" x="659" y="88" label="use current UUID"
-                          chromeColor="#CD0202" click="setCurrentUUIDHandler()" color="#FAF7F7"/>
-                <s:Label x="10" y="138" fontWeight="bold" text="Hearbeat:"/>
-                <s:Label x="375" y="138" fontWeight="bold" text="Hearbeat interval:"/>
-                <s:TextInput id="presenceHeartbeatIntervalInput" x="488" y="132" prompt="in seconds"/>
-                <s:Button id="presenceHeartbeatIntervalGet" x="625" y="132" label="get"
-                          chromeColor="#CD0202" click="getHeartbeatIntervalHandler()"
-                          color="#FDFCFC"/>
-                <s:Button id="presenceHeartbeatIntervalSet" x="704" y="132" label="set"
-                          chromeColor="#CD0202" click="setHeartbeatIntervalHandler()"
-                          color="#FDFAFA"/>
-                <s:TextInput id="presenceHeartbeatInput" x="74" y="132" prompt="in seconds"/>
-                <s:Button id="presenceHeartbeatGet" x="211" y="132" label="get" chromeColor="#CD0202"
-                          click="getHeartbeatHandler()" color="#FCF9F9"/>
-                <s:Button id="presenceHeartbeatSet" x="290" y="132" label="set" chromeColor="#CD0202"
-                          click="setHeartbeatHandler()" color="#FDFBFB"/>
-            </s:BorderContainer>
-        </s:VGroup>
+                <s:BorderContainer id="bottomContainer" width="100%" height="720"  backgroundColor="0xeeeeee"
+                                   borderColor="0xfefefe"  cornerRadius="7" bottom="6"  includeInLayout="true">
 
-        <s:BorderContainer id="bottomContainer" width="100%" height="765" borderColor="#A7A3A3">
-            <s:TextArea id="messagesTextArea" x="15" y="143" width="388" height="70" editable="true"
-                        enabled="true" maxChars="250"/>
-            <s:Label x="17" y="229" height="19" text="Messages:"/>
-            <s:Button id="clearLog" x="84" y="227" height="15" label="Clear" chromeColor="#CD0202"
-                      click="clearLogHandler()" color="#FDF9F9"/>
-            <s:Button x="331" y="191" label="Publish" chromeColor="#CD0202" click="publish()"
-                      color="#FDF9F9"/>
-            <s:TextInput id="originTextInput" x="119" y="36" text="pubsub.pubnub.com"/>
-            <s:TextInput id="subscribeKeyTextInput" x="420" y="39" width="314" text="demo"/>
-            <s:TextInput id="channelTextInput" x="119" y="6" change="channelChangedHandler()"/>
-            <s:TextInput id="publishKeyTextInput" x="420" y="8" width="314" text="demo"
-                         textAlign="left"/>
-            <s:Label x="47" y="42" text="origin"/>
-            <s:Label x="46" y="12" text="channel"/>
-            <s:Label x="332" y="44" height="15" text="subscribe key" textAlign="right"/>
-            <s:Label x="346" y="12" text="publish key" textAlign="right"/>
+                    <s:VGroup top="15" left="15" right="15" gap="20" width="100%">
+                        <s:HGroup gap="40" width="100%" >
+                            <s:VGroup width="100%">
+                                <s:HGroup gap="10" verticalAlign="middle" width="100%" horizontalAlign="right">
+                                    <s:Label text="channel"/>
+                                    <s:TextInput id="channelTextInput" width="201" change="channelChangedHandler()"/>
+                                </s:HGroup>
+                                <s:HGroup gap="10" verticalAlign="middle" width="100%" horizontalAlign="right">
+                                    <s:Label text="origin"/>
+                                    <s:TextInput id="originTextInput" width="201"/>
+                                </s:HGroup>
+                                <s:HGroup gap="10" verticalAlign="middle" width="100%" horizontalAlign="right">
+                                    <s:Label text="auth_key"/>
+                                    <s:TextInput id="authKeyTextInput"  width="201"/>
+                                </s:HGroup>
+                                <s:HGroup gap="10" verticalAlign="middle" width="100%" horizontalAlign="right">
+                                    <s:Label  text="cipher_key"/>
+                                    <s:TextInput id="cipherKeyTextInput" width="201"/>
+                                </s:HGroup>
+                            </s:VGroup>
+                            <s:VGroup width="100%" horizontalAlign="right">
+                                <s:HGroup gap="10" verticalAlign="middle" width="100%" horizontalAlign="right">
+                                    <s:Label  text="publish key" textAlign="right"/>
+                                    <s:TextInput id="publishKeyTextInput" width="362" textAlign="left"/>
+                                </s:HGroup>
+                                <s:HGroup gap="10" verticalAlign="middle" width="100%" horizontalAlign="right">
+                                    <s:Label  height="15" text="subscribe key" textAlign="right"/>
+                                    <s:TextInput id="subscribeKeyTextInput"  width="362"/>
+                                </s:HGroup>
+                                <s:HGroup gap="10" verticalAlign="middle" width="100%" horizontalAlign="right">
+                                    <s:Label text="UUID"/>
+                                    <s:TextInput id="uuidInput"  width="273" text="flash_client"/>
 
-            <s:BorderContainer id="subConnectionStatus" x="420" y="101" width="53" height="13"
-                               backgroundColor="#FC0000">
-            </s:BorderContainer>
-            <s:Label x="326" y="103" color="#626262" fontStyle="italic" text="SUB Net status"/>
-            <s:Label x="48" y="70" text="auth_key"/>
-            <s:Label x="37" y="101" text="cipher_key"/>
-            <s:TextInput id="authKeyTextInput" x="119" y="64" text="air_channel"/>
-            <s:TextInput id="cipherKeyTextInput" x="118" y="93"/>
-            <s:Group id="pamGroup" x="10" y="609" width="792" height="230">
-                <s:Rect id="pamBackground" x="0" y="-68" width="100%" height="216">
-                    <s:fill>
-                        <s:SolidColor color="#FF0000"/>
-                    </s:fill>
-                </s:Rect>
-                <s:TextInput id="pamChannelTextInput" x="10" y="-38" width="314"/>
-                <s:Label x="10" y="-58" text="channel"/>
-                <s:Label x="10" y="-8" text="auth_key"/>
-                <s:TextInput id="pamAuthKeyTextInput" x="10" y="12" width="314"/>
-                <s:Label x="10" y="42" text="secret key"/>
-                <s:TextInput id="pamSecretKeyTextInput" x="10" y="62" width="314"/>
-                <s:Label x="10" y="92" text="ttl"/>
-                <s:TextInput id="pamTtlTextInput" x="10" y="110" width="314"/>
-                <s:CheckBox id="pamReadCheckbox" x="365" y="-37" label="Read ?"/>
-                <s:CheckBox id="pamWriteCheckbox" x="366" y="-11" label="Write ?"/>
-                <s:Button id="grantButton" x="366" y="55" label="Grant" chromeColor="#CD0202"
-                          click="grant()" color="#FBF7F7"/>
-                <s:Button id="revokeButton" x="366" y="84" label="Revoke" chromeColor="#CD0202"
-                          click="revoke()" color="#FDFAFA"/>
-                <s:Button id="auditButton" x="366" y="109" label="Audit" chromeColor="#CD0202"
-                          click="audit()" color="#FDFAFA"/>
-                <s:CheckBox id="pamPnpresCheckbox" x="366" y="16" label="apply to *-pnpres channel too"
-                            selected="true"/>
-                <s:Label x="560" y="-52" fontSize="20" fontWeight="bold" text="PAM - Access Manager"/>
-            </s:Group>
-            <s:Scroller x="423" y="142" width="382" height="70">
-                <s:RichEditableText id="presenceArea" backgroundColor="#000000" color="#FFFFFF"
-                                    editable="false" fontFamily="Arial" fontSize="10"
-                                    paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"
-                                    fontWeight="bold"/>
-            </s:Scroller>
-            <s:Label x="425" y="126" text="presence"/>
-            <s:Scroller x="425" y="245" width="382" height="272">
-                <s:RichEditableText id="historyArea" backgroundColor="#000000" color="#FFFFFF"
-                                    editable="false" fontFamily="Arial" fontSize="10"
-                                    paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
-            </s:Scroller>
-            <s:Label x="426" y="230" text="history"/>
-            <s:Button id="clearPresence" x="735" y="124" height="15" label="Clear"
-                      chromeColor="#CD0202" click="clearPresenceHandler()" color="#FDF9F9"/>
-            <s:Button id="clearHistory" x="737" y="227" height="15" label="Clear"
-                      chromeColor="#CD0202" click="clearHistoryHandler()" color="#FDF9F9"/>
-            <s:Button id="historyButton" x="475" y="224" label="History" chromeColor="#CD0202"
-                      click="history()" color="#FDF9F9"/>
-            <s:Scroller x="15" y="245" width="382" height="272">
-                <s:RichEditableText id="consoleLog" backgroundColor="#000000" color="#FFFFFF"
-                                    editable="false" fontFamily="Arial" fontSize="10" fontWeight="bold"
-                                    paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
-            </s:Scroller>
-            <s:TextInput id="uuidInput" x="420" y="71" width="229" text="air_client"/>
-            <s:Label x="379" y="77" text="UUID"/>
-            <s:CheckBox id="useDefaultUUIDCheckbox" x="653" y="73" label="use default"/>
-        </s:BorderContainer>
+                                    <s:CheckBox id="useDefaultUUIDCheckbox" label="use default"
+                                                selected="false"/>
+                                </s:HGroup>
+                            </s:VGroup>
+                        </s:HGroup>
+                        <s:HGroup width="100%" gap="15">
+                            <s:VGroup horizontalAlign="right" height="100%" verticalAlign="bottom" gap="0">
+                                <s:TextArea id="messagesTextArea"  width="380" height="70" editable="true"
+                                            enabled="true" maxChars="250"/>
+                                <s:Button  label="Publish" click="publish()" styleName="redButton"/>
+                            </s:VGroup>
+                            <s:VGroup width="100%" gap="0">
+                                <s:HGroup width="100%" verticalAlign="middle">
+                                    <s:Label  text="presence"/>
+                                    <s:Spacer width="100%"/>
+                                    <s:Button id="clearPresence"  height="21" label="Clear" click="clearPresenceHandler()" styleName="redButton"/>
+                                </s:HGroup>
+                                <s:Scroller  width="365" height="91">
+                                    <s:RichEditableText id="presenceArea" backgroundColor="#000000" color="#FFFFFF"
+                                                        editable="false" fontFamily="Arial" fontSize="10"
+                                                        paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"
+                                                        fontWeight="bold"/>
+                                </s:Scroller>
+                            </s:VGroup>
+                        </s:HGroup>
+                        <s:HGroup width="100%" gap="15">
+                            <s:VGroup gap="0">
+                                <s:HGroup verticalAlign="middle" width="100%">
+                                    <s:Label  height="19" text="Messages:"/>
+                                    <s:Spacer width="100%"/>
+                                    <s:Button id="clearLog"  height="21" label="Clear" click="clearLogHandler()" styleName="redButton"/>
+                                </s:HGroup>
+                                <s:Scroller  width="380" height="272">
+                                    <s:RichEditableText id="consoleLog" backgroundColor="#000000" color="#FFFFFF"
+                                                        editable="false" fontFamily="Arial" fontSize="10"
+                                                        fontWeight="bold" paddingBottom="10" paddingLeft="10"
+                                                        paddingRight="10" paddingTop="10"/>
+                                </s:Scroller>
+                            </s:VGroup>
+                            <s:VGroup gap="0">
+                                <s:HGroup verticalAlign="middle" width="100%">
+                                    <s:Label  text="history"/>
+                                    <s:Button id="historyButton"  label="History" click="history()" styleName="redButton"/>
+                                    <s:Spacer width="100%"/>
+                                    <s:Button id="clearHistory"  height="21" label="Clear" click="clearHistoryHandler()" styleName="redButton"/>
+
+                                </s:HGroup>
+                                <s:Scroller  width="363" height="272">
+                                    <s:RichEditableText id="historyArea" backgroundColor="#000000" color="#FFFFFF"
+                                                        editable="false" fontFamily="Arial" fontSize="10"
+                                                        paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+                                </s:Scroller>
+                            </s:VGroup>
+                        </s:HGroup>
+                        <s:HGroup width="100%" gap="15">
+                            <s:VGroup >
+                                <s:HGroup gap="10" verticalAlign="middle" width="100%" horizontalAlign="right">
+                                    <s:Label  text="channel"/>
+                                    <s:TextInput id="pamChannelTextInput"  width="314"/>
+                                </s:HGroup>
+                                <s:HGroup gap="10" verticalAlign="middle"  width="100%" horizontalAlign="right">
+                                    <s:Label x="10" y="-11" text="auth_key"/>
+                                    <s:TextInput id="pamAuthKeyTextInput"  width="314"/>
+                                </s:HGroup>
+                                <s:HGroup gap="10" verticalAlign="middle"  width="100%" horizontalAlign="right">
+                                    <s:Label  text="secret key"/>
+                                    <s:TextInput id="pamSecretKeyTextInput"  width="314"/>
+                                </s:HGroup>
+                                <s:HGroup gap="10" verticalAlign="middle"  width="100%" horizontalAlign="right">
+                                    <s:Label  text="ttl"/>
+                                    <s:TextInput id="pamTtlTextInput"  width="314"/>
+                                </s:HGroup>
+                            </s:VGroup>
+                            <s:VGroup >
+                                <s:CheckBox id="pamReadCheckbox"  label="Read ?"/>
+                                <s:CheckBox id="pamWriteCheckbox"  label="Write ?"/>
+                                <s:CheckBox id="pamPnpresCheckbox"  label="apply to *-pnpres channel too" selected="true"/>
+                                <s:HGroup height="35" verticalAlign="bottom">
+                                    <s:Button id="grantButton"  label="Grant" click="grant()" styleName="redButton"/>
+                                    <s:Button id="revokeButton"  label="Revoke" click="revoke()" styleName="redButton"/>
+                                    <s:Button id="auditButton"  label="Audit" click="audit()" styleName="redButton"/>
+
+                                </s:HGroup>
+                            </s:VGroup>
+
+                        </s:HGroup>
+                    </s:VGroup>
+
+                    <s:Label x="547" y="589" fontSize="20" fontWeight="bold" text="PAM - Access Manager"/>
+
+                </s:BorderContainer>
+            </s:VGroup>
+        </s:Scroller>
     </s:VGroup>
 </s:WindowedApplication>
