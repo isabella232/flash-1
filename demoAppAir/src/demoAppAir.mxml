@@ -47,6 +47,10 @@
         private var currentChannel:String;
         public var isSsl:Boolean = false;
 
+        private var statusNotConnected:String = "NOT CONNECTED - Press 'Subscribe' Button";
+        private var statusConnecting:String = "Connecting...";
+        private var statusConnected:String = "CONNECTED - Press 'Publish' Button";
+
         [Embed(source='../assets/Lock.png')]
         [Bindable]
         public var iconLock:Class;
@@ -467,6 +471,7 @@
                 appendStringToConsole(str);
             }
             this.subConnectionStatus.setStyle('backgroundColor', "#45c799");
+            labelConnectionStatus.text =  statusConnected;
         }
 
         private function connecting(str:String = ""):void {
@@ -474,6 +479,7 @@
                 appendStringToConsole(str);
             }
             this.subConnectionStatus.setStyle('backgroundColor', "#bbbbbb");
+            labelConnectionStatus.text = statusConnecting;
         }
 
         private function disconnected(str:String = ""):void {
@@ -481,6 +487,7 @@
                 appendStringToConsole(str);
             }
             this.subConnectionStatus.setStyle('backgroundColor', "#colorRed");
+            labelConnectionStatus.text =  statusNotConnected;
         }
 
         private function getMessagesTextArea():void {
