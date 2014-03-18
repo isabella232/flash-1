@@ -4,13 +4,17 @@
                        xmlns:mx="library://ns.adobe.com/flex/mx"
                        xmlns:comp="components.*"
                        backgroundColor="0xcccccc"
-                       width="825" height="750"
-                       creationComplete="initEvent(event)">
+                       width="825" height="825" showStatusBar="false"
+                       creationComplete="initEvent(event)"
+                       resize="resizeEvent(event)">
     <fx:Style source="demoStyles.css"/>
 
     <fx:Script>
         <![CDATA[
         import mx.events.FlexEvent;
+        import mx.charts.CategoryAxis;
+        import mx.events.ResizeEvent;
+        import mx.formatters.DateFormatter;
 
         import flashx.textLayout.elements.TextFlow;
 
@@ -23,6 +27,8 @@
         private var html:HTMLLoader = new HTMLLoader();
         private var urlRequest:URLRequest = new URLRequest('demoAppAir.html');
 
+        [Bindable]
+        private var scrollHeight:Number = 0;
         [Bindable]
         public var p:*;
         public var config:Object;
@@ -50,6 +56,11 @@
         public var iconUnLock:Class;
 
         protected function initEvent(event:FlexEvent):void {
+            if(Capabilities.screenResolutionY < this.height) {
+                this.height = Capabilities.screenResolutionY;
+            }
+
+            scrollHeight = this.height - topGroup.height - mainGroup.gap;
 
             getMessagesTextArea();
 
@@ -498,11 +509,19 @@
                 unsubscribe();
             }
         }
+
+        protected function resizeEvent(event:ResizeEvent):void
+        {
+            try{
+                scrollHeight = this.height - topGroup.height - mainGroup.gap;
+            }
+            catch(error:Error){}
+        }
         ]]>
     </fx:Script>
-    <s:VGroup verticalAlign="top" width="800" horizontalAlign="center"  horizontalCenter="0">
+    <s:VGroup id="mainGroup" verticalAlign="top" width="800" horizontalAlign="center"  horizontalCenter="0">
 
-        <s:HGroup width="100%" height="55" verticalAlign="middle">
+        <s:HGroup id="topGroup" width="100%" height="55" verticalAlign="middle">
             <s:Button id="subscribeButton" width="130" height="32" label="SUBSCRIBE" includeInLayout="false" visible="false"
                       click="subscribe()"  styleName="redButton"/>
             <s:Button id="unsubscribeButton" width="130" height="32" label="UNSUBSCRIBE"
@@ -525,7 +544,7 @@
             </s:HGroup>
         </s:HGroup>
 
-        <s:Scroller width="100%" height="650">
+        <s:Scroller width="100%" height="{scrollHeight}">
             <s:VGroup width="100%" horizontalAlign="center" height="100%">
                 <s:VGroup width ="100%" horizontalAlign="center" paddingTop="6" paddingBottom="0">
                     <s:BorderContainer id="miscContainer" width="100%" backgroundColor="0xeeeeee"
