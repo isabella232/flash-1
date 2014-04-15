@@ -1,0 +1,13 @@
+<extension xmlns="http://ns.adobe.com/air/extension/3.6">
+  <id>com.pubnub.air</id>
+  <versionNumber>1</versionNumber>
+  <platforms>
+    <platform name="Android-ARM">
+      <applicationDeployment>
+        <nativeLibrary>PubNubAirAndroid.jar</nativeLibrary>
+        <initializer>com.pubnub.air.PubNubAir</initializer>
+        <finalizer>com.pubnub.air.PubNubAir</finalizer>
+      </applicationDeployment>
+    </platform>
+  </platforms>
+</extension>

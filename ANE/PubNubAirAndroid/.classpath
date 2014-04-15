@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry exported="true" kind="lib" path="C:/Program Files/Adobe/Adobe Flash Builder 4.7 (64 Bit)/eclipse/plugins/com.adobe.flash.compiler_4.7.0.349722/AIRSDK/lib/android/FlashRuntimeExtensions.jar"/>
+	<classpathentry kind="lib" path="C:/adt/sdk/platforms/android-19/android.jar"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="lib" path="libs/Pubnub-Android-3.6.0.jar"/>
+	<classpathentry kind="lib" path="libs/bcprov-jdk15on-1.47.jar"/>
+	<classpathentry kind="lib" path="libs/android-support-v4.jar"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>

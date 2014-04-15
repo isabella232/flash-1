@@ -1,0 +1,1 @@
+adb install -r "C:\projects\pubnub\ANESAM~1\WORKSP~1\test\test.apk"

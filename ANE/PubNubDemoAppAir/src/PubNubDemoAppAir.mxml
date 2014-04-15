@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark" applicationDPI="160"
+               backgroundColor="0xcccccc" height="100%" width="100%">
+    <fx:Style source="demoStyles.css"/>
+    <fx:Declarations>
+    </fx:Declarations>
+    <fx:Script>
+        <![CDATA[
+        import com.pubnub.air.PubNub;
+
+        private var pubnub:PubNub;
+
+        private var pubnub2:PubNub;
+        private var asyncFunctions:Object = [];
+        private var currentChannel:String;
+
+        public function button1_clickPublishHandler(event:MouseEvent):void {
+            currentChannel = channelTextInput.text;
+
+            if (!pubnub) {
+                pubnub = new PubNub({
+                    subscribe_key: 'demo',
+                    publish_key: 'demo'
+                });
+            }
+            pubnub.publish({
+                channel: channelTextInput.text,
+                message: messagesTextArea.text,
+                callback: function (result:*):void {
+                    trace('Got result:');
+                    trace(result);
+                },
+                error: function (error:Object):void {
+                    trace('Got ERROR:');
+                    trace(error);
+                }
+            });
+        }
+
+        public function runTestsButton(event:MouseEvent):void {
+            if (!pubnub) {
+                pubnub = new PubNub({
+                    subscribe_key: 'demo',
+                    publish_key: 'demo'
+                });
+            }
+
+            trace('============SYNCHRONOUS FUNCS=========');
+            assertEqual(pubnub.get_heartbeat(), 0, 'default heartbeat');
+            pubnub.set_heartbeat(20);
+            assertEqual(pubnub.get_heartbeat(), 20, 'heartbeat update');
+
+
+            assertNotEmpty(pubnub.uuid(), 'uuid generation');
+            pubnub.setUUID('blahblah');
+            assertEqual(pubnub.getUUID(), 'blahblah', 'uuid setting');
+
+
+            assertEqual(pubnub.get_origin(), 'pubsub', 'getting default origin');
+            pubnub.set_origin('presence-beta');
+            assertEqual(pubnub.get_origin(), 'presence-beta', 'updating origin');
+            pubnub.set_origin('pubsub');
+
+
+            assertEqual(pubnub.get_domain(), 'pubnub.com', 'getting default domain');
+            pubnub.set_domain('blahblah.com');
+            assertEqual(pubnub.get_domain(), 'blahblah.com', 'updating domain');
+            pubnub.set_domain('pubnub.com');
+
+
+            assertEqual(pubnub.get_auth_key(), null, 'auth key default value');
+            pubnub.set_auth_key('blah');
+            assertEqual(pubnub.get_auth_key(), 'blah', 'updating auth key');
+            pubnub.unset_auth_key();
+            assertEqual(pubnub.get_auth_key(), null, 'unsetting auth key');
+
+
+            assertEqual(pubnub.get_non_subscribe_timeout(), 20, 'getting default nonSubscribeTimeout');
+            pubnub.set_non_subscribe_timeout(15);
+            assertEqual(pubnub.get_non_subscribe_timeout(), 15, 'updating nonSubscribeTimeout');
+            trace('============ASYNCHRONOUS FUNCS=========');
+
+            async('should return channel list', function (done:Function):void {
+                var uuid:String = 'uglyUUID';
+                pubnub.setUUID(uuid);
+
+                pubnub.subscribe({
+                    channel: 'flash_channel',
+                    connect: function ():void {
+                        trace('test1 subscribed', pubnub.getUUID());
+                        pubnub.where_now({
+                            uuid: pubnub.getUUID(),
+                            callback: function (result:*):void {
+                                trace(result);
+                                trace('test3 done');
+                                done();
+                            },
+                            error: function ():void {
+                                trace('error:', arguments);
+                            }
+                        });
+                    },
+                    error: function ():void {
+                        trace('error:', arguments);
+                    },
+                    callback: function ():void {
+                    }
+                });
+            });
+
+            async('should publish string', function (done:Function):void {
+                var message:String = 'some message';
+                pubnub.publish({
+                    channel: 'flash_channel',
+                    callback: function (result:*):void {
+                        trace(result);
+                        trace('test3 done');
+                        done();
+                    },
+                    error: function ():void {
+                        trace('error:', arguments);
+                    }
+                });
+            });
+
+
+            async('should subscribe to channel', function (done:Function):void {
+                pubnub.subscribe({
+                    channel: 'flash_channel',
+                    callback: function (result:*):void {
+                    },
+                    connect: function (result:*):void {
+                        trace('test3 done');
+                        pubnub.unsubscribe('flash_channel');
+                        done();
+                    },
+                    error: function ():void {
+                        trace('error:', arguments);
+                    }
+                });
+
+            });
+
+            executeAsync();
+            trace('============misc=========');
+            pubnub.unsubscribe_presence('flash_channel');
+            return;
+            trace('End');
+
+        }
+
+        public function button3_clickUnsubcribeHandler(event:MouseEvent = null):void {
+            if (pubnub) {
+                pubnub.unsubscribe('flash_channel');
+                enableBtnSubandUnsub(false);
+            }
+        }
+
+        private function onOutputFromChannelTextInput(event:TextEvent):void {
+            callLater(scrollToEnd);
+        }
+
+        private function scrollToEnd():void {
+            outputFromChannel.selectRange(int.MAX_VALUE, int.MAX_VALUE);
+
+        }
+
+        public function button2_clickSubcribeHandler(event:MouseEvent):void {
+            subscribeButton.enabled = false;
+            if (pubnub) {
+                pubnub.shutdown();
+                pubnub = null;
+            }
+            if (!pubnub) {
+                pubnub = new PubNub({
+                    subscribe_key: 'demo',
+                    publish_key: 'demo'
+                });
+            }
+
+            pubnub.subscribe({
+                channel: channelTextInput.text,
+                connect: function (result:*):void {
+                    trace('Connect:');
+                    trace(result);
+                    enableBtnSubandUnsub(true);
+                },
+                callback: function (result:*):void {
+                    trace('Subscribe callback:');
+                    trace(result);
+                    var prevText:String = outputFromChannel.text;
+                    outputFromChannel.text = (prevText.length > 0) ? "Type: " + typeof result + "\n" + JSON.stringify(result) + "\n" + prevText : "Type: " + typeof result + "\n" + JSON.stringify(result) + "\n";
+                },
+                error: function (error:Object):void {
+                    trace('Subscribe ERROR:');
+                    trace(error);
+                    subscribeButton.enabled = true;
+                }
+            });
+        }
+
+        private function assertEqual(actual:*, expected:*, description:String = ''):void {
+            if (expected === actual) {
+                trace('PASS', description);
+            } else {
+                trace('FAIL', description, '. expected', "'" + expected + "'", 'but was', "'" + actual + "'");
+            }
+
+        }
+
+        private function assertNotEmpty(val:*, description:String):void {
+            if (val is String) {
+                trace('PASS', description);
+            } else {
+                trace('FAIL', description);
+            }
+        }
+
+        private function async(description:String, func:Function, timeout:int = 2000):void {
+            asyncFunctions.push({func: func, description: description, timeout: timeout});
+        }
+
+        private function executeAsync():void {
+            next();
+
+            function execute(config:Object):void {
+                var t:int = setTimeout(function ():void {
+                    trace('X FAIL', config.description, 'timeout ' + config.timeout + 'ms reached');
+                    next();
+                }, config.timeout);
+
+                config.func(function ():void {
+                    clearTimeout(t);
+                    next();
+                });
+            }
+
+            function next():void {
+                var next:Object = asyncFunctions.shift();
+                if (next) {
+                    execute(next);
+                } else {
+                    pubnub.shutdown();
+                }
+            }
+        }
+
+        private function enableBtnSubandUnsub(isSub:Boolean):void {
+
+            subscribeButton.visible = !isSub;
+            subscribeButton.includeInLayout = !isSub;
+            subscribeButton.enabled = !isSub;
+
+            unsubscribeButton.includeInLayout = isSub;
+            unsubscribeButton.enabled = isSub;
+            unsubscribeButton.visible = isSub;
+        }
+
+        private function channelChangedHandler():void {
+            channel_val();
+        }
+
+        private function channel_val():String {
+
+            currentChannel = channelTextInput.text;
+            button3_clickUnsubcribeHandler();
+            return currentChannel;
+        }
+
+        private function clearLogHandler():void {
+            outputFromChannel.text = "";
+        }
+
+        private function clearMessagesHandler():void {
+            messagesTextArea.text = "";
+        }
+        ]]>
+    </fx:Script>
+    <s:VGroup verticalAlign="middle" width="100%" height="100%" gap="10" horizontalAlign="center" top="10" right="5"
+              left="5" bottom="10">
+
+        <s:BorderContainer id="btnContainer" width="100%" backgroundColor="0xeeeeee"
+                           borderColor="0xfefefe" cornerRadius="7" height="40">
+            <s:HGroup width="100%" height="100%" verticalAlign="middle" horizontalAlign="center">
+                <s:Button width="80" height="32" label="Publish" click="button1_clickPublishHandler(event)"
+                          id="publishButton" styleName="redButton"/>
+                <s:Button width="100" height="32" label="Subscribe" click="button2_clickSubcribeHandler(event)"
+                          id="subscribeButton" styleName="redButton"/>
+                <s:Button width="100" height="32" label="Unsubscribe" id="unsubscribeButton"
+                          click="button3_clickUnsubcribeHandler(event)" enabled="false" styleName="redButton"
+                          visible="false" includeInLayout="false"/>
+            </s:HGroup>
+        </s:BorderContainer>
+        <s:BorderContainer id="fieldContainer" width="100%" height="150" backgroundColor="0xeeeeee"
+                           borderColor="0xfefefe" cornerRadius="7">
+            <s:VGroup top="10" right="5" bottom="5" left="5" width="100%" height="100%" verticalAlign="middle"
+                      horizontalAlign="center" gap="0">
+                <s:HGroup verticalAlign="middle" width="100%">
+                    <s:Label text="channel:"/>
+                    <s:TextInput id="channelTextInput" text="flash_channel" change="channelChangedHandler()"
+                                 width="100%"/>
+                </s:HGroup>
+                <s:Spacer height="10"/>
+                <s:VGroup width="100%" height="100%" gap="0">
+                    <s:HGroup width="100%" verticalAlign="middle">
+                        <s:Label text="message:"/>
+                        <s:Spacer width="100%"/>
+                        <s:Button id="clearMessagesTextArea" height="32" label="Clear" click="clearMessagesHandler()"
+                                  styleName="redButton"/>
+                    </s:HGroup>
+
+                    <s:TextArea id="messagesTextArea" width="100%" height="100%" editable="true"
+                                enabled="true" maxChars="180"/>
+
+                </s:VGroup>
+            </s:VGroup>
+        </s:BorderContainer>
+        <s:BorderContainer id="scrollerContainer" width="100%" height="100%" backgroundColor="0xeeeeee"
+                           borderColor="0xfefefe" cornerRadius="7">
+            <s:VGroup top="10" right="5" bottom="5" left="5" width="100%" height="100%" verticalAlign="middle"
+                      horizontalAlign="center" gap="0">
+                <s:HGroup width="100%" verticalAlign="middle">
+                    <s:Label text="channel data:"/>
+                    <s:Spacer width="100%"/>
+                    <s:Button id="clearLog" height="32" label="Clear" click="clearLogHandler()" styleName="redButton"/>
+                </s:HGroup>
+                <s:TextArea id="outputFromChannel" width="100%" height="100%" editable="false"
+                            textInput="onOutputFromChannelTextInput(event)">
+
+                </s:TextArea>
+            </s:VGroup>
+        </s:BorderContainer>
+
+    </s:VGroup>
+</s:Application>
+
