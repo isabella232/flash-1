@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="PubNubAirMobile" type="flex">
     <CLASSES>
-      <root url="jar://$DOCUMENTS$/build-tools/PubNubAirMobile.ane!/" />
+      <root url="jar://$PROJECT_DIR$/../build-tools/PubNubAirMobile.ane!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
