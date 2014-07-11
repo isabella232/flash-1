@@ -80,7 +80,6 @@
 
             currentHeartbeat = 10;
             currentHeartbeatInterval = 3;
-            channelTextInput.addEventListener(Event.CHANGE, doSubscribe);
             subscribe();
         }
 
@@ -382,6 +381,10 @@
         }
 
         private function channelChangedHandler():void {
+            if (currentChannel && currentChannel.length > 0) {
+                unsubscribe();
+            }
+
             channel_val();
         }
 
@@ -491,11 +494,6 @@
             return DateTimeString;
         }
 
-        protected function doSubscribe(event:TextOperationEvent):void {
-            if (currentChannel && currentChannel.length > 0) {
-                unsubscribe();
-            }
-        }
         ]]>
     </fx:Script>
 
