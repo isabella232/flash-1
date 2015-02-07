@@ -11,6 +11,13 @@ package applicationTest {
             secret_key: SECRET_KEY
         };
 
+        public static var pamConfig36:Object = {
+            origin: "pubsub.pubnub.com",
+            publish_key: PUBLISH_KEY,
+            subscribe_key: SUBSCRIBE_KEY,
+            secret_key: SECRET_KEY
+        };
+
         public static var demoConfig:Object = {
             origin: "pubsub.pubnub.com",
             publish_key: "demo",
@@ -24,6 +31,10 @@ package applicationTest {
 
         public static function generateChannel():String {
             return "flash_test_channel_" + (new Date()).time;
+        }
+
+        public static function generateChannelGroup():String {
+            return "ftest_" + (new Date()).time;
         }
 
         public static function inListDeep(array:Array, obj:Object):Boolean {
