@@ -170,7 +170,7 @@ package applicationTest {
                 p.subscribe({
                     channel: currentChannel,
                     message: (function (channel:String, index:int):Function {
-                        return function (result:Object, envelope:Object, channel:String, time:Number):void {
+                        return function (result:Object, envelope:Object, channelOrGroup:String, time:Number, channel:String):void {
                             dispatchEvent(new PubNubEvent(PubNubEvent.SUBSCRIBE_RESULT + index, result));
                             p.unsubscribe({channel: channel});
                         }

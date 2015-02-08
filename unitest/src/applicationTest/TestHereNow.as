@@ -480,7 +480,7 @@ package applicationTest {
             }, 5000);
         }
 
-        private function subscribeMessageHandler(message:Object, envelope:Object, channel:String, time:Number):void {
+        private function subscribeMessageHandler(message:Object, envelope:Object, channelOrGroup:String, time:Number, channel:String):void {
         }
     }
 }
