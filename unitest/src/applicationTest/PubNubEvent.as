@@ -16,6 +16,11 @@ package applicationTest {
         public static const RW_GRANT_RESULT:String = "RW_GRANT_RESULT";
         public static const RW_GRANT_AUDIT_RESULT:String = "RW_GRANT_AUDIT_RESULT";
         public static const NOT_EXPECTED_ERROR:String = "NOT_EXPECTED_ERROR";
+        public static const CG_GET_CHANNELS:String = "CG_GET_CHANNELS";
+        public static const CG_GET_GROUPS:String = "CG_GET_GROUPS";
+        public static const CG_ADD:String = "CG_ADD";
+        public static const CG_REMOVE_CHANNEL:String = "CG_REMOVE_CHANNEL";
+        public static const CG_REMOVE_GROUP:String = "CG_REMOVE_GROUP";
         public static const ERROR:String = "ERROR";
 
         private var _result:*;

@@ -29,6 +29,7 @@ package com.pubnub
 		private static var AUDIT_FIELDS:Array = ['callback', 'error'];
 		private static var WHERE_NOW_FIELDS:Array = ['callback', 'error'];
 		private static var STATE_FIELDS:Array = ['callback', 'error'];
+        private static var CHANNEL_GROUP_FIELDS:Array = ['callback', 'error'];
 
 		public function PubNub(config:Object = null) {
 			instanceId = generateId();
@@ -241,6 +242,69 @@ package com.pubnub
 		public function get_heartbeat_interval():Number {
 			return Number(jsCallSync('get_heartbeat_interval'));
 		}
+
+        public function channel_group(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group', [newArgs, callbackId]);
+        }
+
+        public function channel_group_list_channels(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group_list_channels', [newArgs, callbackId]);
+        }
+
+        public function channel_group_list_groups(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group_list_groups', [newArgs, callbackId]);
+        }
+
+        public function channel_group_list_namespaces(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group_list_namespaces', [newArgs, callbackId]);
+        }
+
+        public function channel_group_remove_channel(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group_remove_channel', [newArgs, callbackId]);
+        }
+
+        public function channel_group_remove_group(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group_remove_group', [newArgs, callbackId]);
+        }
+
+        public function channel_group_remove_namespace(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group_remove_namespace', [newArgs, callbackId]);
+        }
+
+        public function channel_group_add_channel(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group_add_channel', [newArgs, callbackId]);
+        }
+
+        public function channel_group_cloak(args:Object, callback:Function = undefined):void {
+            var callbackId:String = mockCallback(callback);
+            var newArgs:Object = mockObjectCallbacks(args, PubNub.CHANNEL_GROUP_FIELDS);
+
+            jsCall('channel_group_cloak', [newArgs, callbackId]);
+        }
 
 		// Helpers
 		private function mockObjectCallbacks(obj:Object, fields:Array):Object {

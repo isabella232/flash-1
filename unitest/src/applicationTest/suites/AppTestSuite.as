@@ -1,5 +1,6 @@
 package applicationTest.suites {
-    import applicationTest.TestPAMChannelGroups;
+import applicationTest.TestChannelGroups;
+import applicationTest.TestPAMChannelGroups;
     import applicationTest.TestCipherKey;
     import applicationTest.TestError;
     import applicationTest.TestGrant;
@@ -34,5 +35,6 @@ package applicationTest.suites {
         public var heartbeatIntervalTest:TestHeartbeatInterval;
         public var errorTest:TestError;
         public var channelGroupPAMTest:TestPAMChannelGroups;
+        public var channelGroupTest:TestChannelGroups;
     }
 }
