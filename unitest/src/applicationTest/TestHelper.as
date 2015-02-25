@@ -60,8 +60,8 @@ public class TestHelper {
                 for (var i:int = 0; i < namespaces.length; i++) {
                     if (namespaces[i].indexOf("ftest_") == 0) {
                         (function (nsp:String):void {
-                            p.channel_group_remove_group({
-                                channel_group: nsp
+                            p.channel_group_remove_namespace({
+                                namespace: nsp
                             });
                         })(namespaces[i]);
                     }
