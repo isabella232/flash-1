@@ -16,7 +16,7 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             'test/e2e/spec_helper.js',
-            'test/vendor/pubnub.min.js',
+            'test/vendor/pubnub.js',
             'src/config.js',
             'src/pubnubProxy.js',
             'src/utils.js',
