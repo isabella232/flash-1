@@ -9,5 +9,12 @@
         <finalizer>com.pubnub.air.PubNubAir</finalizer>
       </applicationDeployment>
     </platform>
+    <platform name="Android-x86">
+      <applicationDeployment>
+        <nativeLibrary>PubNubAirAndroid.jar</nativeLibrary>
+        <initializer>com.pubnub.air.PubNubAir</initializer>
+        <finalizer>com.pubnub.air.PubNubAir</finalizer>
+      </applicationDeployment>
+    </platform>
   </platforms>
 </extension>

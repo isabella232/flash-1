@@ -3,16 +3,18 @@
 IF NOT EXIST PubNubAirAndroid.JAR goto fail
 
 REM delete any old stuff
-del Android-ARM\library.swf
 del library.swf
-del Android-ARM\PubNubAirAndroid.jar
+rmdir Android-ARM
+rmdir Android-x86
+mkdir Android-ARM
+mkdir Android-x86
 
 REM move a jar into a proper place, also, ensure its name capitalization 
 REM is correct (PubNubAirAndroid.JAR and PubNubAirAndroid.jar are same for Windows, but not for Java!)
 copy PubNubAirAndroid.jar Android-ARM\PubNubAirAndroid.jar
 
 REM extract library.swf from an swc and put into a proper place
-7z e ..\PubNubAirLib\bin\PubNubAir.swc library.swf
+7z e ..\PubNubAirLib\bin\PubNubAirLib.swc library.swf
 copy library.swf Android-ARM\
 
 REM make temp folder, put PubNubAirAndroid.jar there, extract, then extract any JARs in its
@@ -30,6 +32,7 @@ jar -cf PubNubAirAndroid.jar .
 move PubNubAirAndroid.jar ..\Android-ARM\
 cd ..
 rmdir /S /Q tmp
+cp -r Android-ARM Android-x86
 
 REM now do the actual build of an ANE
 call buildf.bat
