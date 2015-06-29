@@ -4,8 +4,8 @@ IF NOT EXIST PubNubAirAndroid.JAR goto fail
 
 REM delete any old stuff
 del library.swf
-rmdir Android-ARM
-rmdir Android-x86
+rmdir /s /q Android-ARM
+rmdir /s /q Android-x86
 mkdir Android-ARM
 mkdir Android-x86
 
@@ -32,7 +32,7 @@ jar -cf PubNubAirAndroid.jar .
 move PubNubAirAndroid.jar ..\Android-ARM\
 cd ..
 rmdir /S /Q tmp
-cp -r Android-ARM Android-x86
+xcopy /Y Android-ARM Android-x86
 
 REM now do the actual build of an ANE
 call buildf.bat
