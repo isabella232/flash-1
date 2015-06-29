@@ -91,7 +91,7 @@ package com.pubnub.air {
         }
 
         public function time(config:Object):void {
-            var newArgs:Object = mockExtendedObjectCallbacks(config);
+            var newArgs:Object = mockSimpleObjectCallbacks(config);
             extContext.call("time", instanceId, newArgs.callback, newArgs.error);
         }
 

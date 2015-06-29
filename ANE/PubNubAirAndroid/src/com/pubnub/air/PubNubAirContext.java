@@ -26,6 +26,7 @@ public class PubNubAirContext extends FREContext {
         functionMap.put("unsubscribeAll", new unsubscribeAllFunction());
         functionMap.put("shutdown", new shutdownFunction());
 
+        functionMap.put("time", new timeFunction());
         functionMap.put("presence", new presenceFunction());
         functionMap.put("hereNow", new hereNowFunction());
         functionMap.put("whereNow", new whereNowFunction());
