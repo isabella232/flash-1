@@ -1,9 +1,12 @@
 /.metadata
 /.fxpTemp
 /build-tools/Android-ARM/*
-**/.idea
+/build-tools/Android-x86/*
+**/.idea/*
+**/*.iml
 **/.settings
 **/bin
+**/gen
 **/.FlexUnitSettings
 *.tmp
 *.swf
