@@ -3,6 +3,8 @@
 /build-tools/Android-ARM/*
 /build-tools/Android-x86/*
 **/.idea/*
+**/bin-debug/*
+**/.classpath
 **/*.iml
 **/.settings
 **/bin
