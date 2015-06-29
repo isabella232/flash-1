@@ -8,7 +8,6 @@ public class PubNubAir implements FREExtension {
         return new PubNubAirContext();
     }
 
-    @Override
     public void dispose() {
     }
 
