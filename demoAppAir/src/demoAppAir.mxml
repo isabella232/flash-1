@@ -206,10 +206,10 @@
                 backfill: false,
                 noheresync: true,
                 channel: channel_val(),
-                message: function subscribeMessageHandler(message:Object, envelope:Object, channel:String, time:Number):void {
+                message: function subscribeMessageHandler(message:Object, ...args):void {
                     appendObjectToConsole(message);
                 },
-                presence: function subscribePresenceHandler(message:Object, here:*, channel:String, presenceChannel:String = null):void {
+                presence: function subscribePresenceHandler(message:Object, ...args):void {
                     presenceAppend(message);
                 },
                 connect: function subscribeConnectHandler(channel:String):void {

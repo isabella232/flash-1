@@ -5,7 +5,6 @@
 **/.idea/*
 **/bin-debug/*
 **/.classpath
-**/*.iml
 **/.settings
 **/bin
 **/gen
