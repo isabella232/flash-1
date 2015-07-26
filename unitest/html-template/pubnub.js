@@ -1,4 +1,4 @@
-// Version: 3.7.12
+// Version: 3.7.13
 /* =-====================================================================-= */
 /* =-====================================================================-= */
 /* =-=========================     JSON     =============================-= */
@@ -162,7 +162,7 @@ var NOW             = 1
 ,   PARAMSBIT       = '&'
 ,   PRESENCE_HB_THRESHOLD = 5
 ,   PRESENCE_HB_DEFAULT  = 30
-,   SDK_VER         = '3.7.12'
+,   SDK_VER         = '3.7.13'
 ,   REPL            = /{([\w\-]+)}/g;
 
 /**
@@ -1141,6 +1141,7 @@ function PN_API(setup) {
             ,   store    = ('store_in_history' in args) ? args['store_in_history']: true
             ,   jsonp    = jsonp_cb()
             ,   add_msg  = 'push'
+            ,   params
             ,   url;
 
             if (args['prepend']) add_msg = 'unshift'
@@ -1905,6 +1906,7 @@ function PN_API(setup) {
                 ,   op             = args['op']
                 ,   gw_type        = args['gw_type']
                 ,   device_id      = args['device_id']
+                ,   params
                 ,   url;
 
             if (!device_id)     return error('Missing Device ID (device_id)');
@@ -2273,7 +2275,7 @@ window['PUBNUB'] || (function() {
 var SWF             = 'https://pubnub.a.ssl.fastly.net/pubnub.swf'
 ,   ASYNC           = 'async'
 ,   UA              = navigator.userAgent
-,   PNSDK           = 'PubNub-JS-' + 'Web' + '/' + '3.7.12'
+,   PNSDK           = 'PubNub-JS-' + 'Web' + '/' + '3.7.13'
 ,   XORIGN          = UA.indexOf('MSIE 6') == -1;
 
 /**
