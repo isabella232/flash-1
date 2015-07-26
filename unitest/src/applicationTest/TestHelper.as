@@ -20,6 +20,13 @@ public class TestHelper {
             secret_key: "demo-36"
         };
 
+        public static var dsConfig:Object = {
+            origin: "pubsub.pubnub.com",
+            publish_key: "ds",
+            subscribe_key: "ds",
+            secret_key: "ds"
+        };
+
         public static var demoConfig:Object = {
             origin: "pubsub.pubnub.com",
             publish_key: "demo",

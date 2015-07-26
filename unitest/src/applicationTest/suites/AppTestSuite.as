@@ -1,20 +1,21 @@
 package applicationTest.suites {
 import applicationTest.TestChannelGroups;
 import applicationTest.TestPAMChannelGroups;
-    import applicationTest.TestCipherKey;
-    import applicationTest.TestError;
-    import applicationTest.TestGrant;
-    import applicationTest.TestHeartbeat;
-    import applicationTest.TestHeartbeatInterval;
-    import applicationTest.TestHereNow;
-    import applicationTest.TestHistory;
-    import applicationTest.TestPublish;
-    import applicationTest.TestRawEncryption;
-    import applicationTest.TestState;
-    import applicationTest.TestSubscribe;
-    import applicationTest.TestTime;
-    import applicationTest.TestUUID;
-    import applicationTest.TestWhereNow;
+import applicationTest.TestCipherKey;
+import applicationTest.TestError;
+import applicationTest.TestGrant;
+import applicationTest.TestHeartbeat;
+import applicationTest.TestHeartbeatInterval;
+import applicationTest.TestHereNow;
+import applicationTest.TestHistory;
+import applicationTest.TestPublish;
+import applicationTest.TestRawEncryption;
+import applicationTest.TestState;
+import applicationTest.TestSubscribe;
+import applicationTest.TestTime;
+import applicationTest.TestUUID;
+import applicationTest.TestWhereNow;
+import applicationTest.TestWildcardSubscribe;
 
     [Suite]
     [RunWith("org.flexunit.runners.Suite")]
@@ -36,5 +37,6 @@ import applicationTest.TestPAMChannelGroups;
         public var errorTest:TestError;
         public var channelGroupPAMTest:TestPAMChannelGroups;
         public var channelGroupTest:TestChannelGroups;
+        public var wildcardSubscribeTest:TestWildcardSubscribe;
     }
 }
