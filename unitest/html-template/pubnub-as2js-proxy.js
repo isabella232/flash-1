@@ -107,7 +107,8 @@ Wrapper.prototype.mockCallback = function (callbackId) {
     var _wrapper = this;
 
     return function () {
-        _wrapper.applyCallback(callbackId, objectValues(arguments));
+        var args = Array.prototype.slice.call(arguments);
+        _wrapper.applyCallback(callbackId, objectValues(args));
     };
 };
 
