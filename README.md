@@ -1,6 +1,9 @@
 ## YOU MUST HAVE A PUBNUB ACCOUNT TO USE THE API.
 http://www.pubnub.com/account
 
+## Additional Docs
+https://www.pubnub.com/docs/flash-actionscript/pubnub-actionscript-sdk provides tutorials and API reference for using the PubNub Flash SDK in your app.  For more platform specific documentation details, please see the README in each associated sub-directory.
+
 ### PubNub 3.6 Real-time Cloud Push API - AS3, Flex, and Air
 
 PubNub is a blazingly fast cloud-hosted messaging service for building
